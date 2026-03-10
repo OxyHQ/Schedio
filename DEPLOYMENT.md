@@ -1,6 +1,6 @@
-# Deploying Allo to DigitalOcean App Platform
+# Deploying Schedio to DigitalOcean App Platform
 
-This guide explains how to deploy your Allo messaging app to DigitalOcean App Platform.
+This guide explains how to deploy Schedio to DigitalOcean App Platform.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ This guide explains how to deploy your Allo messaging app to DigitalOcean App Pl
 
 1. Go to [DigitalOcean App Platform](https://cloud.digitalocean.com/apps)
 2. Click **Create App**
-3. Select your GitHub repository: `YOUR_USERNAME/Allo`
+3. Select your GitHub repository: `OxyHQ/Schedio`
 4. Select branch: `main`
 
 ### Step 3: Configure Backend Service
@@ -37,20 +37,11 @@ This guide explains how to deploy your Allo messaging app to DigitalOcean App Pl
    - **HTTP Port**: `8080`
    - **Instance Size**: Basic (512MB RAM, $5/month)
 
-2. Add environment variables (click "Edit" next to Environment Variables):
+2. Add environment variables:
    ```
    NODE_ENV=production
    PORT=8080
    MONGODB_URI=<your-mongodb-connection-string>
-   JWT_SECRET=<generate-a-secure-random-string>
-   ```
-
-   Optional variables (if you use these features):
-   ```
-   OPENAI_API_KEY=<your-openai-api-key>
-   FIREBASE_PROJECT_ID=<your-firebase-project-id>
-   FIREBASE_PRIVATE_KEY=<your-firebase-private-key>
-   FIREBASE_CLIENT_EMAIL=<your-firebase-client-email>
    ```
 
 ### Step 4: Configure Frontend Static Site
@@ -65,10 +56,7 @@ This guide explains how to deploy your Allo messaging app to DigitalOcean App Pl
 2. Add frontend environment variables:
    ```
    EXPO_PUBLIC_API_URL=${backend.PUBLIC_URL}
-   EXPO_PUBLIC_SOCKET_URL=${backend.PUBLIC_URL}
    ```
-
-   The `${backend.PUBLIC_URL}` syntax automatically uses the backend URL.
 
 ### Step 5: Add MongoDB Database (Optional)
 
@@ -104,7 +92,7 @@ You can add a custom domain in the Settings tab.
 ### Step 1: Update App Spec
 
 1. Edit [.do/app.yaml](.do/app.yaml):
-   - Replace `YOUR_GITHUB_USERNAME/Allo` with your actual GitHub repo
+   - Verify `OxyHQ/Schedio` repo reference
    - Add any custom environment variables
 
 ### Step 2: Deploy Using doctl CLI
@@ -131,7 +119,7 @@ You can add a custom domain in the Settings tab.
    doctl apps create --spec .do/app.yaml
    ```
 
-4. Get app ID and monitor deployment:
+4. Monitor deployment:
    ```bash
    doctl apps list
    doctl apps get <app-id>
@@ -143,57 +131,25 @@ You can add a custom domain in the Settings tab.
 
 ### Backend Requirements
 
-Your backend needs a health check endpoint. Add this to your Express app:
+The backend has a health check endpoint at `/api/health`:
 
 ```typescript
-// In packages/backend/server.ts
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'healthy' });
+  res.status(200).json({ status: 'ok', service: 'schedio-backend' });
 });
 ```
 
-### Environment Variables
+### Database
 
-Make sure your backend reads from environment variables:
-
-```typescript
-const PORT = process.env.PORT || 8080;
-const MONGODB_URI = process.env.MONGODB_URI;
-const JWT_SECRET = process.env.JWT_SECRET;
-```
+The backend uses MongoDB with database name `schedio-{NODE_ENV}` (e.g., `schedio-production`). The database name is NOT embedded in the connection string — it is built dynamically from the app name and `NODE_ENV`.
 
 ### Frontend API Configuration
 
-Your frontend should use the environment variable for API URL:
+The frontend uses the environment variable for API URL:
 
 ```typescript
-// In packages/frontend
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
 ```
-
-### WebSocket/Socket.IO Configuration
-
-For Socket.IO to work on DigitalOcean:
-
-1. Ensure your backend allows CORS:
-   ```typescript
-   import cors from 'cors';
-   app.use(cors({
-     origin: process.env.FRONTEND_URL || '*',
-     credentials: true
-   }));
-   ```
-
-2. Configure Socket.IO for production:
-   ```typescript
-   const io = new Server(server, {
-     cors: {
-       origin: process.env.FRONTEND_URL || '*',
-       credentials: true
-     },
-     transports: ['websocket', 'polling']
-   });
-   ```
 
 ---
 
@@ -202,7 +158,6 @@ For Socket.IO to work on DigitalOcean:
 ### Auto-scaling
 - DigitalOcean App Platform auto-scales based on traffic
 - Start with 1 instance, scale up as needed
-- Configure in the dashboard under "Scaling"
 
 ### CDN
 - DigitalOcean automatically provides CDN for static sites
@@ -250,16 +205,6 @@ doctl apps logs <app-id> --type run
 - Verify MONGODB_URI is correctly set
 - Check if MongoDB allows connections from DigitalOcean IPs
 - Enable trusted sources in MongoDB Atlas
-
----
-
-## Next Steps
-
-1. Set up custom domain
-2. Configure SSL certificate (automatic with custom domain)
-3. Set up monitoring and alerts
-4. Configure backup strategy for database
-5. Implement CI/CD with GitHub Actions
 
 ---
 

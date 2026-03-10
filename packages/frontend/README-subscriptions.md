@@ -15,5 +15,4 @@ Frontend:
 - UI: `components/ProfileScreen.tsx` toggles the bell (outline vs filled) using the service. Optimistic update with rollback on error.
 
 Notes:
-- Push notifications and real-time sockets reuse existing infrastructure.
 - Only top-level posts trigger subscriber notifications (replies do not).

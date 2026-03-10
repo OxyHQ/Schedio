@@ -1,6 +1,6 @@
-# Allo
+# Schedio
 
-> A modern, cross-platform chat app built with Expo, React Native, TypeScript, and a Node.js/Express backend in a monorepo structure.
+> A modern, cross-platform social media scheduling tool built with Expo, React Native, TypeScript, and a Node.js/Express backend in a monorepo structure.
 
 ---
 
@@ -17,76 +17,54 @@
 
 ## About
 
-**Allo** is a secure, universal chat platform designed for mobile and web with **Signal Protocol encryption**, **device-first architecture**, and **peer-to-peer messaging**. It features end-to-end encrypted messaging, offline support, and a clean, modern UI. Built with Expo, React Native, and a Node.js backend in a modern monorepo structure, it supports file-based routing, multi-language support, and a modern UI.
+**Schedio** is a Buffer-style social media scheduling platform that lets you compose, schedule, and publish posts across multiple social networks from a single dashboard. Built with Expo, React Native, and a Node.js backend in a modern monorepo structure, it supports file-based routing, multi-language support, and a responsive UI that works on web, iOS, and Android.
 
-### Key Security Features
+### Key Features
 
-- 🔐 **Signal Protocol Encryption** - End-to-end encryption for all messages (even more secure than Signal)
-- 📱 **Device-First Architecture** - Messages stored locally first, cloud is secondary
-- ☁️ **Optional Cloud Sync** - Users can enable/disable cloud backup in settings
-- 🔑 **Automatic Key Management** - Signal Protocol device keys generated and managed automatically
-- 🚫 **No Plaintext Storage** - Server never sees unencrypted message content
-- 🔒 **Forward Secrecy** - Each message uses a unique encryption key
-- 🌐 **Peer-to-Peer** - Direct device-to-device messaging when both users are online
+- **Multi-Platform Publishing** — Connect Twitter/X, Instagram, Facebook, LinkedIn, Mastodon and schedule posts across all of them
+- **Post Queue & Calendar** — Visual calendar and drag-and-drop queue for managing scheduled content
+- **Analytics Dashboard** — Track post performance, engagement metrics, and audience growth
+- **Post Composer** — Rich composer with media attachments, polls, location, threads, and article content
+- **Publishing Schedules** — Create custom time slot schedules for automatic posting
+- **Draft Management** — Save and organize drafts for later
+- **Responsive Design** — Sidebar on desktop, bottom bar on mobile — works everywhere
+- **Theming** — Light/dark/system modes with multiple color themes
+- **Multi-Language** — English, Spanish, Italian supported via i18next
 
 ## Project Structure
 
-This is a **monorepo** using npm workspaces with the following structure:
+This is a **monorepo** using npm workspaces:
 
 ```
 /
-├── packages/            # All code packages
-│   ├── frontend/        # Expo React Native app (Allo)
-│   │   ├── app/         # App entry, screens, and routing
-│   │   │   ├── [username]/  # User profile, followers, following
-│   │   │   ├── kaana/       # AI assistant or help section
-│   │   │   ├── p/[id]/      # Post details, replies, quotes
+├── packages/
+│   ├── frontend/        # Expo React Native app
+│   │   ├── app/         # Screens and routing
+│   │   │   ├── (main)/  # Main app screens
+│   │   │   │   ├── index.tsx       # Dashboard
+│   │   │   │   ├── compose.tsx     # Post composer
+│   │   │   │   ├── queue.tsx       # Queue / calendar
+│   │   │   │   ├── analytics.tsx   # Analytics
+│   │   │   │   ├── accounts.tsx    # Social accounts
+│   │   │   │   ├── settings/       # Settings screens
+│   │   │   │   └── post/[id].tsx   # Post detail/edit
+│   │   │   ├── (auth)/  # Authentication screens
 │   │   │   └── ...
 │   │   ├── components/  # UI components
-│   │   ├── assets/      # Images, icons, fonts
-│   │   ├── constants/   # App-wide constants
-│   │   ├── context/     # React context providers
-│   │   ├── features/    # Feature modules
 │   │   ├── hooks/       # Custom React hooks
-│   │   ├── interfaces/  # TypeScript interfaces
-│   │   ├── lib/         # Library code
-│   │   │   ├── signalProtocol.ts  # Signal Protocol encryption
-│   │   │   ├── offlineStorage.ts  # Offline message storage
-│   │   │   ├── p2pMessaging.ts     # Peer-to-peer messaging
-│   │   │   └── ...
-│   │   ├── locales/     # i18n translation files
-│   │   ├── scripts/     # Utility scripts
 │   │   ├── stores/      # State management (Zustand)
-│   │   │   ├── messagesStore.ts    # Encrypted message store
-│   │   │   ├── deviceKeysStore.ts  # Device key management
-│   │   │   └── ...
-│   │   ├── styles/      # Global styles and colors
+│   │   ├── styles/      # Theme and color system
+│   │   ├── locales/     # i18n translation files
 │   │   └── utils/       # Utility functions
 │   ├── backend/         # Node.js/Express API server
-│   │   ├── src/         # Backend source code
-│   │   │   ├── controllers/ # API controllers
-│   │   │   ├── middleware/  # Express middleware
-│   │   │   ├── models/      # MongoDB models
-│   │   │   │   ├── Conversation.ts  # Chat conversations
-│   │   │   │   ├── Message.ts       # Encrypted messages
-│   │   │   │   ├── Device.ts         # Signal Protocol device keys
-│   │   │   │   └── ...
-│   │   │   ├── routes/      # API routes
-│   │   │   │   ├── conversations.ts # Conversation endpoints
-│   │   │   │   ├── messages.ts      # Message endpoints
-│   │   │   │   ├── devices.ts       # Device key management
-│   │   │   │   └── ...
-│   │   │   ├── scripts/     # Utility scripts
-│   │   │   ├── sockets/     # WebSocket handlers
-│   │   │   ├── types/       # TypeScript types
-│   │   │   └── utils/       # Utility functions
-│   │   └── ...
+│   │   └── src/
+│   │       ├── models/      # MongoDB models (Post, SocialAccount, etc.)
+│   │       ├── routes/      # API routes (posts, accounts, analytics, queue)
+│   │       ├── middleware/  # Express middleware
+│   │       └── utils/       # Utility functions
 │   └── shared-types/    # Shared TypeScript types
-│       ├── src/         # Type definitions
-│       └── dist/        # Compiled types
 ├── package.json         # Root package.json with workspaces
-├── tsconfig.json        # Root TypeScript config
-└── ...
+└── tsconfig.json        # Root TypeScript config
 ```
 
 ## Getting Started
@@ -99,14 +77,16 @@ This is a **monorepo** using npm workspaces with the following structure:
 ### Initial Setup
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/OxyHQ/Allo.git
-   cd Allo
+   git clone https://github.com/OxyHQ/Schedio.git
+   cd Schedio
    ```
 
 2. **Install all dependencies**
    ```bash
    npm run install:all
    ```
+
+3. **Set up environment variables** — See backend and frontend READMEs for required env vars.
 
 ### Development
 
@@ -131,7 +111,6 @@ The frontend is an Expo React Native app that can run on:
 - **Android**: `npm run android` (requires Android Studio)
 
 #### Backend Development
-The backend runs on the development server with hot reload:
 ```bash
 npm run dev:backend
 ```
@@ -151,62 +130,31 @@ npm run dev:backend
 - `npm run clean` — Clean all build artifacts
 - `npm run install:all` — Install dependencies for all packages
 
-### Frontend (`@allo/frontend`)
+### Frontend (`@schedio/frontend`)
 - `npm start` — Start Expo development server
 - `npm run android` — Run on Android device/emulator
 - `npm run ios` — Run on iOS simulator
 - `npm run web` — Run in web browser
 - `npm run build-web` — Build static web output
 - `npm run lint` — Lint codebase
-- `npm run clean` — Clean build artifacts
 
-### Backend (`@allo/backend`)
+### Backend (`@schedio/backend`)
 - `npm run dev` — Start development server with hot reload
 - `npm run build` — Build the project
 - `npm run start` — Start production server
 - `npm run lint` — Lint codebase
-- `npm run clean` — Clean build artifacts
-- `npm run migrate` — Run database migrations
-- `npm run migrate:dev` — Run database migrations in development
 
-### Shared Types (`@allo/shared-types`)
+### Shared Types (`@schedio/shared-types`)
 - `npm run build` — Build TypeScript types
 - `npm run dev` — Watch and rebuild types
-- `npm run clean` — Clean build artifacts
 
-## Documentation
+## API Documentation
 
-### Project Documentation
-
-All project documentation is available in the [`docs/`](./docs/) folder:
-
-- [Allo System Overview](./docs/allo_SYSTEM_README.md) - Legacy system overview
-- [Allo Format Specification](./docs/allo_FORMAT_FINAL.md) - Legacy format summary
-- [Allo Implementation](./docs/allo_IMPLEMENTATION_COMPLETE.md) - Legacy implementation details
-- [Notifications System](./docs/allo_NOTIFICATIONS.md) - Notification system documentation
-- [Visual Guide](./docs/allo_VISUAL_GUIDE.md) - Visual design guide
-- [Theming Guide](./docs/THEMING_REFACTOR_SUMMARY.md) - Complete theming system documentation
-- [Theme Quick Reference](./docs/THEME_QUICK_REFERENCE.md) - Quick reference for developers
-- [Theming Troubleshooting](./docs/THEMING_TROUBLESHOOTING.md) - Common theming issues and solutions
-- [Performance Optimizations](./docs/PERFORMANCE_OPTIMIZATIONS.md) - Performance best practices
-- [Vercel Deployment](./docs/VERCEL_DEPLOYMENT.md) - Deployment guide for Vercel
-- [Code Cleanup Summary](./docs/CODE_CLEANUP_SUMMARY.md) - Code cleanup documentation
-
-### API Documentation
-
-The Allo API is a secure backend service built with Express.js and TypeScript, providing encrypted messaging functionality, device key management, authentication, and real-time communications. All messages are encrypted using Signal Protocol - the server never sees plaintext.
+The Schedio API is a REST backend built with Express.js and TypeScript, providing endpoints for post management, social account connections, analytics, and queue management. Authentication is handled by the Oxy platform.
 
 For detailed API information, see:
-- [Backend README](packages/backend/README.md) - Complete API documentation
-- [Frontend README](packages/frontend/README.md) - Frontend implementation details
-
-### Security Documentation
-
-- **Signal Protocol**: End-to-end encryption using ECDH + AES-GCM
-- **Device-First**: Messages stored locally, cloud sync is optional
-- **P2P Messaging**: Direct device-to-device when available
-- **Key Exchange**: Automatic device key registration and exchange
-- **Offline Support**: Full functionality without internet connection
+- [Backend README](packages/backend/README.md) — Complete API documentation
+- [Frontend README](packages/frontend/README.md) — Frontend implementation details
 
 ## Contributing
 

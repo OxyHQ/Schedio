@@ -1,15 +1,14 @@
 # Architecture & Best Practices
 
-This document outlines the architecture and best practices followed in this Expo Router 54 application.
+This document outlines the architecture and best practices followed in the Schedio frontend (Expo SDK 55).
 
-## Expo Router 54 Best Practices
+## Expo Router Best Practices
 
 ### 1. File-Based Routing
 - Routes are defined by the file system structure
-- Use route groups `(chat)` for organization without affecting URLs
+- Use route groups `(main)` for organization without affecting URLs
 - Dynamic routes use `[id].tsx` syntax
 - Nested routes are created through folder structure
-- Expo Router automatically discovers routes from file system
 
 ### 2. Code Splitting & Performance
 - **React.lazy()** for dynamic imports of heavy components
@@ -28,7 +27,6 @@ This document outlines the architecture and best practices followed in this Expo
 - Responsive layouts handle mobile/tablet/desktop breakpoints
 - Breakpoints defined in `constants/responsive.ts`
 - Two-pane layouts for large screens, stack navigation for mobile
-- Three-pane layout on extra-large screens (>= 1024px)
 
 ### 5. Component Organization
 - Clear separation of concerns
@@ -37,65 +35,57 @@ This document outlines the architecture and best practices followed in this Expo
 - Utils for business logic in `utils/` directory
 - Constants in `constants/` directory
 
-### 6. Type Safety
-- Full TypeScript coverage
-- Interface definitions for all props
-- Type-safe route matching
-- Exported types for reuse across components
-
-### 7. Error Handling
-- Error boundaries at layout level
-- Suspense boundaries with loading states
-- Graceful fallbacks for missing data
-
 ## Route Structure
 
 ```
 app/
 ├── _layout.tsx              # Root layout
-├── (chat)/
-│   ├── _layout.tsx          # Chat layout (two-pane for large screens)
-│   ├── index.tsx            # Conversations list
-│   ├── status.tsx           # Status screen
-│   └── settings/
-│       ├── index.tsx        # Settings main screen
-│       ├── appearance.tsx
-│       ├── language.tsx
-│       └── privacy/
-│           └── ...
-└── c/
-    ├── _layout.tsx          # Conversation layout (three-pane for XL screens)
-    └── [id].tsx             # Individual conversation view
+├── (main)/
+│   ├── _layout.tsx          # Main layout (responsive sidebar + content)
+│   ├── index.tsx            # Dashboard — upcoming posts overview
+│   ├── compose.tsx          # Post composer
+│   ├── queue.tsx            # Queue / calendar view
+│   ├── analytics.tsx        # Analytics dashboard
+│   ├── accounts.tsx         # Social accounts management
+│   ├── settings/
+│   │   ├── index.tsx        # Settings main screen
+│   │   ├── appearance.tsx   # Theme, color, app icon
+│   │   ├── language.tsx     # Language selection
+│   │   └── privacy.tsx      # Privacy settings
+│   └── post/
+│       └── [id].tsx         # Post detail/edit
+├── (auth)/
+│   ├── _layout.tsx          # Auth layout
+│   └── index.tsx            # Sign in / sign up
+└── +not-found.tsx           # 404 screen
 ```
 
-## Key Utilities & Constants
+## Navigation
 
-### `utils/routeUtils.ts`
-- Route constants (`ROUTES`)
-- Route pattern matching (`ROUTE_PATTERNS`)
-- Route matching utilities (`routeMatchers`)
-- Type-safe route helpers
+### Desktop (>= 768px)
+- **SideBar** (`components/SideBar/index.tsx`) with nav items:
+  Dashboard, Compose, Queue, Analytics, Accounts, Settings
 
-### `hooks/useRouteDetection.ts`
-- Centralized route detection logic
-- Returns typed `RouteDetectionResult` object
+### Mobile (< 768px)
+- **BottomBar** (`components/layout/BottomBar.tsx`) with nav items:
+  Dashboard, Compose, Queue, Analytics, Settings
+
+### Route Utilities (`utils/routeUtils.ts`)
+- Route constants (`ROUTES`) — all main app routes
+- Route pattern matching (`ROUTE_PATTERNS`) for dynamic routes like `/post/:id`
+- Route matching utilities (`routeMatchers`) — `isComposeRoute`, `isQueueRoute`, `isAnalyticsRoute`, `isAccountsRoute`, `isSettingsRoute`
+
+### Route Detection Hook (`hooks/useRouteDetection.ts`)
+- Returns typed `RouteDetectionResult` with boolean flags for each route
 - Memoized for performance
-- Uses Expo Router hooks properly
+- Used by layouts to determine active navigation state
+
+## Key Utilities & Constants
 
 ### `constants/responsive.ts`
 - Breakpoint constants (`BREAKPOINTS`)
 - Screen size utilities
 - Consistent responsive values across app
-
-### `constants/routes.ts`
-- Route constant definitions
-- Route builder functions
-- Type-safe route generation
-
-### `types/navigation.ts`
-- Shared type definitions
-- `NavigationItem` interface
-- Navigation-related types
 
 ### `components/shared/`
 - **LoadingFallback.tsx**: Suspense fallback component
@@ -103,40 +93,14 @@ app/
 
 ## Performance Optimizations
 
-1. **Memoization**: 
-   - Heavy computations memoized with `useMemo`
-   - Callbacks memoized with `useCallback`
-   - Style objects memoized for theme changes
-
-2. **Code Splitting**: 
-   - Settings screen loaded lazily with `React.lazy()`
-   - Conversation view loaded lazily
-   - Route-based code splitting
-
-3. **Conditional Rendering**: 
-   - Components only render when needed
-   - Responsive rendering based on screen size
-   - Lazy loading with Suspense
-
-4. **Type Safety**: 
-   - Full TypeScript coverage
-   - Prevents runtime errors
-   - Better IDE autocomplete and refactoring
+1. **Memoization**: Heavy computations with `useMemo`, callbacks with `useCallback`
+2. **Code Splitting**: Route-based code splitting with `React.lazy()`
+3. **Conditional Rendering**: Components only render when needed based on screen size
+4. **Type Safety**: Full TypeScript coverage prevents runtime errors
 
 ## Responsive Design
 
-- **Mobile (< 768px)**: Stack navigation, single-pane
-- **Tablet (768px - 1023px)**: Two-pane layout
-- **Desktop (>= 1024px)**: Three-pane layout (conversations + chat + details)
+- **Mobile (< 768px)**: Stack navigation, single-pane, bottom bar
+- **Tablet/Desktop (>= 768px)**: Two-pane layout with sidebar
 
 Breakpoints defined in `constants/responsive.ts` for consistency.
-
-## Code Quality Standards
-
-1. **Import Organization**: Grouped by type (Components, Hooks, Utils, Types, Constants)
-2. **Component Structure**: Clear prop interfaces, proper TypeScript types
-3. **Documentation**: JSDoc comments for complex functions and hooks
-4. **Error Handling**: Proper error boundaries and fallbacks
-5. **Reusability**: Shared components for common patterns
-6. **Maintainability**: Centralized constants and utilities
-
