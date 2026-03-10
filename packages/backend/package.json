@@ -24,7 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
-    "express-rate-limit": "^8.0.1",
+    "express-rate-limit": "^8.1.1",
     "express-slow-down": "^2.1.0",
     "express-validator": "^7.0.1",
     "i18n": "^0.15.1",
