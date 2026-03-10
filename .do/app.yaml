@@ -1,0 +1,63 @@
+name: schedio
+region: nyc
+
+# Backend Service
+services:
+  - name: backend
+    github:
+      repo: OxyHQ/Schedio
+      branch: main
+      deploy_on_push: true
+
+    # Build settings
+    build_command: npm install && npm run build:backend
+    run_command: npm run start:backend
+
+    # Environment
+    environment_slug: node-js
+    http_port: 8080
+
+    # Instance size
+    instance_size_slug: basic-xxs
+    instance_count: 1
+
+    # Health check
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+
+    # Environment variables (add these in DO dashboard)
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+
+# Frontend Static Site
+static_sites:
+  - name: frontend
+    github:
+      repo: OxyHQ/Schedio
+      branch: main
+      deploy_on_push: true
+
+    # Build settings
+    build_command: npm install && npm run build:frontend
+    output_dir: packages/frontend/dist
+
+    # Environment variables for build
+    envs:
+      - key: EXPO_PUBLIC_API_URL
+        value: ${backend.PUBLIC_URL}
+
+# Database (MongoDB)
+databases:
+  - name: schedio-db
+    engine: MONGODB
+    version: "6"
+    production: true
+    cluster_name: schedio-cluster

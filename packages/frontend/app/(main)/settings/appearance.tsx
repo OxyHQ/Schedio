@@ -1,0 +1,274 @@
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  Switch,
+} from 'react-native';
+import { useAppearanceStore } from '@/stores/appearanceStore';
+import { colors as baseColors } from '@/styles/colors';
+import { Header } from '@/components/layout/Header';
+import { HeaderIconButton } from '@/components/layout/HeaderIconButton';
+import { BackArrowIcon } from '@/assets/icons/back-arrow-icon';
+import { router } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { ThemedView } from '@/components/ThemedView';
+import { useTheme } from '@/hooks/useTheme';
+import { LogoIcon } from '@/assets/logo';
+import { COLOR_THEMES } from '@/styles/colorThemes';
+import { SPACING, SPACING_CLASSES } from '@/constants/spacing';
+
+const IconComponent = Ionicons as any;
+
+// App icon options (visual only for now)
+const APP_ICONS = [
+  { id: 'default', label: 'Default', bgColor: '#1D9BF0', logoColor: '#FFFFFF' },
+  { id: 'default-x', label: 'Default X', bgColor: '#000000', logoColor: '#FFFFFF' },
+  { id: 'classic', label: 'Classic', bgColor: '#21C063', logoColor: '#FFFFFF' },
+  { id: 'classic-x', label: 'Classic X', bgColor: '#718096', logoColor: '#FFFFFF' },
+];
+
+
+export default function AppearanceSettingsScreen() {
+  const mySettings = useAppearanceStore((state) => state.mySettings);
+  const loading = useAppearanceStore((state) => state.loading);
+  const loadMySettings = useAppearanceStore((state) => state.loadMySettings);
+  const updateMySettings = useAppearanceStore((state) => state.updateMySettings);
+  const theme = useTheme();
+
+  const [selectedColorThemeId, setSelectedColorThemeId] = useState('classic');
+  const [selectedThemeMode, setSelectedThemeMode] = useState<'light' | 'dark' | 'system'>('system');
+  const [selectedIconId, setSelectedIconId] = useState('default');
+  const [autoNightMode, setAutoNightMode] = useState(false);
+
+  useEffect(() => {
+    loadMySettings();
+  }, [loadMySettings]);
+
+  // Derive selected color theme and mode from current settings
+  useEffect(() => {
+    if (mySettings) {
+      const mode = mySettings.appearance?.themeMode || 'system';
+      const colorTheme = mySettings.appearance?.colorTheme || 'classic';
+      setSelectedThemeMode(mode);
+      setSelectedColorThemeId(colorTheme);
+    }
+  }, [mySettings]);
+
+  // Get the effective theme mode (resolve 'system' to light or dark based on device settings)
+  const effectiveMode = useMemo(() => {
+    if (selectedThemeMode === 'system') {
+      return theme.isDark ? 'dark' : 'light';
+    }
+    return selectedThemeMode;
+  }, [selectedThemeMode, theme.isDark]);
+
+  const selectedColorTheme = useMemo(
+    () => COLOR_THEMES.find((t) => t.id === selectedColorThemeId) || COLOR_THEMES[0],
+    [selectedColorThemeId]
+  );
+
+  const selectedVariant = useMemo(
+    () => selectedColorTheme[effectiveMode],
+    [selectedColorTheme, effectiveMode]
+  );
+
+  const onSelectColorTheme = useCallback(
+    async (colorTheme: (typeof COLOR_THEMES)[0]) => {
+      setSelectedColorThemeId(colorTheme.id);
+      await updateMySettings({
+        appearance: {
+          themeMode: selectedThemeMode,
+          colorTheme: colorTheme.id,
+          primaryColor: colorTheme.primaryColor,
+        },
+      } as any);
+    },
+    [updateMySettings, selectedThemeMode]
+  );
+
+  const onSelectThemeMode = useCallback(
+    async (mode: 'light' | 'dark' | 'system') => {
+      setSelectedThemeMode(mode);
+      await updateMySettings({
+        appearance: {
+          themeMode: mode,
+          colorTheme: selectedColorThemeId,
+          primaryColor: selectedColorTheme.primaryColor,
+        },
+      } as any);
+    },
+    [updateMySettings, selectedColorThemeId, selectedColorTheme]
+  );
+
+  return (
+    <ThemedView className="flex-1">
+      <Header
+        options={{
+          title: 'Appearance',
+          leftComponents: [
+            <HeaderIconButton key="back" onPress={() => router.back()}>
+              <BackArrowIcon size={20} color={theme.colors.text} />
+            </HeaderIconButton>,
+          ],
+        }}
+        hideBottomBorder={true}
+        disableSticky={true}
+      />
+      <ScrollView className={SPACING_CLASSES.screen} showsVerticalScrollIndicator={false}>
+        {/* THEME MODE */}
+        <Text className={SPACING_CLASSES.sectionTitle} style={{ color: theme.colors.textSecondary }}>
+          THEME MODE
+        </Text>
+        <View className={`flex-row gap-${SPACING.content.gap} mb-${SPACING.content.gapLarge}`}>
+          {(['light', 'dark', 'system'] as const).map((mode) => {
+            const isSelected = selectedThemeMode === mode;
+            const modeLabels = { light: 'Light', dark: 'Dark', system: 'System' };
+            return (
+              <TouchableOpacity
+                key={mode}
+                className={`flex-1 py-${SPACING.item.gap} px-${SPACING.item.paddingHorizontal} rounded-xl border items-center justify-center`}
+                style={{
+                  backgroundColor: isSelected ? selectedColorTheme.primaryColor : theme.colors.card,
+                  borderColor: theme.colors.border,
+                }}
+                onPress={() => onSelectThemeMode(mode)}
+                activeOpacity={0.8}
+              >
+                <Text
+                  className="text-[15px]"
+                  style={{
+                    color: isSelected ? '#FFFFFF' : theme.colors.text,
+                    fontWeight: isSelected ? '600' : '400',
+                  }}
+                >
+                  {modeLabels[mode]}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+
+        {/* COLOR THEME */}
+        <Text className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`} style={{ color: theme.colors.textSecondary }}>
+          COLOR THEME
+        </Text>
+
+        {/* Color theme picker */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          className={`pb-${SPACING.content.gapLarge}`}
+          contentContainerStyle={{ gap: 12 }}
+        >
+          {COLOR_THEMES.map((colorTheme) => {
+            const isSelected = selectedColorThemeId === colorTheme.id;
+            const variant = colorTheme[effectiveMode];
+            return (
+              <TouchableOpacity
+                key={colorTheme.id}
+                className="w-[90px] rounded-xl overflow-hidden items-center"
+                style={{
+                  borderColor: isSelected ? colorTheme.primaryColor : theme.colors.border,
+                  borderWidth: isSelected ? 2.5 : 1,
+                }}
+                onPress={() => onSelectColorTheme(colorTheme)}
+                activeOpacity={0.8}
+              >
+                {/* Mini preview */}
+                <View className="w-full h-[60px] p-2.5 justify-between" style={{ backgroundColor: variant.chatBackground }}>
+                  <View
+                    className="w-[60%] h-3.5 rounded-[7px] self-start"
+                    style={{ backgroundColor: variant.bubbleReceived }}
+                  />
+                  <View
+                    className="w-[50%] h-3.5 rounded-[7px] self-end"
+                    style={{ backgroundColor: variant.bubbleSent }}
+                  />
+                </View>
+                <Text
+                  className="text-[13px] py-2"
+                  style={{
+                    color: isSelected ? colorTheme.primaryColor : theme.colors.text,
+                    fontWeight: isSelected ? '600' : '400',
+                  }}
+                >
+                  {colorTheme.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+
+        {/* Chat Background + Auto-Night Mode */}
+        <View
+          className="rounded-2xl border overflow-hidden"
+          style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
+        >
+          <TouchableOpacity
+            className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pt-${SPACING.item.paddingHorizontal}`}
+            onPress={() => router.push('/settings/chat-background' as any)}
+          >
+            <Text className="text-base" style={{ color: theme.colors.text }}>
+              Chat Background
+            </Text>
+            <IconComponent name="chevron-forward" size={16} color={theme.colors.textTertiary} />
+          </TouchableOpacity>
+          <View className={`h-[1px] mx-${SPACING.item.paddingHorizontal}`} style={{ backgroundColor: theme.colors.border }} />
+          <View className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pb-${SPACING.item.paddingHorizontal}`}>
+            <Text className="text-base" style={{ color: theme.colors.text }}>
+              Auto-Night Mode
+            </Text>
+            <Switch
+              value={autoNightMode}
+              onValueChange={setAutoNightMode}
+              trackColor={{ false: theme.colors.border, true: selectedColorTheme.primaryColor }}
+              thumbColor="#FFFFFF"
+              ios_backgroundColor={theme.colors.border}
+            />
+          </View>
+        </View>
+
+        {/* APP ICON */}
+        <Text className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`} style={{ color: theme.colors.textSecondary }}>
+          APP ICON
+        </Text>
+        <View className={`flex-row gap-${SPACING.item.paddingHorizontal} py-1`}>
+          {APP_ICONS.map((appIcon) => {
+            const isSelected = selectedIconId === appIcon.id;
+            return (
+              <TouchableOpacity
+                key={appIcon.id}
+                className="items-center"
+                onPress={() => setSelectedIconId(appIcon.id)}
+                activeOpacity={0.8}
+              >
+                <View
+                  className="w-16 h-16 rounded-2xl items-center justify-center"
+                  style={{
+                    backgroundColor: appIcon.bgColor,
+                    borderColor: isSelected ? theme.colors.primary : 'transparent',
+                    borderWidth: isSelected ? 2.5 : 0,
+                  }}
+                >
+                  <LogoIcon size={28} color={appIcon.logoColor} />
+                </View>
+                <Text
+                  className="text-xs mt-1.5"
+                  style={{
+                    color: isSelected ? theme.colors.primary : theme.colors.textSecondary,
+                    fontWeight: isSelected ? '600' : '400',
+                  }}
+                >
+                  {appIcon.label}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </ScrollView>
+    </ThemedView>
+  );
+}
+
