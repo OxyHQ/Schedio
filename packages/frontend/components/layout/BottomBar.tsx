@@ -1,7 +1,6 @@
 import React, { useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, ViewStyle, Platform, Vibration } from 'react-native';
+import { StyleSheet, View, Text, ViewStyle, Platform, Vibration, Pressable } from 'react-native';
 import { Link, usePathname } from 'expo-router';
-import { Pressable } from 'react-native-web-hover';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
