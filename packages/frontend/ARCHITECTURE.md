@@ -51,7 +51,8 @@ app/
 │   │   ├── index.tsx        # Settings main screen
 │   │   ├── appearance.tsx   # Theme, color, app icon
 │   │   ├── language.tsx     # Language selection
-│   │   └── privacy.tsx      # Privacy settings
+│   │   ├── privacy.tsx      # Privacy settings
+│   │   └── profile-customization.tsx  # Profile display options
 │   └── post/
 │       └── [id].tsx         # Post detail/edit
 ├── (auth)/

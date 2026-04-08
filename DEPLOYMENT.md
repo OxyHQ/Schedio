@@ -131,12 +131,13 @@ You can add a custom domain in the Settings tab.
 
 ### Backend Requirements
 
-The backend has a health check endpoint at `/api/health`:
+The backend has a health check endpoint at `/api/health` (mounted via the public API router):
 
 ```typescript
-app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', service: 'schedio-backend' });
+publicApiRouter.get("/health", (req, res) => {
+  res.json({ status: "ok", service: "schedio-backend" });
 });
+app.use("/api", publicApiRouter);
 ```
 
 ### Database
@@ -148,7 +149,7 @@ The backend uses MongoDB with database name `schedio-{NODE_ENV}` (e.g., `schedio
 The frontend uses the environment variable for API URL:
 
 ```typescript
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000/api';
 ```
 
 ---
