@@ -7,24 +7,24 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "npm run dev --workspaces",
-    "dev:frontend": "npm run dev --workspace=@schedio/frontend",
-    "dev:backend": "npm run dev --workspace=@schedio/backend",
-    "build": "npm run build --workspaces",
-    "build:shared-types": "npm run build --workspace=@schedio/shared-types",
-    "build:frontend": "npm run build --workspace=@schedio/frontend",
-    "build:backend": "npm run build --workspace=@schedio/backend",
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "install:all": "npm install && npm install --workspaces",
-    "start:frontend": "npm run start --workspace=@schedio/frontend",
-    "start:backend": "npm run start --workspace=@schedio/backend",
-    "postinstall": "npm run build:shared-types"
+    "dev": "bun run --filter '*' dev",
+    "dev:frontend": "bun run --filter '@schedio/frontend' dev",
+    "dev:backend": "bun run --filter '@schedio/backend' dev",
+    "build": "bun run --filter '*' build",
+    "build:shared-types": "bun run --filter '@schedio/shared-types' build",
+    "build:frontend": "bun run --filter '@schedio/frontend' build",
+    "build:backend": "bun run --filter '@schedio/backend' build",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run --filter '*' lint",
+    "clean": "bun run --filter '*' clean && rm -rf node_modules",
+    "install:all": "bun install",
+    "start:frontend": "bun run --filter '@schedio/frontend' start",
+    "start:backend": "bun run --filter '@schedio/backend' start",
+    "web": "bun run --filter '@schedio/frontend' web",
+    "postinstall": "bun run build:shared-types"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "react-native-worklets": "0.5.1",
     "typescript": "~5.9.2"
   },
   "engines": {
