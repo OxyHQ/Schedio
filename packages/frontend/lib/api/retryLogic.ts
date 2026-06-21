@@ -5,6 +5,8 @@
  * Handles network failures gracefully, improves reliability
  */
 
+import axios from 'axios';
+
 export interface RetryConfig {
   maxRetries?: number;
   initialDelayMs?: number;
@@ -110,8 +112,8 @@ export async function retryWithBackoff<T>(
       console.warn(
         `[Retry] Attempt ${attempt + 1}/${fullConfig.maxRetries} failed. Retrying in ${delay}ms...`,
         {
-          error: error.message || error,
-          status: error.response?.status,
+          error: error instanceof Error ? error.message : String(error),
+          status: axios.isAxiosError(error) ? error.response?.status : undefined,
         }
       );
 

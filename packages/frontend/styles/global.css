@@ -1,3 +1,96 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+@import "nativewind/theme";
+
+@source "./app/**/*.{js,jsx,ts,tsx}";
+@source "./components/**/*.{js,jsx,ts,tsx}";
+@source "./lib/**/*.{js,jsx,ts,tsx}";
+@source "./hooks/**/*.{js,jsx,ts,tsx}";
+@source "../../node_modules/@oxyhq/services/lib/**/*.{js,jsx}";
+@source "../../node_modules/@oxyhq/bloom/lib/**/*.{js,jsx}";
+
+@theme {
+  /* Primary brand colors */
+  --color-primary: #21C063;
+  --color-primary-light: #DDF3F5;
+  --color-primary-light-1: #DDF3F5;
+  --color-primary-light-2: #E5F0FF;
+  --color-primary-dark: #000000;
+  --color-primary-dark-1: #0A0A0A;
+  --color-primary-dark-2: #1A1A1A;
+
+  --color-secondary: #d169e5;
+  --color-secondary-light: #f3e8ff;
+
+  /* Semantic theme colors (light mode defaults) */
+  --color-theme-bg: #FDFDFD;
+  --color-theme-bg-secondary: #FAFAFA;
+  --color-theme-bg-tertiary: #F5F5F5;
+  --color-theme-text: #1A1A1A;
+  --color-theme-text-secondary: #707070;
+  --color-theme-text-tertiary: #A0A0A0;
+  --color-theme-border: #E8E8E8;
+  --color-theme-border-light: #F5F5F5;
+  --color-theme-card: #FFFFFF;
+
+  /* Grayscale palette */
+  --color-black-light-1: #0F0F0F;
+  --color-black-light-2: #1A1A1A;
+  --color-black-light-3: #2A2A2A;
+  --color-black-light-4: #707070;
+  --color-black-light-5: #A0A0A0;
+  --color-black-light-6: #E8E8E8;
+  --color-black-light-7: #F5F5F5;
+  --color-black-light-8: #FAFAFA;
+  --color-black-light-9: #FDFDFD;
+
+  /* Message colors (light mode) */
+  --color-message-sent: #21C063;
+  --color-message-received: #EDF2F7;
+  --color-message-text-sent: #FFFFFF;
+  --color-message-text-received: #1A202C;
+  --color-message-timestamp: #A0AEC0;
+  --color-message-separator: #CBD5E0;
+
+  /* Dark mode message colors */
+  --color-message-received-dark: #1A1A1A;
+  --color-message-text-received-dark: #E8E8E8;
+  --color-message-timestamp-dark: #707070;
+  --color-message-separator-dark: #2A2A2A;
+
+  /* Interactive elements */
+  --color-button-primary: #21C063;
+  --color-button-secondary: #718096;
+  --color-button-disabled: #CBD5E0;
+  --color-link: #21C063;
+
+  /* Status colors */
+  --color-online: #00C853;
+  --color-offline: #718096;
+  --color-busy: #FF3B30;
+  --color-away: #FFCC00;
+
+  /* Chat UI colors */
+  --color-chat-input-bg: #F7FAFC;
+  --color-chat-input-border: #E2E8F0;
+  --color-chat-input-text: #2D3748;
+  --color-chat-input-placeholder: #A0AEC0;
+  --color-chat-header-border: #E2E8F0;
+  --color-chat-unread-badge: #FF3B30;
+  --color-chat-typing: #00C853;
+
+  /* Dark mode chat UI */
+  --color-chat-input-bg-dark: #0A0A0A;
+  --color-chat-input-border-dark: #2A2A2A;
+  --color-chat-input-text-dark: #E8E8E8;
+  --color-chat-input-placeholder-dark: #707070;
+  --color-chat-header-border-dark: #1A1A1A;
+
+  /* Utility colors */
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-shadow: rgba(0, 0, 0, 0.3);
+
+  /* Border radius */
+  --radius-message: 20px;
+}

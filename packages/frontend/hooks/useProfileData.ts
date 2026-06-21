@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { useUsersStore, useUserByUsername } from '@/stores/usersStore';
+import { useUsersStore, useUserByUsername, type UserEntity } from '@/stores/usersStore';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { usePrivacySettings } from './usePrivacySettings';
 import { useOxy } from '@oxyhq/services';
@@ -97,7 +97,10 @@ export function useProfileData(username?: string): {
         // Fetch fresh data - this will update the store
         const data = await ensureByUsername(
           username,
-          (u) => oxyServices.getProfileByUsername(u)
+          async (u): Promise<UserEntity> => {
+            const profile = await oxyServices.getProfileByUsername(u);
+            return { ...profile, avatar: profile.avatar ?? undefined };
+          }
         );
 
         if (!cancelled && data?.id) {

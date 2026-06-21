@@ -52,7 +52,7 @@ const alloPicker: React.FC<alloPickerProps> = ({
                 // Search for users via Oxy services
                 const searchResults = await oxyServices.searchProfiles(query, { limit: 10 });
 
-                const mappedUsers: alloUser[] = (searchResults || []).map((profile: any) => {
+                const mappedUsers: alloUser[] = (searchResults?.data ?? []).map((profile: any) => {
                     // Handle name object or string
                     let displayName = profile.username || profile.handle;
                     if (typeof profile.name === 'string') {

@@ -16,6 +16,7 @@ export interface PrivacySettings {
     hideSaveCounts?: boolean;
     hiddenWords?: string[];
     restrictedUsers?: string[];
+    blockedUsers?: string[];
 }
 
 /**
@@ -34,7 +35,7 @@ export function usePrivacySettings(userId?: string | null): PrivacySettings | nu
 
         const loadSettings = async () => {
             try {
-                const response = await authenticatedClient.get(`/profile/settings/${userId}`);
+                const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(`/profile/settings/${userId}`);
                 if (response.data?.privacy) {
                     setSettings(response.data.privacy);
                 } else {
@@ -101,7 +102,7 @@ export function useCurrentUserPrivacySettings(): PrivacySettings | null {
 
             // Then fetch fresh data from API
             try {
-                const response = await authenticatedClient.get('/profile/settings/me');
+                const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>('/profile/settings/me');
                 if (response.data?.privacy) {
                     const freshSettings = response.data.privacy;
                     cachedPrivacySettings = freshSettings;

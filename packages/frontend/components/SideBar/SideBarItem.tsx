@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, Platform, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 
 export function SideBarItem({
@@ -15,7 +15,7 @@ export function SideBarItem({
     isActive: boolean;
     icon: React.ReactNode;
     text: string;
-    href?: string;
+    href?: Href;
     isExpanded: boolean;
     onHoverExpand?: () => void;
     onPress?: () => void;

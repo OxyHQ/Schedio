@@ -1,6 +1,6 @@
 /**
  * App Health Check Utility
- * Verifies all optimizations are working correctly in Expo 54
+ * Verifies all optimizations are working correctly in Expo 56
  */
 
 import { Platform } from 'react-native';
@@ -24,7 +24,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
 
   // 1. Check Performance API
   try {
-    if (typeof performance !== 'undefined' && performance.now) {
+    if (typeof performance !== 'undefined' && typeof performance.now === 'function') {
       checks.push({
         name: 'Performance API',
         status: 'pass',
@@ -94,7 +94,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
       }
 
       // Check for addEventListener (typing indicators)
-      if (window.addEventListener) {
+      if (typeof window.addEventListener === 'function') {
         checks.push({
           name: 'Event Listeners (Web)',
           status: 'pass',
@@ -221,7 +221,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
  */
 export function logHealthCheck(result: HealthCheckResult): void {
   console.log('\n========================================');
-  console.log('🏥 App Health Check (Expo 54)');
+  console.log('🏥 App Health Check (Expo 56)');
   console.log('========================================\n');
 
   result.checks.forEach((check) => {

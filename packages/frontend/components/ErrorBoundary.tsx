@@ -133,8 +133,10 @@ class ErrorBoundaryBase extends Component<Props, State> {
     }
 }
 
-// Wrap the component with translation HOC
-const ErrorBoundary = withTranslation()(ErrorBoundaryBase);
+// Wrap the component with translation HOC. The explicit annotation keeps the
+// emitted type portable (composite build) — the HOC's inferred return type would
+// otherwise reference react-i18next internals. `t` is injected by withTranslation.
+const ErrorBoundary: React.ComponentType<Omit<Props, 't'>> = withTranslation()(ErrorBoundaryBase);
 
 /**
  * Smaller error boundary for specific features
@@ -146,7 +148,7 @@ export function FeatureErrorBoundary({
 }: {
     children: ReactNode;
     featureName: string;
-}): JSX.Element {
+}): React.JSX.Element {
     const Wrapper = ({ children: wrappedChildren }: { children: ReactNode }) => (
         <ErrorBoundaryBase
             t={(key: string) => key}

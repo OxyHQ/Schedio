@@ -172,16 +172,13 @@ export async function waitForConnection(timeoutMs: number = 30000): Promise<bool
       resolve(false);
     }, timeoutMs);
 
-    const unsubscribeStore = useConnectionStatusStore.subscribe(
-      (state) => state.isConnected,
-      (isConnected) => {
-        if (isConnected) {
-          clearTimeout(timeout);
-          unsubscribeStore();
-          resolve(true);
-        }
+    const unsubscribeStore = useConnectionStatusStore.subscribe((state) => {
+      if (state.isConnected) {
+        clearTimeout(timeout);
+        unsubscribeStore();
+        resolve(true);
       }
-    );
+    });
   });
 }
 

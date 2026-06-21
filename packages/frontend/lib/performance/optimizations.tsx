@@ -139,7 +139,7 @@ export function useMemoDebug<T>(
   deps: React.DependencyList,
   debugName?: string
 ): T {
-  const prevDeps = useRef<React.DependencyList>();
+  const prevDeps = useRef<React.DependencyList | undefined>(undefined);
 
   const value = useMemo(() => {
     if (__DEV__ && debugName) {

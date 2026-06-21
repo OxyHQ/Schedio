@@ -30,9 +30,19 @@ export default function MainLayout() {
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="settings/appearance" />
         <Stack.Screen name="settings/language" />
-        <Stack.Screen name="settings/privacy" />
+        <Stack.Screen name="settings/privacy/index" />
+        <Stack.Screen name="settings/privacy/profile-visibility" />
+        <Stack.Screen name="settings/privacy/tags-allos" />
+        <Stack.Screen name="settings/privacy/online-status" />
+        <Stack.Screen name="settings/privacy/restricted" />
+        <Stack.Screen name="settings/privacy/blocked" />
+        <Stack.Screen name="settings/privacy/hidden-words" />
+        <Stack.Screen name="settings/privacy/hide-counts" />
         <Stack.Screen name="settings/profile-customization" />
         <Stack.Screen name="post/[id]" />
+        <Stack.Screen name="search/[query]" />
+        <Stack.Screen name="search/advanced" />
+        <Stack.Screen name="@[username]" />
       </Stack>
     </ThemedView>
   );

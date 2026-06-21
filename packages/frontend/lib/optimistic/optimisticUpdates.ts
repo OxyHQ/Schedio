@@ -116,7 +116,7 @@ export class OptimisticUpdateManager<T = any> {
    */
   isPending(id: string): boolean {
     const update = this.updates.get(id);
-    return update?.status === 'pending' ?? false;
+    return update?.status === 'pending';
   }
 
   /**

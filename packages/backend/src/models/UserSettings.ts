@@ -19,6 +19,7 @@ export interface PrivacySettings {
   hideSaveCounts?: boolean;
   hiddenWords?: string[];
   restrictedUsers?: string[]; // Users who can see limited content
+  blockedUsers?: string[]; // Users who are fully blocked
 }
 
 export interface ProfileCustomization {
@@ -55,6 +56,7 @@ const PrivacySchema = new Schema<PrivacySettings>({
   hideSaveCounts: { type: Boolean, default: false },
   hiddenWords: [{ type: String }],
   restrictedUsers: [{ type: String }],
+  blockedUsers: [{ type: String }],
 }, { _id: false });
 
 const ProfileCustomizationSchema = new Schema<ProfileCustomization>({

@@ -61,7 +61,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
           <Text
             key={`m-${key++}`}
             style={[{ color: theme.colors.primary }, linkStyle]}
-            onPress={() => router.push(`/@${alloUsername}`)}
+            onPress={() => router.push({ pathname: '/@[username]', params: { username: alloUsername } })}
           >
             {alloDisplay}
           </Text>

@@ -20,6 +20,12 @@ import { ThemedView } from "@/components/ThemedView";
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QUERY_CLIENT_CONFIG } from '@/components/providers/constants';
 
+// Bloom theme provider — required by @oxyhq/services >=10 SDK components
+// (OxySignInButton, bottom sheets) which consume Bloom's `useTheme`. Must wrap
+// every render branch (splash + app) or those components throw
+// "useTheme must be used within a <BloomThemeProvider>".
+import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+
 // Hooks
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useIsScreenNotMobile } from "@/hooks/useOptimizedMediaQuery";
@@ -227,8 +233,10 @@ export default function RootLayout() {
   ]);
 
   return (
-    <ThemedView style={{ flex: 1 }}>
-      {appContent}
-    </ThemedView>
+    <BloomThemeProvider mode={colorScheme}>
+      <ThemedView style={{ flex: 1 }}>
+        {appContent}
+      </ThemedView>
+    </BloomThemeProvider>
   );
 }

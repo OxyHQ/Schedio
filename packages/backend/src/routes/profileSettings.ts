@@ -45,6 +45,9 @@ router.get('/settings/:userId', async (req: AuthRequest, res: Response) => {
     if (validationError) {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
     }
+    if (typeof userId !== 'string') {
+      return sendErrorResponse(res, 400, 'Bad Request', 'userId must be a single value');
+    }
 
     const doc = await ensureUserSettings(userId);
     return sendSuccessResponse(res, 200, doc);
@@ -127,6 +130,9 @@ router.put('/settings', async (req: AuthRequest, res: Response) => {
       }
       if (Array.isArray(privacy.restrictedUsers)) {
         update['privacy.restrictedUsers'] = privacy.restrictedUsers;
+      }
+      if (Array.isArray(privacy.blockedUsers)) {
+        update['privacy.blockedUsers'] = privacy.blockedUsers;
       }
     }
     

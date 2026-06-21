@@ -33,8 +33,10 @@ backendClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Keep oxyClient reference for Oxy-specific API calls (if needed)
-const authenticatedClient = oxyClient.getClient();
+// Keep oxyClient reference for Oxy-specific API calls (if needed).
+// Explicit annotation keeps the emitted type portable under composite builds
+// (the inferred HttpService type isn't exported from the @oxyhq/core barrel).
+const authenticatedClient: ReturnType<typeof oxyClient.getClient> = oxyClient.getClient();
 
 // Circuit breaker to prevent cascading failures
 // Opens after 5 consecutive failures, stays open for 30 seconds

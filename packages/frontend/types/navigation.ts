@@ -2,11 +2,13 @@
  * Navigation-related type definitions
  */
 
+import type { RouteValue } from '@/utils/routeUtils';
+
 export interface NavigationItem {
   title: string;
   icon: React.ReactNode;
   iconActive: React.ReactNode;
-  route: string;
+  route: RouteValue;
   onPress?: () => void;
 }
 

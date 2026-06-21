@@ -9,5 +9,5 @@ export function useColorScheme(): 'light' | 'dark' {
 	const pref = mySettings?.appearance?.themeMode ?? 'system';
 
 	if (pref === 'light' || pref === 'dark') return pref;
-	return (rnScheme ?? 'light');
+	return rnScheme === 'dark' ? 'dark' : 'light';
 }

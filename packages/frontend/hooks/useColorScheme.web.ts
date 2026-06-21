@@ -19,7 +19,7 @@ export function useColorScheme(): 'light' | 'dark' {
 
   if (hasHydrated) {
     if (pref === 'light' || pref === 'dark') return pref;
-    return (colorScheme ?? 'light');
+    return colorScheme === 'dark' ? 'dark' : 'light';
   }
 
   // During SSR/first render, default to light for consistent static HTML

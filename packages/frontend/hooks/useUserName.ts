@@ -57,10 +57,7 @@ export function useUserFirstName(userId?: string): string | undefined {
 
     // If it's the current user, use current user data
     if (userId === currentUser?.id) {
-      if (typeof currentUser.name === 'string') {
-        return currentUser.name.split(' ')[0];
-      }
-      return currentUser.name?.first || currentUser.username;
+      return currentUser.name?.first || currentUser.name?.full?.split(' ')[0] || currentUser.username;
     }
 
     // Otherwise, use fetched user data
