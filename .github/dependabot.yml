@@ -1,0 +1,14 @@
+# Dependabot configuration for Schedio.
+#
+# IMPORTANT: Schedio is a bun monorepo and tracks bun.lock — it does NOT
+# track package-lock.json. Dependabot's npm/npm_and_yarn updater is not
+# bun-aware: it would edit a stray, untracked package-lock.json and leave
+# bun.lock out of sync. JS dependency bumps are therefore applied manually
+# via `bun install`. Only the github-actions ecosystem is delegated to
+# Dependabot here.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
