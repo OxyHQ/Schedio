@@ -1,6 +1,7 @@
 const pkg = require('./package.json')
 const fs = require('fs')
 const path = require('path')
+const { oxySplashScreenPlugin } = require('@oxyhq/expo-splash/config')
 
 module.exports = function(_config) {
 
@@ -124,15 +125,21 @@ return {
         plugins: (() => {
             const base = [
                 "expo-router",
-                [
-                    "expo-splash-screen",
-                    {
-                        image: "./assets/images/splash-icon.png",
-                        imageWidth: 200,
-                        resizeMode: "contain",
-                        backgroundColor: "#ffffff"
-                    }
-                ],
+                // Native OS splash (Oxy family "Instagram, from Meta" pattern):
+                // Schedio's own logo (white paper-plane mark on transparent)
+                // centered on the dark brand background, with the shared Oxy
+                // symbol pinned to the bottom. `oxySplashScreenPlugin` builds the
+                // `expo-splash-screen` tuple; the bare `@oxyhq/expo-splash` entry
+                // (which bundles the Oxy mark) MUST come IMMEDIATELY after it to
+                // add the bottom branding — the ordering is load-bearing, so keep
+                // these two entries adjacent (expo-notifications is spliced in
+                // AFTER them below).
+                oxySplashScreenPlugin({
+                    image: './assets/images/splash-logo.png',
+                    imageWidth: 176,
+                    backgroundColor: '#0B0B0F',
+                }),
+                '@oxyhq/expo-splash',
                 "expo-image-picker",
                 "expo-video",
                 [
@@ -181,9 +188,12 @@ return {
                 "expo-web-browser",
             ];
 
-            // Only include expo-notifications for native builds (android/ios)
+            // Only include expo-notifications for native builds (android/ios).
+            // Insert at index 3 (was 2) so it lands AFTER the two splash entries
+            // (`oxySplashScreenPlugin(...)` at 1 + `'@oxyhq/expo-splash'` at 2)
+            // and never splits that load-bearing pair.
             if (PLATFORM !== 'web') {
-                base.splice(2, 0, [
+                base.splice(3, 0, [
                     "expo-notifications",
                     {
                         color: "#ffffff"
