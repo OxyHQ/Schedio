@@ -4,6 +4,7 @@ import 'react-native-url-polyfill/auto';
 import 'react-native-reanimated';
 
 import NetInfo from '@react-native-community/netinfo';
+import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxyhq/expo-splash';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { useFonts } from "expo-font";
 import { Stack, usePathname } from "expo-router";
@@ -40,10 +41,23 @@ import { loadFontsWithFallback } from '@/utils/fontLoader';
 // Styles
 import '../styles/global.css';
 
+// NATIVE ONLY: hold the OS splash so it stays visible until fonts + init finish,
+// then hide it once `appIsReady` flips (via `useHideNativeSplashWhenReady`). This
+// makes the native OS splash the SINGLE splash on native — Schedio's white logo
+// centered on the dark brand background with the Oxy symbol pinned to the bottom
+// (configured by `@oxyhq/expo-splash` in app.config.js). The custom
+// `AppSplashScreen` React overlay is gated to web only. No-op on web (the shared
+// helper guards `Platform.OS === 'web'`).
+preventNativeSplashAutoHide();
+
 // Types
 interface SplashState {
   initializationComplete: boolean;
   startFade: boolean;
+  // WEB ONLY: set when the custom <AppSplashScreen> finishes fading out. Native
+  // never renders that overlay, so this stays false there and must NOT gate
+  // native readiness (see the readiness gate in RootLayout).
+  fadeComplete: boolean;
 }
 
 interface MainLayoutProps {
@@ -112,6 +126,7 @@ export default function RootLayout() {
   const [splashState, setSplashState] = useState<SplashState>({
     initializationComplete: false,
     startFade: false,
+    fadeComplete: false,
   });
 
   const isScreenNotMobile = useIsScreenNotMobile();
@@ -125,8 +140,12 @@ export default function RootLayout() {
     'Phudu': require('@/assets/fonts/Phudu-VariableFont_wght.ttf'),
   });
 
+  // WEB only: the custom <AppSplashScreen> fades out once init completes; its
+  // `onFadeComplete` records that the fade finished. On native this callback
+  // never fires (no custom overlay is rendered), which is why native readiness
+  // must NOT depend on it (see the readiness gate below).
   const handleSplashFadeComplete = useCallback(() => {
-    setAppIsReady(true);
+    setSplashState((prev) => ({ ...prev, fadeComplete: true }));
   }, []);
 
   const initializeApp = useCallback(async () => {
@@ -192,6 +211,29 @@ export default function RootLayout() {
     }
   }, [splashState.initializationComplete, splashState.startFade]);
 
+  // NATIVE ONLY: once ready, hide the held OS splash. The shared helper is a
+  // no-op on web (the OS splash was never held; the custom overlay handles the
+  // transition there).
+  useHideNativeSplashWhenReady(appIsReady);
+
+  // Readiness gate.
+  // - WEB keeps the fade-gated flow: the custom <AppSplashScreen> renders, fades
+  //   out when init completes, and its `onFadeComplete` sets `fadeComplete`, so
+  //   web readiness = init complete AND the custom splash finished fading.
+  // - NATIVE renders NO custom splash (the held OS splash covers the screen), so
+  //   `onFadeComplete` never fires; native readiness = init complete ONLY, else
+  //   the OS splash would hang forever.
+  useEffect(() => {
+    if (appIsReady) return;
+    const ready =
+      Platform.OS === 'web'
+        ? splashState.initializationComplete && splashState.fadeComplete
+        : splashState.initializationComplete;
+    if (ready) {
+      setAppIsReady(true);
+    }
+  }, [appIsReady, splashState.initializationComplete, splashState.fadeComplete]);
+
   useEffect(() => {
     if (appIsReady) {
       AppInitializer.initializeDeferred();
@@ -202,12 +244,15 @@ export default function RootLayout() {
 
   const appContent = useMemo(() => {
     if (!appIsReady) {
-      return (
+      // WEB: the custom splash covers font-load + init and fades out; its
+      // `onFadeComplete` gates `appIsReady`. NATIVE renders null here — the held
+      // OS splash is on top, so nothing underneath needs to paint.
+      return Platform.OS === 'web' ? (
         <AppSplashScreen
           startFade={splashState.startFade}
           onFadeComplete={handleSplashFadeComplete}
         />
-      );
+      ) : null;
     }
 
     return (
