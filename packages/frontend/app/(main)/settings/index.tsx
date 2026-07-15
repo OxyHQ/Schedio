@@ -23,8 +23,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import i18n from 'i18next';
 import { SPACING, SPACING_CLASSES } from '@/constants/spacing';
 
-// Type assertion for Ionicons compatibility with React 19
-const IconComponent = Ionicons as any;
+const IconComponent = Ionicons;
 
 export default function SettingsScreen() {
     const { t } = useTranslation();
@@ -77,7 +76,7 @@ export default function SettingsScreen() {
                 token: tokenInfo.token,
                 type: tokenInfo.type || (Platform.OS === 'ios' ? 'apns' : 'fcm'),
                 platform: Platform.OS,
-                locale: (Constants as any).locale || 'en-US',
+                locale: i18n.language || 'en-US',
             });
             return true;
         } catch (e) {
@@ -135,7 +134,7 @@ export default function SettingsScreen() {
                 themeMode: newThemeMode,
                 primaryColor: mySettings?.appearance?.primaryColor,
             },
-        } as any);
+        });
     }, [updateMySettings, mySettings?.appearance?.primaryColor]);
 
     // Get current language

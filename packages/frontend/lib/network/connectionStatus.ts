@@ -86,17 +86,9 @@ export function startConnectionMonitoring(): () => void {
     return unsubscribe;
   }
 
-  console.log('[Connection] Starting connection monitoring');
-
   // Subscribe to NetInfo changes
   unsubscribe = NetInfo.addEventListener((state) => {
     const store = useConnectionStatusStore.getState();
-
-    console.log('[Connection] Network state changed:', {
-      isConnected: state.isConnected,
-      type: state.type,
-      isInternetReachable: state.isInternetReachable,
-    });
 
     store.setConnectionInfo({
       isConnected: state.isConnected ?? false,
@@ -115,7 +107,6 @@ export function startConnectionMonitoring(): () => void {
 
   return () => {
     if (unsubscribe) {
-      console.log('[Connection] Stopping connection monitoring');
       unsubscribe();
       unsubscribe = null;
     }

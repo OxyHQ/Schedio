@@ -69,16 +69,16 @@ export const LazyImage: React.FC<LazyImageProps> = ({
       { threshold, rootMargin }
     );
 
-    const currentRef = containerRef.current;
-    if (currentRef) {
-      // @ts-ignore - React Native Web compatibility
-      observer.observe(currentRef);
+    // On web a style-based RN View ref resolves to the underlying DOM element,
+    // which is what IntersectionObserver expects (RN types it as `View`).
+    const node = containerRef.current as unknown as Element | null;
+    if (node) {
+      observer.observe(node);
     }
 
     return () => {
-      if (currentRef) {
-        // @ts-ignore
-        observer.unobserve(currentRef);
+      if (node) {
+        observer.unobserve(node);
       }
     };
   }, [threshold, rootMargin]);

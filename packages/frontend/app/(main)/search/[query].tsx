@@ -49,7 +49,7 @@ export default function SearchResultsScreen() {
             setLoading(true);
             setErrored(false);
             try {
-                const response: SearchResponse = await profilesApi.search(decodedQuery);
+                const response = await profilesApi.search<SearchResponse>(decodedQuery);
                 if (cancelled) return;
                 setResults(Array.isArray(response?.data) ? response.data : []);
             } catch (error) {

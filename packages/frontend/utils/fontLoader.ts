@@ -48,7 +48,6 @@ export async function loadFontsWithFallback(
   // If fonts already loaded successfully
   if (fontsLoaded && !fontError) {
     const loadTime = perfMonitor.measure('fontLoading');
-    console.log(`[FontLoader] ✓ Fonts loaded successfully in ${loadTime?.toFixed(0)}ms`);
     return {
       loaded: true,
       fontsReady: true,
@@ -76,7 +75,6 @@ export async function loadFontsWithFallback(
         if (fontsLoaded) {
           clearInterval(checkInterval);
           const loadTime = perfMonitor.measure('fontLoading');
-          console.log(`[FontLoader] ✓ Fonts loaded in ${loadTime?.toFixed(0)}ms`);
           resolveFonts({
             loaded: true,
             fontsReady: true,
@@ -98,7 +96,7 @@ export async function loadFontsWithFallback(
     const timeoutPromise = new Promise<FontLoadResult>((resolveTimeout) => {
       setTimeout(() => {
         const loadTime = perfMonitor.measure('fontLoading');
-        console.log(
+        console.warn(
           `[FontLoader] ⏱ Font loading timeout (${FONT_LOAD_CONFIG.maxWaitTime}ms), ` +
           `continuing with system fonts. Custom fonts will apply when ready.`
         );

@@ -83,7 +83,7 @@ export function createBinaryBlob(
   data: ArrayBuffer | Uint8Array | ArrayBufferView | BlobPart,
   mimeType: string = 'application/octet-stream'
 ): Blob {
-  return new Blob([data as any], { type: mimeType });
+  return new Blob([data] as globalThis.BlobPart[], { type: mimeType });
 }
 
 /**
@@ -93,7 +93,7 @@ export function createMixedBlob(
   parts: (string | ArrayBuffer | ArrayBufferView | Blob)[],
   mimeType: string = ''
 ): Blob {
-  return new Blob(parts as any, { type: mimeType });
+  return new Blob(parts as globalThis.BlobPart[], { type: mimeType });
 }
 
 /**

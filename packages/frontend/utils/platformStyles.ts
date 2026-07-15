@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, type ViewStyle } from 'react-native';
 import { colors } from '@/styles/colors';
 
 export const shadowStyle = (opts?: { elevation?: number; web?: string }) => {
@@ -13,5 +13,5 @@ export const shadowStyle = (opts?: { elevation?: number; web?: string }) => {
       shadowOpacity: 0.2,
       shadowRadius: Math.max(1, elev * 2),
     },
-  }) as any;
+  }) as ViewStyle;
 };

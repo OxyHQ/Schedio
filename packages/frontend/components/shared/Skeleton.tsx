@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -18,10 +18,10 @@ export function SkeletonBone({
   borderRadius = 4,
   style,
 }: {
-  width: number | string;
+  width: DimensionValue;
   height: number;
   borderRadius?: number;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
 }) {
   const theme = useTheme();
   const opacity = useSharedValue(0.3);
@@ -40,7 +40,7 @@ export function SkeletonBone({
   return (
     <Animated.View
       style={[
-        { width: width as any, height, borderRadius, backgroundColor: bone },
+        { width, height, borderRadius, backgroundColor: bone },
         animStyle,
         style,
       ]}

@@ -1,9 +1,8 @@
 import React, { useMemo, useCallback } from 'react';
 import { StyleSheet, View, Text, ViewStyle, Platform, Vibration, Pressable } from 'react-native';
-import { Link, usePathname } from 'expo-router';
+import { Link, usePathname, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 
 // Components
 import Avatar from '@/components/Avatar';
@@ -24,8 +23,6 @@ import { ROUTES, routeMatchers, isRouteActive } from '@/utils/routeUtils';
 
 // Types
 import type { NavigationItem } from '@/types/navigation';
-
-const IconComponent = Ionicons as any;
 
 export const BottomBar = () => {
     const { t } = useTranslation();
@@ -171,7 +168,7 @@ export const BottomBar = () => {
                 return (
                     <Link
                         key={`${route}-${title}`}
-                        href={route as any}
+                        href={route as Href}
                         style={styles.tab}
                         asChild
                     >
@@ -193,7 +190,7 @@ export const BottomBar = () => {
 
             {/* Profile/Avatar button */}
             <Link
-                href={user?.username ? `/@${user.username}` as any : '#' as any}
+                href={user?.username ? (`/@${user.username}` as Href) : ('#' as Href)}
                 style={styles.tab}
                 asChild
             >

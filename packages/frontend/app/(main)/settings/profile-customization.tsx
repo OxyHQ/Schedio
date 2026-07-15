@@ -46,7 +46,7 @@ export default function ProfileCustomizationScreen() {
           ...mySettings?.profileCustomization,
           avatarShape: shape,
         },
-      } as any);
+      });
     } catch (error) {
       console.error('Error updating avatar shape:', error);
     }

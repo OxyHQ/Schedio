@@ -27,7 +27,6 @@ const SignInPrompt: React.FC<SignInPromptProps> = ({ onSignInPress }) => {
             } catch (error: any) {
                 // Handle authentication cancellation gracefully
                 if (error?.message?.includes('cancelled') || error?.message?.includes('closed')) {
-                    console.log('Authentication cancelled by user');
                     return;
                 }
                 // Log other errors

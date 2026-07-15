@@ -43,8 +43,6 @@ export class OptimisticUpdateManager<T = any> {
     this.updates.set(update.id, fullUpdate);
     this.notifyListeners();
 
-    console.log(`[Optimistic] Added update ${update.id} (${update.type})`);
-
     return update.id;
   }
 
@@ -61,7 +59,6 @@ export class OptimisticUpdateManager<T = any> {
         this.notifyListeners();
       }, 1000);
 
-      console.log(`[Optimistic] Confirmed update ${id}`);
       this.notifyListeners();
     }
   }
@@ -75,7 +72,6 @@ export class OptimisticUpdateManager<T = any> {
       update.status = 'failed';
 
       if (rollback && update.rollback) {
-        console.log(`[Optimistic] Rolling back update ${id}`);
         update.rollback();
       }
 
@@ -85,7 +81,6 @@ export class OptimisticUpdateManager<T = any> {
         this.notifyListeners();
       }, 2000);
 
-      console.log(`[Optimistic] Failed update ${id}`);
       this.notifyListeners();
     }
   }

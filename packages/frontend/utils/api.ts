@@ -9,34 +9,17 @@ const API_CONFIG = {
   baseURL: API_URL,
 };
 
-// IMPORTANT: Create dedicated client for local backend API (conversations, messages, etc.)
-// This is separate from oxyClient which is for Oxy-specific API calls
-const backendClient = axios.create({
-  baseURL: API_CONFIG.baseURL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-  timeout: 10000, // 10 second timeout
-});
-
-// Add request interceptor to backend client to include auth token from Oxy
-backendClient.interceptors.request.use((config) => {
-  try {
-    // Get token from Oxy client's TokenStore (not axios headers)
-    const token = oxyClient.getAccessToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-  } catch (error) {
-    console.warn('[API] Could not get auth token for backend request:', error);
-  }
-  return config;
-});
-
-// Keep oxyClient reference for Oxy-specific API calls (if needed).
+// Authenticated client for the Schedio backend. The SDK linked client carries the
+// device-first session and transparently re-mints the access token on 401, so no
+// app-local Authorization header plumbing is needed (Oxy SDK rule). It is bound to
+// the backend's own base URL (not the Oxy API that oxyClient itself targets).
 // Explicit annotation keeps the emitted type portable under composite builds
-// (the inferred HttpService type isn't exported from the @oxyhq/core barrel).
-const authenticatedClient: ReturnType<typeof oxyClient.getClient> = oxyClient.getClient();
+// (the HttpService type isn't exported from the @oxyhq/core barrel).
+const backendClient: ReturnType<typeof oxyClient.getClient> =
+  oxyClient.createLinkedClient({ baseURL: API_CONFIG.baseURL }).client;
+
+// Same linked client, exported for callers that talk to the backend directly.
+const authenticatedClient: ReturnType<typeof oxyClient.getClient> = backendClient;
 
 // Circuit breaker to prevent cascading failures
 // Opens after 5 consecutive failures, stays open for 30 seconds
@@ -44,9 +27,9 @@ const apiCircuitBreaker = new CircuitBreaker(5, 60000, 30000);
 
 // Request deduplication cache - prevents duplicate simultaneous requests
 // WhatsApp/Telegram pattern: if same request is in flight, return same promise
-const pendingRequests = new Map<string, Promise<any>>();
+const pendingRequests = new Map<string, Promise<unknown>>();
 
-function createRequestKey(method: string, endpoint: string, params?: any): string {
+function createRequestKey(method: string, endpoint: string, params?: unknown): string {
   return `${method}:${endpoint}:${JSON.stringify(params || {})}`;
 }
 
@@ -57,7 +40,8 @@ async function deduplicateRequest<T>(
   // Check if this exact request is already in flight
   const pending = pendingRequests.get(key);
   if (pending) {
-    return pending;
+    // The cache is heterogeneous; the key guarantees this is the same request type.
+    return pending as Promise<T>;
   }
 
   // Execute new request and cache the promise
@@ -82,51 +66,53 @@ const publicClient = axios.create({
 // API methods using backendClient for local backend (conversations, messages, etc.)
 // NOTE: This calls your local backend at http://localhost:3000/api, NOT the Oxy API
 export const api = {
-  async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<{ data: T }> {
+  // The linked client returns the parsed response body directly (not an axios
+  // envelope), so wrap it back into `{ data }` to preserve this module's contract.
+  async get<T = unknown>(endpoint: string, params?: Record<string, unknown>): Promise<{ data: T }> {
     const key = createRequestKey('GET', endpoint, params);
-    const response = await deduplicateRequest(key, () =>
+    const data = await deduplicateRequest(key, () =>
       apiCircuitBreaker.execute(() =>
-        backendClient.get(endpoint, { params })
+        backendClient.get<T>(endpoint, { params })
       )
     );
-    return { data: response.data };
+    return { data };
   },
 
-  async post<T = any>(endpoint: string, body?: any): Promise<{ data: T }> {
+  async post<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate POST requests as they may have side effects
-    const response = await apiCircuitBreaker.execute(() =>
-      backendClient.post(endpoint, body)
+    const data = await apiCircuitBreaker.execute(() =>
+      backendClient.post<T>(endpoint, body)
     );
-    return { data: response.data };
+    return { data };
   },
 
-  async put<T = any>(endpoint: string, body?: any): Promise<{ data: T }> {
+  async put<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate PUT requests as they may have side effects
-    const response = await apiCircuitBreaker.execute(() =>
-      backendClient.put(endpoint, body)
+    const data = await apiCircuitBreaker.execute(() =>
+      backendClient.put<T>(endpoint, body)
     );
-    return { data: response.data };
+    return { data };
   },
 
-  async delete<T = any>(endpoint: string): Promise<{ data: T }> {
+  async delete<T = unknown>(endpoint: string): Promise<{ data: T }> {
     // Don't deduplicate DELETE requests as they may have side effects
-    const response = await apiCircuitBreaker.execute(() =>
-      backendClient.delete(endpoint)
+    const data = await apiCircuitBreaker.execute(() =>
+      backendClient.delete<T>(endpoint)
     );
-    return { data: response.data };
+    return { data };
   },
 
-  async patch<T = any>(endpoint: string, body?: any): Promise<{ data: T }> {
+  async patch<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate PATCH requests as they may have side effects
-    const response = await apiCircuitBreaker.execute(() =>
-      backendClient.patch(endpoint, body)
+    const data = await apiCircuitBreaker.execute(() =>
+      backendClient.patch<T>(endpoint, body)
     );
-    return { data: response.data };
+    return { data };
   },
 };
 
 export class ApiError extends Error {
-  constructor(message: string, public status?: number, public response?: any) {
+  constructor(message: string, public status?: number, public response?: unknown) {
     super(message);
     this.name = 'ApiError';
   }
@@ -158,31 +144,31 @@ export function webAlert(
 }
 
 export const healthApi = {
-  async checkHealth() {
-    const response = await api.get('/api/health');
+  async checkHealth<T = unknown>(): Promise<T> {
+    const response = await api.get<T>('/api/health');
     return response.data;
   },
 };
 
 // Profiles API - Telegram-style: Frontend calls backend, backend calls Oxy
 export const profilesApi = {
-  async getByUsername(username: string) {
-    const response = await api.get(`/api/profiles/username/${username}`);
+  async getByUsername<T = unknown>(username: string): Promise<T> {
+    const response = await api.get<T>(`/api/profiles/username/${username}`);
     return response.data;
   },
 
-  async getById(id: string) {
-    const response = await api.get(`/api/profiles/${id}`);
+  async getById<T = unknown>(id: string): Promise<T> {
+    const response = await api.get<T>(`/api/profiles/${id}`);
     return response.data;
   },
 
-  async search(query: string, limit: number = 20) {
-    const response = await api.get('/api/profiles/search', { q: query, limit });
+  async search<T = unknown>(query: string, limit: number = 20): Promise<T> {
+    const response = await api.get<T>('/api/profiles/search', { q: query, limit });
     return response.data;
   },
 
-  async getRecommendations() {
-    const response = await api.get('/api/profiles/recommendations');
+  async getRecommendations<T = unknown>(): Promise<T> {
+    const response = await api.get<T>('/api/profiles/recommendations');
     return response.data;
   },
 };
@@ -190,19 +176,19 @@ export const profilesApi = {
 // Files API - Telegram-style: Frontend calls backend, backend calls Oxy
 export const filesApi = {
   async getFileUrl(fileId: string, size: 'thumb' | 'full' | string = 'full'): Promise<string> {
-    const response = await api.get(`/api/files/url/${fileId}`, { size });
+    const response = await api.get<{ url: string }>(`/api/files/url/${fileId}`, { size });
     return response.data.url;
   },
 
-  async uploadFile(file: any, options?: any) {
-    const response = await api.post('/api/files/upload', { file, options });
+  async uploadFile<T = unknown>(file: unknown, options?: unknown): Promise<T> {
+    const response = await api.post<T>('/api/files/upload', { file, options });
     return response.data;
   },
 };
 
 // Public API methods (no authentication required)
 export const publicApi = {
-  async get<T = any>(endpoint: string, params?: Record<string, any>): Promise<{ data: T }> {
+  async get<T = unknown>(endpoint: string, params?: Record<string, unknown>): Promise<{ data: T }> {
     const response = await publicClient.get(endpoint, { params });
     return { data: response.data };
   },

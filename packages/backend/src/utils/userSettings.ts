@@ -34,7 +34,10 @@ export async function ensureUserSettings(oxyUserId: string) {
 /**
  * Extracts public profile design data from UserSettings document
  */
-export function extractPublicProfileData(doc: any, userId: string) {
+export function extractPublicProfileData(
+  doc: Awaited<ReturnType<typeof ensureUserSettings>>,
+  userId: string
+) {
   return {
     oxyUserId: userId,
     appearance: doc?.appearance?.primaryColor ? {

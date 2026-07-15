@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Platform, Pressable } from 'react-native';
+import { View, Text, Platform, Pressable, type ViewStyle, type TextStyle } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -25,17 +25,15 @@ export function SideBarItem({
     const [isHovered, setIsHovered] = React.useState(false);
     return (
         <Pressable
-            {...({
-                onPress: () => {
-                    if (onPress) return onPress();
-                    if (href) router.push(href);
-                },
-                onHoverIn: () => {
-                    setIsHovered(true);
-                    onHoverExpand?.();
-                },
-                onHoverOut: () => setIsHovered(false),
-            } as any)}
+            onPress={() => {
+                if (onPress) return onPress();
+                if (href) router.push(href);
+            }}
+            onHoverIn={() => {
+                setIsHovered(true);
+                onHoverExpand?.();
+            }}
+            onHoverOut={() => setIsHovered(false)}
             style={({ pressed }) => [
                 {
                     flexDirection: 'row',
@@ -60,7 +58,7 @@ export function SideBarItem({
                             transition: 'all 200ms cubic-bezier(0.2, 0, 0, 1)',
                             willChange: 'background-color, border-color, transform',
                         },
-                    }) as any),
+                    }) as unknown as ViewStyle),
                     ...Platform.select({
                         web: {
                             cursor: 'pointer',
@@ -96,7 +94,7 @@ export function SideBarItem({
                                     fontFamily: 'Phudu',
                                     whiteSpace: 'nowrap',
                                 },
-                            }) as any),
+                            }) as unknown as TextStyle),
                         }}
                     >
                         {text}

@@ -99,9 +99,12 @@ export function LayoutScrollProvider({
         setScrollY(offset);
         // Optimize web DOM queries - only check if we don't have a registered element
         if (Platform.OS === 'web' && !scrollElementRef.current) {
-            const target = (event?.nativeEvent as any)?.target ?? (event as any)?.target;
-            if (target && typeof target.closest === 'function') {
-                const owner = target.closest('[data-layoutscroll="true"]') as HTMLElement | null;
+            const rawTarget = event?.nativeEvent?.target ?? event?.target;
+            const domTarget = rawTarget as unknown as
+                | { closest?: (selector: string) => HTMLElement | null }
+                | undefined;
+            if (domTarget && typeof domTarget.closest === 'function') {
+                const owner = domTarget.closest('[data-layoutscroll="true"]');
                 if (owner) {
                     scrollElementRef.current = owner;
                 }

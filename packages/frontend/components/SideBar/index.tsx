@@ -36,7 +36,7 @@ import { ROUTES, routeMatchers, isRouteActive } from "@/utils/routeUtils";
 // Types
 import type { NavigationItem } from "@/types/navigation";
 
-const IconComponent = Ionicons as any;
+const IconComponent = Ionicons;
 const WindowHeight = Dimensions.get('window').height;
 
 export function SideBar() {
@@ -157,7 +157,8 @@ export function SideBar() {
     if (isSideBarVisible) {
         return (
             <Pressable
-                {...({ onHoverIn: handleHoverIn, onHoverOut: handleHoverOut } as any)}
+                onHoverIn={handleHoverIn}
+                onHoverOut={handleHoverOut}
                 style={[
                     styles.container,
                     { backgroundColor: theme.colors.background },
@@ -235,17 +236,19 @@ export function SideBar() {
 const styles = StyleSheet.create({
     container: {
         padding: 12,
+        // `position: 'sticky'` and `height: '100vh'` are web-only CSS values the
+        // React Native ViewStyle enum can't express; RN-Web accepts them at runtime.
         ...(Platform.select({
             web: {
-                position: 'sticky' as any,
+                position: 'sticky',
                 overflow: 'hidden',
-                height: '100vh' as any,
+                height: '100vh',
                 cursor: 'initial',
             },
             default: {
                 height: WindowHeight,
             },
-        }) as ViewStyle),
+        }) as unknown as ViewStyle),
         top: 0,
         zIndex: 1000,
     },

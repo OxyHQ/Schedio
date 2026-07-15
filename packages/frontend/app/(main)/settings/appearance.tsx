@@ -12,14 +12,11 @@ import { Header } from '@/components/layout/Header';
 import { HeaderIconButton } from '@/components/layout/HeaderIconButton';
 import { BackArrowIcon } from '@/assets/icons/back-arrow-icon';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { LogoIcon } from '@/assets/logo';
 import { COLOR_THEMES } from '@/styles/colorThemes';
 import { SPACING, SPACING_CLASSES } from '@/constants/spacing';
-
-const IconComponent = Ionicons as any;
 
 // App icon options (visual only for now)
 const APP_ICONS = [
@@ -83,7 +80,7 @@ export default function AppearanceSettingsScreen() {
           colorTheme: colorTheme.id,
           primaryColor: colorTheme.primaryColor,
         },
-      } as any);
+      });
     },
     [updateMySettings, selectedThemeMode]
   );
@@ -97,7 +94,7 @@ export default function AppearanceSettingsScreen() {
           colorTheme: selectedColorThemeId,
           primaryColor: selectedColorTheme.primaryColor,
         },
-      } as any);
+      });
     },
     [updateMySettings, selectedColorThemeId, selectedColorTheme]
   );
@@ -201,22 +198,12 @@ export default function AppearanceSettingsScreen() {
           })}
         </ScrollView>
 
-        {/* Chat Background + Auto-Night Mode */}
+        {/* Auto-Night Mode */}
         <View
           className="rounded-2xl border overflow-hidden"
           style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
         >
-          <TouchableOpacity
-            className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pt-${SPACING.item.paddingHorizontal}`}
-            onPress={() => router.push('/settings/chat-background' as any)}
-          >
-            <Text className="text-base" style={{ color: theme.colors.text }}>
-              Chat Background
-            </Text>
-            <IconComponent name="chevron-forward" size={16} color={theme.colors.textTertiary} />
-          </TouchableOpacity>
-          <View className={`h-[1px] mx-${SPACING.item.paddingHorizontal}`} style={{ backgroundColor: theme.colors.border }} />
-          <View className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pb-${SPACING.item.paddingHorizontal}`}>
+          <View className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pt-${SPACING.item.paddingHorizontal} pb-${SPACING.item.paddingHorizontal}`}>
             <Text className="text-base" style={{ color: theme.colors.text }}>
               Auto-Night Mode
             </Text>

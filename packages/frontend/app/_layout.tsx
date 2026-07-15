@@ -151,8 +151,6 @@ export default function RootLayout() {
   const initializeApp = useCallback(async () => {
     if (fontError) {
       console.warn('Font loading failed, using system fonts:', fontError);
-    } else if (!fontsLoaded) {
-      console.log('Fonts still loading, continuing with system fonts temporarily...');
     }
 
     const result = await AppInitializer.initializeApp(fontsLoaded || false);

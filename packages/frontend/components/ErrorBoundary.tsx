@@ -53,11 +53,9 @@ class ErrorBoundaryBase extends Component<Props, State> {
             errorCount: prev.errorCount + 1,
         }));
 
-        // Call custom error handler (for analytics, Sentry, etc.)
+        // Call custom error handler (for analytics, Sentry, etc.) — this is the
+        // integration point for an external error-tracking service.
         this.props.onError?.(error, errorInfo);
-
-        // TODO: Send to error tracking service
-        // logErrorToService({ error, errorInfo, userAgent: navigator.userAgent });
     }
 
     private handleRetry = () => {

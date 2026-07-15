@@ -13,6 +13,7 @@ import {
   hasNotificationPermission,
   setupNotifications,
 } from '@/utils/notifications';
+import { logger } from '@/utils/logger';
 import { initializeI18n } from './i18n';
 import { INITIALIZATION_TIMEOUT } from './constants';
 import { runStartupHealthCheck } from '@/utils/appHealthCheck';
@@ -63,9 +64,9 @@ async function loadAppearanceSettings(): Promise<void> {
 async function fetchCurrentUser(): Promise<void> {
   try {
     await oxyClient.getCurrentUser();
-  } catch (error) {
-    // User might not be authenticated yet, which is fine
-    console.log('User not authenticated during init');
+  } catch {
+    // Expected when the user is not yet authenticated during cold boot
+    logger.debug('User not authenticated during init');
   }
 }
 
@@ -123,9 +124,12 @@ export class AppInitializer {
 
       return { success: true };
     } catch (error) {
+      console.warn('[AppInitializer] Startup error, continuing:', error);
       try {
         await SplashScreen.hideAsync();
-      } catch (_) {}
+      } catch (splashError) {
+        console.warn('Failed to hide native splash screen after startup error:', splashError);
+      }
       return { success: true };
     }
   }
