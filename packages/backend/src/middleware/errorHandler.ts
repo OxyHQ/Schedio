@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { validationResult } from 'express-validator';
 import { logger } from '../utils/logger';
 
 /**
@@ -24,6 +25,25 @@ export class AppError extends Error {
 }
 
 /**
+ * Structural view of the errors this handler normalizes: our own {@link AppError}
+ * plus the Mongoose / JWT shapes we branch on. Every field is optional because the
+ * caught value is `unknown` until we inspect it.
+ */
+interface NormalizedError {
+  statusCode?: number;
+  status?: string;
+  message?: string;
+  name?: string;
+  code?: number;
+  isOperational?: boolean;
+  stack?: string;
+  path?: string;
+  value?: unknown;
+  keyValue?: Record<string, unknown>;
+  errors?: Record<string, { message?: string }>;
+}
+
+/**
  * Async handler wrapper
  * Eliminates need for try/catch in every route
  *
@@ -33,7 +53,9 @@ export class AppError extends Error {
  *   res.json(users);
  * }));
  */
-export const asyncHandler = (fn: Function) => {
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => unknown
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
@@ -42,9 +64,9 @@ export const asyncHandler = (fn: Function) => {
 /**
  * Handle validation errors from express-validator
  */
-function handleValidationError(error: any): AppError {
-  const message = Object.values(error.errors)
-    .map((val: any) => val.message)
+function handleValidationError(error: NormalizedError): AppError {
+  const message = Object.values(error.errors ?? {})
+    .map((val) => val.message)
     .join('. ');
   return new AppError(`Invalid input: ${message}`, 400);
 }
@@ -52,18 +74,19 @@ function handleValidationError(error: any): AppError {
 /**
  * Handle Mongoose cast errors (invalid MongoDB ObjectId)
  */
-function handleCastError(error: any): AppError {
-  const message = `Invalid ${error.path}: ${error.value}`;
+function handleCastError(error: NormalizedError): AppError {
+  const message = `Invalid ${error.path}: ${String(error.value)}`;
   return new AppError(message, 400);
 }
 
 /**
  * Handle Mongoose duplicate key errors
  */
-function handleDuplicateKeyError(error: any): AppError {
-  const field = Object.keys(error.keyValue)[0];
-  const value = error.keyValue[field];
-  const message = `Duplicate value for field ${field}: ${value}. Please use another value`;
+function handleDuplicateKeyError(error: NormalizedError): AppError {
+  const keyValue = error.keyValue ?? {};
+  const field = Object.keys(keyValue)[0];
+  const value = keyValue[field];
+  const message = `Duplicate value for field ${field}: ${String(value)}. Please use another value`;
   return new AppError(message, 409);
 }
 
@@ -82,7 +105,7 @@ function handleJWTExpiredError(): AppError {
  * Send error response in development mode
  * Includes stack trace and full error details
  */
-function sendErrorDev(error: AppError, req: Request, res: Response) {
+function sendErrorDev(error: NormalizedError, req: Request, res: Response) {
   logger.error('ERROR 💥', {
     error: {
       message: error.message,
@@ -99,7 +122,7 @@ function sendErrorDev(error: AppError, req: Request, res: Response) {
     },
   });
 
-  res.status(error.statusCode).json({
+  res.status(error.statusCode ?? 500).json({
     status: error.status,
     error: error,
     message: error.message,
@@ -111,7 +134,7 @@ function sendErrorDev(error: AppError, req: Request, res: Response) {
  * Send error response in production mode
  * Hides internal errors from clients
  */
-function sendErrorProd(error: AppError, req: Request, res: Response) {
+function sendErrorProd(error: NormalizedError, req: Request, res: Response) {
   // Operational, trusted error: send message to client
   if (error.isOperational) {
     logger.warn('Operational error', {
@@ -121,7 +144,7 @@ function sendErrorProd(error: AppError, req: Request, res: Response) {
       method: req.method,
     });
 
-    res.status(error.statusCode).json({
+    res.status(error.statusCode ?? 500).json({
       status: error.status,
       message: error.message,
     });
@@ -155,26 +178,27 @@ function sendErrorProd(error: AppError, req: Request, res: Response) {
  * app.use(errorHandler);
  */
 export const errorHandler = (
-  err: any,
+  err: unknown,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  err.statusCode = err.statusCode || 500;
-  err.status = err.status || 'error';
+  const normalized = err as NormalizedError;
+  normalized.statusCode = normalized.statusCode || 500;
+  normalized.status = normalized.status || 'error';
 
   if (process.env.NODE_ENV === 'development') {
-    sendErrorDev(err, req, res);
+    sendErrorDev(normalized, req, res);
   } else if (process.env.NODE_ENV === 'production') {
-    let error = { ...err };
-    error.message = err.message;
+    let error: NormalizedError = { ...normalized };
+    error.message = normalized.message;
 
     // Handle specific error types
-    if (err.name === 'CastError') error = handleCastError(err);
-    if (err.code === 11000) error = handleDuplicateKeyError(err);
-    if (err.name === 'ValidationError') error = handleValidationError(err);
-    if (err.name === 'JsonWebTokenError') error = handleJWTError();
-    if (err.name === 'TokenExpiredError') error = handleJWTExpiredError();
+    if (normalized.name === 'CastError') error = handleCastError(normalized);
+    if (normalized.code === 11000) error = handleDuplicateKeyError(normalized);
+    if (normalized.name === 'ValidationError') error = handleValidationError(normalized);
+    if (normalized.name === 'JsonWebTokenError') error = handleJWTError();
+    if (normalized.name === 'TokenExpiredError') error = handleJWTExpiredError();
 
     sendErrorProd(error, req, res);
   }
@@ -223,12 +247,11 @@ export const validateRequest = (
   res: Response,
   next: NextFunction
 ) => {
-  const { validationResult } = require('express-validator');
   const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
     const error = new AppError(
-      errors.array().map((e: any) => e.msg).join('. '),
+      errors.array().map((e) => e.msg).join('. '),
       400
     );
     return next(error);

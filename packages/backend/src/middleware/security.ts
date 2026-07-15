@@ -1,6 +1,6 @@
 import rateLimit from "express-rate-limit";
 import slowDown from "express-slow-down";
-import { Request, Response, NextFunction } from "express";
+import { Request, RequestHandler } from "express";
 
 // Rate limiting middleware (exclude file uploads)
 const rateLimiter = rateLimit({
@@ -10,8 +10,10 @@ const rateLimiter = rateLimit({
   skip: (req: Request) => req.path.startsWith('/files/upload')
 });
 
-// Brute force protection middleware (exclude file uploads)
-const bruteForceProtection: any = slowDown({
+// Brute force protection middleware (exclude file uploads).
+// Explicit RequestHandler annotation keeps the emitted type portable under
+// composite builds (express-slow-down's nested express-rate-limit type isn't).
+const bruteForceProtection: RequestHandler = slowDown({
   windowMs: 15 * 60 * 1000, // 15 minutes
   delayAfter: 50000, // allow 100 requests per 15 minutes, then...
   delayMs: () => 500, // add 500ms delay per request above 100 (new behavior)

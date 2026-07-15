@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { getRequiredOxyUserId } from '@oxyhq/core/server';
 import Post from '../models/Post';
 
 const router = Router();
@@ -6,7 +7,7 @@ const router = Router();
 // GET / - Get publishing queue
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getRequiredOxyUserId(req);
     const queue = await Post.find({ userId, status: 'scheduled' })
       .sort({ scheduledAt: 1 });
     res.json({ queue });

@@ -1,12 +1,12 @@
-import { Router, Response } from 'express';
+import { Router, Request, Response } from 'express';
+import { requireOxyAuth, getRequiredOxyUserId } from '@oxyhq/core/server';
 import UserSettings from '../models/UserSettings';
 import UserBehavior from '../models/UserBehavior';
 import Block from '../models/Block';
 import Restrict from '../models/Restrict';
-import { AuthRequest, requireAuth } from '../middleware/auth';
-import { ensureUserSettings } from '../utils/userSettings';
+import { ensureUserSettings, extractPublicProfileData } from '../utils/userSettings';
 import { sendErrorResponse, sendSuccessResponse, validateRequired } from '../utils/apiHelpers';
-import { getAuthenticatedUserId } from '../utils/auth';
+import { logger } from '../utils/logger';
 
 const router = Router();
 
@@ -16,19 +16,19 @@ const router = Router();
  */
 
 // Apply auth middleware to all routes
-router.use(requireAuth);
+router.use(requireOxyAuth);
 
 /**
  * GET /api/profile/settings/me
  * Get current user's settings
  */
-router.get('/settings/me', async (req: AuthRequest, res: Response) => {
+router.get('/settings/me', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const doc = await ensureUserSettings(oxyUserId);
     return sendSuccessResponse(res, 200, doc);
   } catch (err) {
-    console.error('[ProfileSettings] Error fetching my settings:', err);
+    logger.error('[ProfileSettings] Error fetching my settings:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch settings');
   }
 });
@@ -37,7 +37,7 @@ router.get('/settings/me', async (req: AuthRequest, res: Response) => {
  * GET /api/profile/settings/:userId
  * Get settings by oxy user id
  */
-router.get('/settings/:userId', async (req: AuthRequest, res: Response) => {
+router.get('/settings/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     
@@ -49,10 +49,17 @@ router.get('/settings/:userId', async (req: AuthRequest, res: Response) => {
       return sendErrorResponse(res, 400, 'Bad Request', 'userId must be a single value');
     }
 
+    const requesterId = getRequiredOxyUserId(req);
     const doc = await ensureUserSettings(userId);
-    return sendSuccessResponse(res, 200, doc);
+
+    // Only the owner may read their full settings (privacy lists, hidden words,
+    // security flags). Everyone else gets just the public profile design data.
+    if (requesterId === userId) {
+      return sendSuccessResponse(res, 200, doc);
+    }
+    return sendSuccessResponse(res, 200, extractPublicProfileData(doc, userId));
   } catch (err) {
-    console.error('[ProfileSettings] Error fetching user settings:', err);
+    logger.error('[ProfileSettings] Error fetching user settings:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch settings');
   }
 });
@@ -61,23 +68,24 @@ router.get('/settings/:userId', async (req: AuthRequest, res: Response) => {
  * PUT /api/profile/settings
  * Update current user's settings
  */
-router.put('/settings', async (req: AuthRequest, res: Response) => {
+router.put('/settings', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const { appearance, profileHeaderImage, privacy, profileCustomization } = req.body || {};
 
-    const update: Record<string, any> = {};
-    
+    const update: Record<string, unknown> = {};
+
     if (appearance) {
-      update['appearance'] = {};
+      const appearanceUpdate: Record<string, unknown> = {};
       if (appearance.themeMode && ['light', 'dark', 'system'].includes(appearance.themeMode)) {
-        update.appearance.themeMode = appearance.themeMode;
+        appearanceUpdate.themeMode = appearance.themeMode;
       }
       if (typeof appearance.primaryColor === 'string' && appearance.primaryColor.trim()) {
-        update.appearance.primaryColor = appearance.primaryColor.trim();
+        appearanceUpdate.primaryColor = appearance.primaryColor.trim();
       } else if (appearance.primaryColor === null) {
-        update.appearance.primaryColor = undefined;
+        appearanceUpdate.primaryColor = undefined;
       }
+      update.appearance = appearanceUpdate;
     }
     
     if (typeof profileHeaderImage === 'string') {
@@ -157,7 +165,7 @@ router.put('/settings', async (req: AuthRequest, res: Response) => {
 
     return sendSuccessResponse(res, 200, doc);
   } catch (err) {
-    console.error('[ProfileSettings] Error updating settings:', err);
+    logger.error('[ProfileSettings] Error updating settings:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to update settings');
   }
 });
@@ -166,9 +174,9 @@ router.put('/settings', async (req: AuthRequest, res: Response) => {
  * DELETE /api/profile/settings/behavior
  * Reset user behavior/preferences
  */
-router.delete('/settings/behavior', async (req: AuthRequest, res: Response) => {
+router.delete('/settings/behavior', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const result = await UserBehavior.findOneAndDelete({ oxyUserId });
 
     return sendSuccessResponse(
@@ -178,7 +186,7 @@ router.delete('/settings/behavior', async (req: AuthRequest, res: Response) => {
       result ? 'Personalization data reset successfully' : 'No personalization data to reset'
     );
   } catch (err) {
-    console.error('[ProfileSettings] Error resetting user behavior:', err);
+    logger.error('[ProfileSettings] Error resetting user behavior:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to reset personalization data');
   }
 });
@@ -187,9 +195,9 @@ router.delete('/settings/behavior', async (req: AuthRequest, res: Response) => {
  * Block management endpoints
  */
 
-router.get('/blocks', async (req: AuthRequest, res: Response) => {
+router.get('/blocks', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const blocks = await Block.find({ userId: oxyUserId })
       .sort({ createdAt: -1 })
       .lean();
@@ -198,14 +206,14 @@ router.get('/blocks', async (req: AuthRequest, res: Response) => {
       blockedUsers: blocks.map(b => b.blockedId),
     });
   } catch (err) {
-    console.error('[ProfileSettings] Error fetching blocked users:', err);
+    logger.error('[ProfileSettings] Error fetching blocked users:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch blocked users');
   }
 });
 
-router.post('/blocks', async (req: AuthRequest, res: Response) => {
+router.post('/blocks', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const { blockedId } = req.body;
     
     const validationError = validateRequired(blockedId, 'blockedId');
@@ -224,18 +232,18 @@ router.post('/blocks', async (req: AuthRequest, res: Response) => {
 
     await Block.create({ userId: oxyUserId, blockedId });
     return sendSuccessResponse(res, 201, { success: true }, 'User blocked successfully');
-  } catch (err: any) {
-    console.error('[ProfileSettings] Error blocking user:', err);
-    if (err.code === 11000) {
+  } catch (err: unknown) {
+    logger.error('[ProfileSettings] Error blocking user:', err);
+    if ((err as { code?: number }).code === 11000) {
       return sendSuccessResponse(res, 200, { success: true }, 'User already blocked');
     }
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to block user');
   }
 });
 
-router.delete('/blocks/:blockedId', async (req: AuthRequest, res: Response) => {
+router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const { blockedId } = req.params;
     
     const validationError = validateRequired(blockedId, 'blockedId');
@@ -251,7 +259,7 @@ router.delete('/blocks/:blockedId', async (req: AuthRequest, res: Response) => {
 
     return sendSuccessResponse(res, 200, { success: true }, 'User unblocked successfully');
   } catch (err) {
-    console.error('[ProfileSettings] Error unblocking user:', err);
+    logger.error('[ProfileSettings] Error unblocking user:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to unblock user');
   }
 });
@@ -260,9 +268,9 @@ router.delete('/blocks/:blockedId', async (req: AuthRequest, res: Response) => {
  * Restricted users management endpoints
  */
 
-router.get('/restricts', async (req: AuthRequest, res: Response) => {
+router.get('/restricts', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const restricts = await Restrict.find({ userId: oxyUserId })
       .sort({ createdAt: -1 })
       .lean();
@@ -271,14 +279,14 @@ router.get('/restricts', async (req: AuthRequest, res: Response) => {
       restrictedUsers: restricts.map(r => r.restrictedId),
     });
   } catch (err) {
-    console.error('[ProfileSettings] Error fetching restricted users:', err);
+    logger.error('[ProfileSettings] Error fetching restricted users:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch restricted users');
   }
 });
 
-router.post('/restricts', async (req: AuthRequest, res: Response) => {
+router.post('/restricts', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const { restrictedId } = req.body;
     
     const validationError = validateRequired(restrictedId, 'restrictedId');
@@ -297,18 +305,18 @@ router.post('/restricts', async (req: AuthRequest, res: Response) => {
 
     await Restrict.create({ userId: oxyUserId, restrictedId });
     return sendSuccessResponse(res, 201, { success: true }, 'User restricted successfully');
-  } catch (err: any) {
-    console.error('[ProfileSettings] Error restricting user:', err);
-    if (err.code === 11000) {
+  } catch (err: unknown) {
+    logger.error('[ProfileSettings] Error restricting user:', err);
+    if ((err as { code?: number }).code === 11000) {
       return sendSuccessResponse(res, 200, { success: true }, 'User already restricted');
     }
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to restrict user');
   }
 });
 
-router.delete('/restricts/:restrictedId', async (req: AuthRequest, res: Response) => {
+router.delete('/restricts/:restrictedId', async (req: Request, res: Response) => {
   try {
-    const oxyUserId = getAuthenticatedUserId(req);
+    const oxyUserId = getRequiredOxyUserId(req);
     const { restrictedId } = req.params;
     
     const validationError = validateRequired(restrictedId, 'restrictedId');
@@ -324,7 +332,7 @@ router.delete('/restricts/:restrictedId', async (req: AuthRequest, res: Response
 
     return sendSuccessResponse(res, 200, { success: true }, 'User unrestricted successfully');
   } catch (err) {
-    console.error('[ProfileSettings] Error unrestricting user:', err);
+    logger.error('[ProfileSettings] Error unrestricting user:', err);
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to unrestrict user');
   }
 });

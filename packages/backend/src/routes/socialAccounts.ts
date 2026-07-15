@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { getRequiredOxyUserId } from '@oxyhq/core/server';
 import SocialAccount from '../models/SocialAccount';
 
 const router = Router();
@@ -6,7 +7,7 @@ const router = Router();
 // GET / - List connected accounts
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getRequiredOxyUserId(req);
     const accounts = await SocialAccount.find({ userId, isActive: true });
     res.json({ accounts });
   } catch (error) {
@@ -17,8 +18,27 @@ router.get('/', async (req: Request, res: Response) => {
 // POST / - Connect a new account
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    const account = await SocialAccount.create({ ...req.body, userId });
+    const userId = getRequiredOxyUserId(req);
+    const {
+      platform,
+      platformUserId,
+      platformUsername,
+      accessToken,
+      refreshToken,
+      tokenExpiresAt,
+      profileImageUrl,
+    } = req.body ?? {};
+
+    const account = await SocialAccount.create({
+      userId,
+      platform,
+      platformUserId,
+      platformUsername,
+      accessToken,
+      refreshToken,
+      tokenExpiresAt,
+      profileImageUrl,
+    });
     res.status(201).json({ message: 'Account connected', account });
   } catch (error) {
     res.status(500).json({ message: 'Failed to connect account' });
@@ -28,8 +48,9 @@ router.post('/', async (req: Request, res: Response) => {
 // DELETE /:id - Disconnect an account
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const account = await SocialAccount.findByIdAndUpdate(
-      req.params.id,
+    const userId = getRequiredOxyUserId(req);
+    const account = await SocialAccount.findOneAndUpdate(
+      { _id: req.params.id, userId },
       { isActive: false },
       { new: true }
     );

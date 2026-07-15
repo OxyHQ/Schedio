@@ -3,6 +3,7 @@ import express from "express";
 import { connectToDatabase } from "./src/utils/database";
 import dotenv from "dotenv";
 import { oxyClient } from "@oxyhq/core";
+import { createOxyAuthMiddleware } from "@oxyhq/core/server";
 
 // Routers
 import profileSettingsRoutes from "./src/routes/profileSettings";
@@ -12,12 +13,17 @@ import analyticsRoutes from "./src/routes/analytics";
 import queueRoutes from "./src/routes/queue";
 
 // Middleware
-import { rateLimiter } from "./src/middleware/security";
+import { rateLimiter, bruteForceProtection } from "./src/middleware/security";
+import { logger } from "./src/utils/logger";
 
 // --- Config ---
 dotenv.config();
 
 const app = express();
+
+// Behind the ALB (single proxy hop) — required for express-rate-limit /
+// express-slow-down to read the real client IP from X-Forwarded-For.
+app.set("trust proxy", 1);
 
 // Initialize Oxy client for authentication
 export const oxy = oxyClient;
@@ -32,7 +38,7 @@ app.use(async (req, res, next) => {
     await connectToDatabase();
     next();
   } catch (error) {
-    console.error("MongoDB connection unavailable:", error);
+    logger.error("MongoDB connection unavailable:", error);
     if (res.headersSent) {
       return;
     }
@@ -69,32 +75,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Optional Auth Middleware ---
-// Tries to authenticate but doesn't fail if no token is provided
-const optionalAuth = (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    return next();
-  }
-
-  const authMiddleware = oxy.auth();
-  authMiddleware(req, res, (err?: any) => {
-    if (err) {
-      console.log(
-        "Optional auth: Authentication failed, continuing as unauthenticated:",
-        err?.message || "Unknown error"
-      );
-      (req as any).user = undefined;
-    }
-    next();
-  });
-};
-
 // --- API ROUTES ---
 // Public API routes (no authentication required)
 const publicApiRouter = express.Router();
@@ -112,9 +92,13 @@ authenticatedApiRouter.use("/accounts", socialAccountsRoutes);
 authenticatedApiRouter.use("/analytics", analyticsRoutes);
 authenticatedApiRouter.use("/queue", queueRoutes);
 
-// Mount public and authenticated API routers
+// Mount public and authenticated API routers.
+// Health/public routes are mounted before the limiters so health checks are not
+// rate-limited; rate limiting + brute-force protection apply to everything after.
 app.use("/api", publicApiRouter);
-app.use("/api", oxy.auth(), authenticatedApiRouter);
+app.use(rateLimiter);
+app.use(bruteForceProtection);
+app.use("/api", createOxyAuthMiddleware(oxy), authenticatedApiRouter);
 
 // --- Root API Welcome Route ---
 app.get("/", async (req, res) => {
@@ -124,10 +108,10 @@ app.get("/", async (req, res) => {
 // --- MongoDB Connection ---
 const db = require("mongoose").connection;
 db.on("error", (error: Error) => {
-  console.error("MongoDB connection error:", error);
+  logger.error("MongoDB connection error:", error);
 });
 db.once("open", () => {
-  console.log("Connected to MongoDB successfully");
+  logger.info("Connected to MongoDB successfully");
   // Load models
   require("./src/models/UserSettings");
   require("./src/models/Block");
@@ -141,10 +125,10 @@ const bootServer = async () => {
   try {
     await connectToDatabase();
     app.listen(PORT, () => {
-      console.log(`Schedio backend server running on port ${PORT}`);
+      logger.info(`Schedio backend server running on port ${PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start server: unable to connect to MongoDB", error);
+    logger.error("Failed to start server: unable to connect to MongoDB", error);
     process.exit(1);
   }
 };

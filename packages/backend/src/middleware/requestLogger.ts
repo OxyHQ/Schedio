@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { getOxyUserId } from '@oxyhq/core/server';
 import { logger } from '../utils/logger';
 
 /**
@@ -35,12 +36,12 @@ export const requestLogger = (
     url: req.originalUrl,
     ip: req.ip,
     userAgent: req.get('user-agent'),
-    userId: (req as any).user?.id,
+    userId: getOxyUserId(req) ?? undefined,
   });
 
   // Capture response
   const originalSend = res.send;
-  res.send = function (data: any) {
+  res.send = function (data: unknown) {
     const duration = Date.now() - startTime;
 
     const logData: RequestLog = {
@@ -50,7 +51,7 @@ export const requestLogger = (
       duration,
       ip: req.ip || '',
       userAgent: req.get('user-agent') || '',
-      userId: (req as any).user?.id,
+      userId: getOxyUserId(req) ?? undefined,
     };
 
     // Log based on status code
@@ -86,7 +87,7 @@ export const requestLogger = (
 export function logDatabaseQuery(
   collection: string,
   method: string,
-  query: any,
+  query: unknown,
   duration?: number
 ) {
   const logData = {
@@ -109,7 +110,7 @@ export function logDatabaseQuery(
 export function logApiError(
   req: Request,
   error: Error,
-  additionalContext?: Record<string, any>
+  additionalContext?: Record<string, unknown>
 ) {
   logger.error('API Error', {
     error: {
@@ -127,7 +128,7 @@ export function logApiError(
       ip: req.ip,
       userAgent: req.get('user-agent'),
     },
-    user: (req as any).user?.id,
+    user: getOxyUserId(req) ?? undefined,
     ...additionalContext,
   });
 }
@@ -135,10 +136,10 @@ export function logApiError(
 /**
  * Sanitize request body (remove sensitive fields)
  */
-function sanitizeBody(body: any): any {
-  if (!body) return {};
+function sanitizeBody(body: unknown): Record<string, unknown> {
+  if (!body || typeof body !== 'object') return {};
 
-  const sanitized = { ...body };
+  const sanitized: Record<string, unknown> = { ...(body as Record<string, unknown>) };
   const sensitiveFields = ['password', 'token', 'apiKey', 'secret', 'authorization'];
 
   sensitiveFields.forEach(field => {
@@ -153,8 +154,8 @@ function sanitizeBody(body: any): any {
 /**
  * Sanitize request headers (remove sensitive values)
  */
-function sanitizeHeaders(headers: any): any {
-  const sanitized = { ...headers };
+function sanitizeHeaders(headers: Record<string, unknown>): Record<string, unknown> {
+  const sanitized: Record<string, unknown> = { ...headers };
 
   if (sanitized.authorization) {
     sanitized.authorization = '[REDACTED]';

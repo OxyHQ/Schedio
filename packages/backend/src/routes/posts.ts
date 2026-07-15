@@ -1,4 +1,5 @@
 import { Router, Request, Response } from 'express';
+import { getRequiredOxyUserId } from '@oxyhq/core/server';
 import Post from '../models/Post';
 
 const router = Router();
@@ -6,7 +7,7 @@ const router = Router();
 // GET / - List posts
 router.get('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = getRequiredOxyUserId(req);
     const posts = await Post.find({ userId }).sort({ createdAt: -1 });
     res.json({ posts });
   } catch (error) {
@@ -17,8 +18,18 @@ router.get('/', async (req: Request, res: Response) => {
 // POST / - Create post
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
-    const post = await Post.create({ ...req.body, userId });
+    const userId = getRequiredOxyUserId(req);
+    const { content, media, platforms, status, scheduledAt, hashtags } = req.body ?? {};
+
+    const post = await Post.create({
+      userId,
+      content,
+      media,
+      platforms,
+      status,
+      scheduledAt,
+      hashtags,
+    });
     res.status(201).json({ message: 'Post created', post });
   } catch (error) {
     res.status(500).json({ message: 'Failed to create post' });
@@ -28,7 +39,8 @@ router.post('/', async (req: Request, res: Response) => {
 // GET /:id - Get single post
 router.get('/:id', async (req: Request, res: Response) => {
   try {
-    const post = await Post.findById(req.params.id);
+    const userId = getRequiredOxyUserId(req);
+    const post = await Post.findOne({ _id: req.params.id, userId });
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -41,7 +53,14 @@ router.get('/:id', async (req: Request, res: Response) => {
 // PUT /:id - Update post
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-    const post = await Post.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const userId = getRequiredOxyUserId(req);
+    const { content, media, platforms, status, scheduledAt, hashtags } = req.body ?? {};
+
+    const post = await Post.findOneAndUpdate(
+      { _id: req.params.id, userId },
+      { content, media, platforms, status, scheduledAt, hashtags },
+      { new: true }
+    );
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -54,7 +73,8 @@ router.put('/:id', async (req: Request, res: Response) => {
 // DELETE /:id - Delete post
 router.delete('/:id', async (req: Request, res: Response) => {
   try {
-    const post = await Post.findByIdAndDelete(req.params.id);
+    const userId = getRequiredOxyUserId(req);
+    const post = await Post.findOneAndDelete({ _id: req.params.id, userId });
     if (!post) {
       return res.status(404).json({ message: 'Post not found' });
     }
@@ -67,8 +87,9 @@ router.delete('/:id', async (req: Request, res: Response) => {
 // POST /:id/publish - Publish post
 router.post('/:id/publish', async (req: Request, res: Response) => {
   try {
-    const post = await Post.findByIdAndUpdate(
-      req.params.id,
+    const userId = getRequiredOxyUserId(req);
+    const post = await Post.findOneAndUpdate(
+      { _id: req.params.id, userId },
       { status: 'published', publishedAt: new Date() },
       { new: true }
     );
