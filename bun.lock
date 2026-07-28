@@ -119,8 +119,6 @@
         "react-native-web": "~0.21.2",
         "react-native-worklets": "0.8.3",
         "react-responsive": "^10.0.1",
-        "sonner": "^2.0.7",
-        "sonner-native": "^0.26.1",
         "tailwindcss": "4.2.2",
         "tailwindcss-animate": "^1.0.7",
         "zod": "^3.25.76",
@@ -2011,7 +2009,7 @@
 
     "sonner": ["sonner@2.0.7", "", { "peerDependencies": { "react": "^18.0.0 || ^19.0.0 || ^19.0.0-rc", "react-dom": "^18.0.0 || ^19.0.0 || ^19.0.0-rc" } }, "sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w=="],
 
-    "sonner-native": ["sonner-native@0.26.2", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-gesture-handler": ">=2.28.0", "react-native-reanimated": "^4.1.1", "react-native-safe-area-context": "^5.6.0", "react-native-screens": "^4.16.0", "react-native-svg": "^15.12.1", "react-native-worklets": ">=0.6.1" } }, "sha512-duK937iN8RKzcz7lyCHBCGTGhfZzRzcuLA+brEdC7UL4yXcSh/h6Y073PnRrGBEy7ApEtRDMijgIpUUVtzjuOA=="],
+    "sonner-native": ["sonner-native@0.20.0", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-gesture-handler": ">=2.16.1", "react-native-reanimated": ">=3.10.1", "react-native-safe-area-context": ">=4.10.5", "react-native-screens": ">=3.31.1", "react-native-svg": ">=15.6.0" } }, "sha512-DU31DDEYpFsLdL0yOQDPZizqXr4TIUaC/t1K6NCPgRSXdZAXYwUPH7VWRY6KGO4MZ8Wt/gHU4EXuHFtATVPAqg=="],
 
     "source-map": ["source-map@0.5.7", "", {}, "sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ=="],
 
@@ -2308,8 +2306,6 @@
     "@jridgewell/source-map/@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@oxyhq/services/@oxyhq/contracts": ["@oxyhq/contracts@0.2.0", "", { "dependencies": { "zod": "^3.25.64" } }, "sha512-uW0Jq6L4eTBAZUA/Rr59qi/9P4k7drI0NRbQTppXbIjVBz12KZTJ/wLbI48gM8wYgL/g9AuQj7KlueXKH5WhDg=="],
-
-    "@oxyhq/services/sonner-native": ["sonner-native@0.20.0", "", { "peerDependencies": { "react": "*", "react-native": "*", "react-native-gesture-handler": ">=2.16.1", "react-native-reanimated": ">=3.10.1", "react-native-safe-area-context": ">=4.10.5", "react-native-screens": ">=3.31.1", "react-native-svg": ">=15.6.0" } }, "sha512-DU31DDEYpFsLdL0yOQDPZizqXr4TIUaC/t1K6NCPgRSXdZAXYwUPH7VWRY6KGO4MZ8Wt/gHU4EXuHFtATVPAqg=="],
 
     "@schedio/backend/@schedio/shared-types": ["@schedio/shared-types@file:packages/shared-types", { "devDependencies": { "@types/node": "^20.0.0", "typescript": "^5.0.0" } }],
 

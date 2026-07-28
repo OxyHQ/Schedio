@@ -17,7 +17,6 @@ import { OxyProvider } from '@oxyhq/services';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { HomeRefreshProvider } from '@/context/HomeRefreshContext';
-import { Toaster } from '@/lib/sonner';
 import i18n from '@/lib/i18n';
 import { OXY_BASE_URL, OXY_CLIENT_ID } from '@/config';
 
@@ -50,11 +49,6 @@ export const AppProviders = memo(function AppProviders({
                       <HomeRefreshProvider>
                         {children}
                         <StatusBar style="auto" />
-                        <Toaster
-                          position="bottom-center"
-                          swipeToDismissDirection="left"
-                          offset={15}
-                        />
                       </HomeRefreshProvider>
                     </ErrorBoundary>
                   </MenuProvider>
