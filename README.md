@@ -1,172 +1,144 @@
-# Schedio
+<h1 align="center">Schedio</h1>
 
-> A modern, cross-platform social media scheduling tool built with Expo, React Native, TypeScript, and a Node.js/Express backend in a monorepo structure.
+<p align="center">
+  Compose once, queue it, and let it publish across every social account you have connected.
+</p>
+
+<p align="center">
+  <img alt="Bun" src="https://img.shields.io/badge/bun-workspaces-440151?style=flat-square&logo=bun&logoColor=white">
+  <img alt="Expo" src="https://img.shields.io/badge/Expo-56-440151?style=flat-square&logo=expo&logoColor=white">
+  <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.85-440151?style=flat-square&logo=react&logoColor=white">
+  <img alt="Express" src="https://img.shields.io/badge/Express-4-440151?style=flat-square&logo=express&logoColor=white">
+  <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose-440151?style=flat-square&logo=mongodb&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-440151?style=flat-square&logo=typescript&logoColor=white">
+</p>
+
+<p align="center">
+  <b>One codebase, three targets.</b><br>
+  The same Expo app runs on web, iOS and Android, against an Express API<br>
+  that never stores a password because identity comes from Oxy.
+</p>
 
 ---
 
-## Table of Contents
-- [About](#about)
-- [Project Structure](#project-structure)
-- [Getting Started](#getting-started)
-- [Development Scripts](#development-scripts)
-- [API Documentation](#api-documentation)
-- [Contributing](#contributing)
-- [License](#license)
+<table>
+<tr>
+<td valign="top" width="50%">
 
----
+### 📮 Scheduling that survives a bad night
 
-## About
+A post moves through `draft`, `scheduled`, `published` or `failed`, and carries a retry count so a provider outage does not silently swallow it.
 
-**Schedio** is a Buffer-style social media scheduling platform that lets you compose, schedule, and publish posts across multiple social networks from a single dashboard. Built with Expo, React Native, and a Node.js backend in a modern monorepo structure, it supports file-based routing, multi-language support, and a responsive UI that works on web, iOS, and Android.
+`PublishingSchedule` holds the time slots, so you set the rhythm once and drop posts into the queue rather than picking a timestamp every time.
 
-### Key Features
+</td>
+<td valign="top" width="50%">
 
-- **Multi-Platform Publishing** — Connect Twitter/X, Instagram, Facebook, LinkedIn, Mastodon and schedule posts across all of them
-- **Post Queue & Calendar** — Visual calendar and drag-and-drop queue for managing scheduled content
-- **Analytics Dashboard** — Track post performance, engagement metrics, and audience growth
-- **Post Composer** — Rich composer with media attachments, polls, location, threads, and article content
-- **Publishing Schedules** — Create custom time slot schedules for automatic posting
-- **Draft Management** — Save and organize drafts for later
-- **Responsive Design** — Sidebar on desktop, bottom bar on mobile — works everywhere
-- **Theming** — Light/dark/system modes with multiple color themes
-- **Multi-Language** — English, Spanish, Italian supported via i18next
+### 🔗 Five networks, one composer
 
-## Project Structure
+`SocialAccount` connects Twitter, Instagram, Facebook, LinkedIn and Mastodon, each with its own tokens and refresh window.
 
-This is a **monorepo** using npm workspaces:
+One post targets several accounts at once. `PostAnalytics` records what each of them did with it afterwards.
 
-```
-/
-├── packages/
-│   ├── frontend/        # Expo React Native app
-│   │   ├── app/         # Screens and routing
-│   │   │   ├── (main)/  # Main app screens
-│   │   │   │   ├── index.tsx       # Dashboard
-│   │   │   │   ├── compose.tsx     # Post composer
-│   │   │   │   ├── queue.tsx       # Queue / calendar
-│   │   │   │   ├── analytics.tsx   # Analytics
-│   │   │   │   ├── accounts.tsx    # Social accounts
-│   │   │   │   ├── settings/       # Settings screens
-│   │   │   │   └── post/[id].tsx   # Post detail/edit
-│   │   │   ├── (auth)/  # Authentication screens
-│   │   │   └── ...
-│   │   ├── components/  # UI components
-│   │   ├── hooks/       # Custom React hooks
-│   │   ├── stores/      # State management (Zustand)
-│   │   ├── styles/      # Theme and color system
-│   │   ├── locales/     # i18n translation files
-│   │   └── utils/       # Utility functions
-│   ├── backend/         # Node.js/Express API server
-│   │   └── src/
-│   │       ├── models/      # MongoDB models (Post, SocialAccount, etc.)
-│   │       ├── routes/      # API routes (posts, accounts, analytics, queue)
-│   │       ├── middleware/  # Express middleware
-│   │       └── utils/       # Utility functions
-│   └── shared-types/    # Shared TypeScript types
-├── package.json         # Root package.json with workspaces
-└── tsconfig.json        # Root TypeScript config
-```
+</td>
+</tr>
+</table>
 
-## Getting Started
+## Packages
 
-### Prerequisites
-- Node.js 18+ and npm 8+
-- MongoDB instance
-- Expo CLI for mobile development
+Bun workspaces, three of them:
 
-### Initial Setup
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/OxyHQ/Schedio.git
-   cd Schedio
-   ```
+| Package | What it is |
+|---|---|
+| [`@schedio/frontend`](packages/frontend/) | The Expo app. Expo Router, NativeWind 5, Zustand, i18next, and [`@oxyhq/bloom`](https://www.npmjs.com/package/@oxyhq/bloom) for tokens and primitives |
+| [`@schedio/backend`](packages/backend/) | The Express API. Mongoose models, rate limiting, validation, and route level Oxy auth |
+| [`@schedio/shared-types`](packages/shared-types/) | The DTOs both sides agree on. Compiled by `postinstall`, before anything else runs |
 
-2. **Install all dependencies**
-   ```bash
-   npm run install:all
-   ```
+Sign in, sessions and user records come from the Oxy platform through [`@oxyhq/services`](https://www.npmjs.com/package/@oxyhq/services) in the app and [`@oxyhq/core`](https://www.npmjs.com/package/@oxyhq/core) on the server. Every protected route resolves its user with `getRequiredOxyUserId` from `@oxyhq/core/server`, so no user id is ever taken from the request body. See [github.com/OxyHQ/oxy](https://github.com/OxyHQ/oxy).
 
-3. **Set up environment variables** — See backend and frontend READMEs for required env vars.
+## Quick start
 
-### Development
-
-#### Start All Services
 ```bash
-npm run dev
+bun install            # postinstall builds @schedio/shared-types
+bun run dev            # frontend and backend together
 ```
 
-#### Start Individual Services
+Or one at a time:
+
 ```bash
-# Frontend only
-npm run dev:frontend
-
-# Backend only
-npm run dev:backend
+bun run dev:frontend   # Expo
+bun run dev:backend    # Express with nodemon
+bun run web            # Expo straight to the browser
 ```
 
-#### Frontend Development
-The frontend is an Expo React Native app that can run on:
-- **Web**: `npm run web` (or `npm run dev:frontend` then press 'w')
-- **iOS**: `npm run ios` (requires macOS and Xcode)
-- **Android**: `npm run android` (requires Android Studio)
+You will need Node 18 or newer and a MongoDB instance. Environment variables are documented in the [backend](packages/backend/README.md) and [frontend](packages/frontend/README.md) package READMEs.
 
-#### Backend Development
+> [!NOTE]
+> Schedio is a Bun workspace. Use `bun`, not `npm` or `yarn`: the root scripts are all `bun run --filter`, and the lockfile is `bun.lock`.
+
+<details>
+<summary><b>All workspace scripts</b></summary>
+
+<br>
+
 ```bash
-npm run dev:backend
+bun run build               # every package
+bun run build:shared-types
+bun run build:frontend      # static web export
+bun run build:backend
+bun run start:frontend
+bun run start:backend
+bun run lint
+bun run clean               # build artifacts and node_modules
 ```
 
-## Development Scripts
+Per package scripts live in each package's own `package.json`. The frontend adds `ios`, `android` and `web`; the backend adds `migrate`.
 
-### Root Level (Monorepo)
-- `npm run dev` — Start all services in development mode
-- `npm run dev:frontend` — Start frontend development server
-- `npm run dev:backend` — Start backend development server
-- `npm run build` — Build all packages
-- `npm run build:shared-types` — Build shared types package
-- `npm run build:frontend` — Build frontend for production
-- `npm run build:backend` — Build backend for production
-- `npm run test` — Run tests across all packages
-- `npm run lint` — Lint all packages
-- `npm run clean` — Clean all build artifacts
-- `npm run install:all` — Install dependencies for all packages
+</details>
 
-### Frontend (`@schedio/frontend`)
-- `npm start` — Start Expo development server
-- `npm run android` — Run on Android device/emulator
-- `npm run ios` — Run on iOS simulator
-- `npm run web` — Run in web browser
-- `npm run build-web` — Build static web output
-- `npm run lint` — Lint codebase
+<details>
+<summary><b>What is in the app</b></summary>
 
-### Backend (`@schedio/backend`)
-- `npm run dev` — Start development server with hot reload
-- `npm run build` — Build the project
-- `npm run start` — Start production server
-- `npm run lint` — Lint codebase
+<br>
 
-### Shared Types (`@schedio/shared-types`)
-- `npm run build` — Build TypeScript types
-- `npm run dev` — Watch and rebuild types
+Routes under `packages/frontend/app/`:
 
-## API Documentation
+| Screen | Path |
+|---|---|
+| Dashboard | `(main)/index.tsx` |
+| Composer | `(main)/compose.tsx` |
+| Queue and calendar | `(main)/queue.tsx` |
+| Analytics | `(main)/analytics.tsx` |
+| Connected accounts | `(main)/accounts.tsx` |
+| Post detail | `(main)/post/` |
+| Search | `(main)/search/` |
+| Profile | `(main)/@[username].tsx` |
+| Settings | `(main)/settings/` (appearance, language, privacy, profile customisation) |
+| Sign in | `(auth)/` |
 
-The Schedio API is a REST backend built with Express.js and TypeScript, providing endpoints for post management, social account connections, analytics, and queue management. Authentication is handled by the Oxy platform.
+The interface ships in English, Spanish and Italian (`packages/frontend/locales/`), and follows the system light or dark theme through the appearance store.
 
-For detailed API information, see:
-- [Backend README](packages/backend/README.md) — Complete API documentation
-- [Frontend README](packages/frontend/README.md) — Frontend implementation details
+</details>
+
+<details>
+<summary><b>What is in the API</b></summary>
+
+<br>
+
+Routes in `packages/backend/src/routes/`: `posts`, `queue`, `analytics`, `socialAccounts`, `profileSettings`.
+
+Models in `packages/backend/src/models/`: `Post`, `PostAnalytics`, `PublishingSchedule`, `SocialAccount`, `UserSettings`, `UserBehavior`, `Block`, `Restrict`.
+
+Full endpoint documentation is in the [backend README](packages/backend/README.md).
+
+</details>
 
 ## Contributing
 
-Contributions are welcome! Please open issues or pull requests for bug fixes, features, or improvements.
+Issues and pull requests are welcome. Branch, change one thing, run `bun run lint`, open the pull request.
 
-### Development Workflow
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting: `npm run test && npm run lint`
-5. Submit a pull request
+<br>
 
-## License
-
-This project is licensed under the MIT License.
+<div align="center">
+<sub>built by <a href="https://oxy.so">Oxy</a></sub>
+</div>
