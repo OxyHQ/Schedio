@@ -1,6 +1,7 @@
 {
     "name": "@schedio/shared-types",
     "version": "1.0.0",
+    "private": true,
     "description": "Shared TypeScript types for Schedio frontend and backend",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -19,7 +20,6 @@
         "schedio"
     ],
     "author": "Schedio Team",
-    "license": "UNLICENSED",
     "devDependencies": {
         "typescript": "^5.0.0",
         "@types/node": "^20.0.0"
