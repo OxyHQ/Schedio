@@ -6,40 +6,32 @@
   "type": "commonjs",
   "main": "server.ts",
   "scripts": {
-    "start": "ts-node --transpile-only server.ts",
-    "dev": "nodemon --watch \"**/*.ts\" --exec ts-node --transpile-only server.ts",
-    "build": "tsc",
-    "migrate": "ts-node --transpile-only scripts/migrate.ts",
-    "migrate:dev": "NODE_ENV=development ts-node --transpile-only scripts/migrate.ts",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "bun server.ts",
+    "dev": "bun --watch server.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --maxWorkers=1 --exclude 'dist/**'",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "ts-node --transpile-only src/db/migrate.ts",
+    "db:build-import-manifest": "ts-node --transpile-only src/db/buildLegacyManifest.ts",
+    "db:import-legacy": "ts-node --transpile-only src/db/importLegacyJsonl.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^1.3.22",
     "@oxyhq/core": "^23.0.0",
-    "@schedio/shared-types": "file:../shared-types",
-    "@types/multer": "^2.0.0",
-    "ai": "^5.0.95",
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.3",
-    "cors": "^2.8.5",
+    "@oxyhq/db": "^0.1.2",
     "dotenv": "^16.6.1",
+    "drizzle-orm": "0.45.2",
     "express": "^4.21.2",
     "express-rate-limit": "^8.1.1",
     "express-slow-down": "^2.1.0",
-    "express-validator": "^7.0.1",
-    "i18n": "^0.15.1",
-    "jsonwebtoken": "^9.0.2",
-    "jwt-decode": "^4.0.0",
-    "mongoose": "^8.22.1",
-    "multer": "^2.1.1",
-    "qrcode-terminal": "^0.11.0",
-    "validator": "^13.15.23"
+    "postgres": "3.4.9"
   },
   "devDependencies": {
-    "node-fetch": "^2.7.0",
-    "nodemon": "^3.1.10",
+    "@types/node": "^20.0.0",
+    "drizzle-kit": "0.31.10",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.10"
   }
 }

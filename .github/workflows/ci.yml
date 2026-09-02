@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend build and tests
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: schedio
+          POSTGRES_PASSWORD: schedio
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U schedio -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgres://schedio:schedio@127.0.0.1:5432/postgres
+      SOCIAL_TOKEN_ENCRYPTION_KEY: abababababababababababababababababababababababababababababababab
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: Lockfile matches manifests
+        run: |
+          bun install
+          git diff --exit-code -- bun.lock
+      - run: bun run --filter @schedio/backend typecheck
+      - run: bun run build:backend
+      - run: bun run --filter @schedio/backend test
+      - name: Migrations match the schema
+        working-directory: packages/backend
+        run: |
+          bun run db:generate
+          git diff --exit-code -- drizzle
+
+  frontend:
+    name: Frontend web export
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - run: bun run build:frontend
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096

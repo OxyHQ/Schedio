@@ -81,22 +81,22 @@ This is the **frontend package** of the **Schedio** monorepo. Schedio is a Buffe
 ```bash
 git clone https://github.com/OxyHQ/Schedio.git
 cd Schedio
-npm run install:all
-npm run dev:frontend
+bun install
+bun run dev:frontend
 ```
 
 #### From This Package Directory
 ```bash
 cd packages/frontend
-npm install
+bun install
 npm start
 ```
 
 ### Running the App
 
-- **Web**: Press `w` in the terminal or run `npm run web`
-- **iOS**: Press `i` or run `npm run ios` (requires macOS)
-- **Android**: Press `a` or run `npm run android`
+- **Web**: Press `w` in the terminal or run `bun run web`
+- **iOS**: Press `i` or run `bun run ios` (requires macOS)
+- **Android**: Press `a` or run `bun run android`
 - **Expo Go**: Scan the QR code with the Expo Go app
 
 ### Environment Setup
@@ -114,12 +114,12 @@ EXPO_PUBLIC_POSTHOG_KEY=your_posthog_key
 ## Development Scripts
 
 - `npm start` — Start Expo development server
-- `npm run android` — Run on Android device/emulator
-- `npm run ios` — Run on iOS simulator
-- `npm run web` — Run in web browser
-- `npm run build-web` — Build static web output
-- `npm run lint` — Lint codebase
-- `npm run test` — Run tests
+- `bun run android` — Run on Android device/emulator
+- `bun run ios` — Run on iOS simulator
+- `bun run web` — Run in web browser
+- `bun run build-web` — Build static web output
+- `bun run lint` — Lint codebase
+- `bun run test` — Run tests
 
 ## Navigation
 

@@ -18,17 +18,17 @@ This is the **backend package** of the **Schedio** monorepo. Schedio is a Buffer
 
 ## Tech Stack
 
-- Node.js with TypeScript
+- Bun with TypeScript
 - Express.js for REST API
-- MongoDB with Mongoose for data storage
+- PostgreSQL with Drizzle ORM for first-party data
 - Oxy Services for authentication (users managed by Oxy platform)
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ and npm 8+
-- MongoDB instance
+- Bun 1.3.14
+- PostgreSQL 17
 - Git
 
 ### Development Setup
@@ -37,15 +37,15 @@ This is the **backend package** of the **Schedio** monorepo. Schedio is a Buffer
 ```bash
 git clone https://github.com/OxyHQ/Schedio.git
 cd Schedio
-npm run install:all
-npm run dev:backend
+bun install
+bun run dev:backend
 ```
 
 #### Option 2: From This Package Directory
 ```bash
 cd packages/backend
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 ### Environment Configuration
@@ -54,7 +54,8 @@ Create a `.env` file in this package directory:
 
 ```env
 # Database
-MONGODB_URI=your_mongodb_connection_string
+DATABASE_URL=postgres://user:password@127.0.0.1:5432/schedio
+SOCIAL_TOKEN_ENCRYPTION_KEY=64_hex_characters
 
 # Authentication
 OXY_API_URL=https://api.oxy.so
@@ -71,13 +72,13 @@ FRONTEND_URL=https://schedio.app
 
 #### Development Mode
 ```bash
-npm run dev
+bun run dev
 ```
 
 #### Production Mode
 ```bash
-npm run build
-npm start
+bun run build
+bun run start
 ```
 
 ## API Endpoints
@@ -233,7 +234,7 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
     article?: ArticleData,
     attachments?: Attachment[]
   },
-  platforms: ObjectId[],    // Refs to SocialAccount
+  platformIds: string[],    // Existing source ids are preserved as text
   status: "draft" | "scheduled" | "published" | "failed",
   scheduledAt?: Date,
   publishedAt?: Date,
@@ -252,8 +253,8 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
   platform: "twitter" | "instagram" | "facebook" | "linkedin" | "mastodon",
   platformUserId: string,
   platformUsername: string,
-  accessToken: string,
-  refreshToken?: string,
+  accessTokenCiphertext: string,
+  refreshTokenCiphertext?: string,
   tokenExpiresAt?: Date,
   profileImageUrl?: string,
   isActive: boolean,
@@ -265,7 +266,7 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
 
 ```typescript
 {
-  postId: ObjectId,
+  postId: string,
   platform: string,
   metrics: {
     likes: number,
@@ -293,11 +294,13 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
 
 ## Development Scripts
 
-- `npm run dev` — Start development server with hot reload
-- `npm run build` — Build the project
-- `npm run start` — Start production server
-- `npm run lint` — Lint codebase
-- `npm run clean` — Clean build artifacts
+- `bun run dev` — Start development server with hot reload
+- `bun run build` — Build the project
+- `bun run start` — Start production server
+- `bun run test` — Run static, transform, encryption and PostgreSQL schema tests
+- `bun run db:generate` — Generate Drizzle migrations
+- `bun run db:migrate -- --target-database=<name> --phase=<pre|post|all>` — Apply migrations with an explicit target guard
+- `bun run clean` — Clean build artifacts
 
 ## Monorepo Integration
 
@@ -314,4 +317,5 @@ This package is part of the Schedio monorepo and integrates with:
 
 - **No User Management**: Users are managed by the Oxy platform. The backend only stores Oxy user IDs.
 - **Authentication**: All authenticated endpoints use Oxy's authentication middleware.
-- **Database**: MongoDB with database name `schedio-{NODE_ENV}` (e.g., `schedio-production`).
+- **Database**: PostgreSQL only. `DATABASE_URL` is mandatory and the service fails startup if the database or social-token encryption key is unavailable.
+- **Cutover**: [the PostgreSQL cutover runbook](../../docs/postgres-cutover.md) is the source of truth. Merging code does not authorize a production migration.

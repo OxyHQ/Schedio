@@ -1,10 +1,15 @@
+import { uuidv7 } from "@oxyhq/db";
+import { and, desc, eq } from "drizzle-orm";
 import { Router, Request, Response } from 'express';
 import { requireOxyAuth, getRequiredOxyUserId } from '@oxyhq/core/server';
-import UserSettings from '../models/UserSettings';
-import UserBehavior from '../models/UserBehavior';
-import Block from '../models/Block';
-import Restrict from '../models/Restrict';
-import { ensureUserSettings, extractPublicProfileData } from '../utils/userSettings';
+import { getDb } from "../db";
+import { blocks, restricts, userBehaviors } from "../db/schema";
+import {
+  ensureUserSettings,
+  extractPublicProfileData,
+  settingsPatchFromBody,
+  updateUserSettings,
+} from '../utils/userSettings';
 import { sendErrorResponse, sendSuccessResponse, validateRequired } from '../utils/apiHelpers';
 import { logger } from '../utils/logger';
 
@@ -71,97 +76,7 @@ router.get('/settings/:userId', async (req: Request, res: Response) => {
 router.put('/settings', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
-    const { appearance, profileHeaderImage, privacy, profileCustomization } = req.body || {};
-
-    const update: Record<string, unknown> = {};
-
-    if (appearance) {
-      const appearanceUpdate: Record<string, unknown> = {};
-      if (appearance.themeMode && ['light', 'dark', 'system'].includes(appearance.themeMode)) {
-        appearanceUpdate.themeMode = appearance.themeMode;
-      }
-      if (typeof appearance.primaryColor === 'string' && appearance.primaryColor.trim()) {
-        appearanceUpdate.primaryColor = appearance.primaryColor.trim();
-      } else if (appearance.primaryColor === null) {
-        appearanceUpdate.primaryColor = undefined;
-      }
-      update.appearance = appearanceUpdate;
-    }
-    
-    if (typeof profileHeaderImage === 'string') {
-      update.profileHeaderImage = profileHeaderImage;
-    }
-    
-    if (profileCustomization) {
-      if (typeof profileCustomization.coverPhotoEnabled === 'boolean') {
-        update['profileCustomization.coverPhotoEnabled'] = profileCustomization.coverPhotoEnabled;
-      }
-      if (typeof profileCustomization.minimalistMode === 'boolean') {
-        update['profileCustomization.minimalistMode'] = profileCustomization.minimalistMode;
-      }
-      if (typeof profileCustomization.displayName === 'string') {
-        update['profileCustomization.displayName'] = profileCustomization.displayName.trim() || undefined;
-      } else if (profileCustomization.displayName === null) {
-        update['profileCustomization.displayName'] = undefined;
-      }
-      if (typeof profileCustomization.coverImage === 'string') {
-        update['profileCustomization.coverImage'] = profileCustomization.coverImage.trim() || undefined;
-      } else if (profileCustomization.coverImage === null) {
-        update['profileCustomization.coverImage'] = undefined;
-      }
-    }
-    
-    if (privacy) {
-      const privacyFields = [
-        'profileVisibility',
-        'showContactInfo',
-        'allowTags',
-        'allowallos',
-        'showOnlineStatus',
-        'hideLikeCounts',
-        'hideShareCounts',
-        'hideReplyCounts',
-        'hideSaveCounts',
-      ] as const;
-      
-      privacyFields.forEach(field => {
-        if (typeof privacy[field] === 'boolean') {
-          update[`privacy.${field}`] = privacy[field];
-        }
-      });
-      
-      if (privacy.profileVisibility && ['public', 'private', 'followers_only'].includes(privacy.profileVisibility)) {
-        update['privacy.profileVisibility'] = privacy.profileVisibility;
-      }
-      if (Array.isArray(privacy.hiddenWords)) {
-        update['privacy.hiddenWords'] = privacy.hiddenWords;
-      }
-      if (Array.isArray(privacy.restrictedUsers)) {
-        update['privacy.restrictedUsers'] = privacy.restrictedUsers;
-      }
-      if (Array.isArray(privacy.blockedUsers)) {
-        update['privacy.blockedUsers'] = privacy.blockedUsers;
-      }
-    }
-    
-    if (req.body.security) {
-      const { security } = req.body;
-      if (typeof security.cloudSyncEnabled === 'boolean') {
-        update['security.cloudSyncEnabled'] = security.cloudSyncEnabled;
-      }
-      if (typeof security.encryptionEnabled === 'boolean') {
-        update['security.encryptionEnabled'] = security.encryptionEnabled;
-      }
-      if (typeof security.peerToPeerEnabled === 'boolean') {
-        update['security.peerToPeerEnabled'] = security.peerToPeerEnabled;
-      }
-    }
-
-    const doc = await UserSettings.findOneAndUpdate(
-      { oxyUserId },
-      { $set: update },
-      { upsert: true, new: true }
-    ).lean();
+    const doc = await updateUserSettings(oxyUserId, settingsPatchFromBody(req.body));
 
     return sendSuccessResponse(res, 200, doc);
   } catch (err) {
@@ -177,13 +92,18 @@ router.put('/settings', async (req: Request, res: Response) => {
 router.delete('/settings/behavior', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
-    const result = await UserBehavior.findOneAndDelete({ oxyUserId });
+    const rows = await getDb()
+      .delete(userBehaviors)
+      .where(eq(userBehaviors.oxyUserId, oxyUserId))
+      .returning({ id: userBehaviors.id });
 
     return sendSuccessResponse(
       res,
       200,
       { success: true },
-      result ? 'Personalization data reset successfully' : 'No personalization data to reset'
+      rows.length > 0
+        ? 'Personalization data reset successfully'
+        : 'No personalization data to reset'
     );
   } catch (err) {
     logger.error('[ProfileSettings] Error resetting user behavior:', err);
@@ -198,12 +118,14 @@ router.delete('/settings/behavior', async (req: Request, res: Response) => {
 router.get('/blocks', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
-    const blocks = await Block.find({ userId: oxyUserId })
-      .sort({ createdAt: -1 })
-      .lean();
+    const rows = await getDb()
+      .select({ blockedId: blocks.blockedId })
+      .from(blocks)
+      .where(eq(blocks.userId, oxyUserId))
+      .orderBy(desc(blocks.createdAt), desc(blocks.id));
 
     return sendSuccessResponse(res, 200, {
-      blockedUsers: blocks.map(b => b.blockedId),
+      blockedUsers: rows.map((row) => row.blockedId),
     });
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching blocked users:', err);
@@ -225,18 +147,16 @@ router.post('/blocks', async (req: Request, res: Response) => {
       return sendErrorResponse(res, 400, 'Bad Request', 'Cannot block yourself');
     }
 
-    const existing = await Block.findOne({ userId: oxyUserId, blockedId });
-    if (existing) {
-      return sendSuccessResponse(res, 200, { success: true }, 'User already blocked');
-    }
-
-    await Block.create({ userId: oxyUserId, blockedId });
-    return sendSuccessResponse(res, 201, { success: true }, 'User blocked successfully');
+    const inserted = await getDb()
+      .insert(blocks)
+      .values({ id: uuidv7(), userId: oxyUserId, blockedId })
+      .onConflictDoNothing({ target: [blocks.userId, blocks.blockedId] })
+      .returning({ id: blocks.id });
+    return inserted.length === 0
+      ? sendSuccessResponse(res, 200, { success: true }, 'User already blocked')
+      : sendSuccessResponse(res, 201, { success: true }, 'User blocked successfully');
   } catch (err: unknown) {
     logger.error('[ProfileSettings] Error blocking user:', err);
-    if ((err as { code?: number }).code === 11000) {
-      return sendSuccessResponse(res, 200, { success: true }, 'User already blocked');
-    }
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to block user');
   }
 });
@@ -247,13 +167,16 @@ router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
     const { blockedId } = req.params;
     
     const validationError = validateRequired(blockedId, 'blockedId');
-    if (validationError) {
+    if (validationError || typeof blockedId !== "string") {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
     }
 
-    const result = await Block.findOneAndDelete({ userId: oxyUserId, blockedId });
+    const rows = await getDb()
+      .delete(blocks)
+      .where(and(eq(blocks.userId, oxyUserId), eq(blocks.blockedId, blockedId)))
+      .returning({ id: blocks.id });
 
-    if (!result) {
+    if (rows.length === 0) {
       return sendErrorResponse(res, 404, 'Not Found', 'Block not found');
     }
 
@@ -271,12 +194,14 @@ router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
 router.get('/restricts', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
-    const restricts = await Restrict.find({ userId: oxyUserId })
-      .sort({ createdAt: -1 })
-      .lean();
+    const rows = await getDb()
+      .select({ restrictedId: restricts.restrictedId })
+      .from(restricts)
+      .where(eq(restricts.userId, oxyUserId))
+      .orderBy(desc(restricts.createdAt), desc(restricts.id));
 
     return sendSuccessResponse(res, 200, {
-      restrictedUsers: restricts.map(r => r.restrictedId),
+      restrictedUsers: rows.map((row) => row.restrictedId),
     });
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching restricted users:', err);
@@ -298,18 +223,16 @@ router.post('/restricts', async (req: Request, res: Response) => {
       return sendErrorResponse(res, 400, 'Bad Request', 'Cannot restrict yourself');
     }
 
-    const existing = await Restrict.findOne({ userId: oxyUserId, restrictedId });
-    if (existing) {
-      return sendSuccessResponse(res, 200, { success: true }, 'User already restricted');
-    }
-
-    await Restrict.create({ userId: oxyUserId, restrictedId });
-    return sendSuccessResponse(res, 201, { success: true }, 'User restricted successfully');
+    const inserted = await getDb()
+      .insert(restricts)
+      .values({ id: uuidv7(), userId: oxyUserId, restrictedId })
+      .onConflictDoNothing({ target: [restricts.userId, restricts.restrictedId] })
+      .returning({ id: restricts.id });
+    return inserted.length === 0
+      ? sendSuccessResponse(res, 200, { success: true }, 'User already restricted')
+      : sendSuccessResponse(res, 201, { success: true }, 'User restricted successfully');
   } catch (err: unknown) {
     logger.error('[ProfileSettings] Error restricting user:', err);
-    if ((err as { code?: number }).code === 11000) {
-      return sendSuccessResponse(res, 200, { success: true }, 'User already restricted');
-    }
     return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to restrict user');
   }
 });
@@ -320,13 +243,16 @@ router.delete('/restricts/:restrictedId', async (req: Request, res: Response) =>
     const { restrictedId } = req.params;
     
     const validationError = validateRequired(restrictedId, 'restrictedId');
-    if (validationError) {
+    if (validationError || typeof restrictedId !== "string") {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
     }
 
-    const result = await Restrict.findOneAndDelete({ userId: oxyUserId, restrictedId });
+    const rows = await getDb()
+      .delete(restricts)
+      .where(and(eq(restricts.userId, oxyUserId), eq(restricts.restrictedId, restrictedId)))
+      .returning({ id: restricts.id });
 
-    if (!result) {
+    if (rows.length === 0) {
       return sendErrorResponse(res, 404, 'Not Found', 'Restrict not found');
     }
 

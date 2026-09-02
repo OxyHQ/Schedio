@@ -9,12 +9,9 @@ services:
       branch: main
       deploy_on_push: true
 
-    # Build settings
-    build_command: npm install && npm run build:backend
-    run_command: npm run start:backend
+    dockerfile_path: packages/backend/Dockerfile
 
     # Environment
-    environment_slug: node-js
     http_port: 8080
 
     # Instance size
@@ -36,6 +33,8 @@ services:
         value: production
       - key: PORT
         value: "8080"
+      - key: DATABASE_URL
+        value: ${schedio-db.DATABASE_URL}
 
 # Frontend Static Site
 static_sites:
@@ -46,7 +45,7 @@ static_sites:
       deploy_on_push: true
 
     # Build settings
-    build_command: npm install && npm run build:frontend
+    build_command: bun install --frozen-lockfile && bun run build:frontend
     output_dir: packages/frontend/dist
 
     # Environment variables for build
@@ -54,10 +53,11 @@ static_sites:
       - key: EXPO_PUBLIC_API_URL
         value: ${backend.PUBLIC_URL}
 
-# Database (MongoDB)
+# PostgreSQL database. A cutover operator must create and backfill this resource
+# before switching the service; this spec is not an authorization to deploy it.
 databases:
   - name: schedio-db
-    engine: MONGODB
-    version: "6"
+    engine: PG
+    version: "17"
     production: true
     cluster_name: schedio-cluster

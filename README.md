@@ -9,7 +9,7 @@
   <img alt="Expo" src="https://img.shields.io/badge/Expo-56-440151?style=flat-square&logo=expo&logoColor=white">
   <img alt="React Native" src="https://img.shields.io/badge/React%20Native-0.85-440151?style=flat-square&logo=react&logoColor=white">
   <img alt="Express" src="https://img.shields.io/badge/Express-4-440151?style=flat-square&logo=express&logoColor=white">
-  <img alt="MongoDB" src="https://img.shields.io/badge/MongoDB-Mongoose-440151?style=flat-square&logo=mongodb&logoColor=white">
+  <img alt="PostgreSQL" src="https://img.shields.io/badge/PostgreSQL-Drizzle-440151?style=flat-square&logo=postgresql&logoColor=white">
   <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5.9-440151?style=flat-square&logo=typescript&logoColor=white">
 </p>
 
@@ -51,7 +51,7 @@ Bun workspaces, three of them:
 | Package | What it is |
 |---|---|
 | [`@schedio/frontend`](packages/frontend/) | The Expo app. Expo Router, NativeWind 5, Zustand, i18next, and [`@oxyhq/bloom`](https://www.npmjs.com/package/@oxyhq/bloom) for tokens and primitives |
-| [`@schedio/backend`](packages/backend/) | The Express API. Mongoose models, rate limiting, validation, and route level Oxy auth |
+| [`@schedio/backend`](packages/backend/) | The Express API. PostgreSQL/Drizzle repositories, rate limiting, validation, and route-level Oxy auth |
 | [`@schedio/shared-types`](packages/shared-types/) | The DTOs both sides agree on. Compiled by `postinstall`, before anything else runs |
 
 Sign in, sessions and user records come from the Oxy platform through [`@oxyhq/services`](https://www.npmjs.com/package/@oxyhq/services) in the app and [`@oxyhq/core`](https://www.npmjs.com/package/@oxyhq/core) on the server. Every protected route resolves its user with `getRequiredOxyUserId` from `@oxyhq/core/server`, so no user id is ever taken from the request body. See [github.com/OxyHQ/oxy](https://github.com/OxyHQ/oxy).
@@ -71,7 +71,7 @@ bun run dev:backend    # Express with nodemon
 bun run web            # Expo straight to the browser
 ```
 
-You will need Node 18 or newer and a MongoDB instance. Environment variables are documented in the [backend](packages/backend/README.md) and [frontend](packages/frontend/README.md) package READMEs.
+You will need Bun 1.3.14 and PostgreSQL 17. Environment variables are documented in the [backend](packages/backend/README.md) and [frontend](packages/frontend/README.md) package READMEs.
 
 > [!NOTE]
 > Schedio is a Bun workspace. Use `bun`, not `npm` or `yarn`: the root scripts are all `bun run --filter`, and the lockfile is `bun.lock`.
@@ -92,7 +92,7 @@ bun run lint
 bun run clean               # build artifacts and node_modules
 ```
 
-Per package scripts live in each package's own `package.json`. The frontend adds `ios`, `android` and `web`; the backend adds `migrate`.
+Per-package scripts live in each package's own `package.json`. The frontend adds `ios`, `android` and `web`; the backend adds schema generation, migration and audited legacy-import commands.
 
 </details>
 
@@ -127,7 +127,7 @@ The interface ships in English, Spanish and Italian (`packages/frontend/locales/
 
 Routes in `packages/backend/src/routes/`: `posts`, `queue`, `analytics`, `socialAccounts`, `profileSettings`.
 
-Models in `packages/backend/src/models/`: `Post`, `PostAnalytics`, `PublishingSchedule`, `SocialAccount`, `UserSettings`, `UserBehavior`, `Block`, `Restrict`.
+The eight first-party tables and constraints live in `packages/backend/src/db/schema.ts`. Existing source ids are preserved as text during import; new rows receive UUIDv7 ids.
 
 Full endpoint documentation is in the [backend README](packages/backend/README.md).
 

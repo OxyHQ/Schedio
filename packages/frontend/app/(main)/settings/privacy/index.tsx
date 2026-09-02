@@ -17,7 +17,7 @@ interface PrivacySettings {
     profileVisibility?: 'public' | 'private' | 'followers_only';
     showContactInfo?: boolean;
     allowTags?: boolean;
-    allowallos?: boolean;
+    allowAllos?: boolean;
     showOnlineStatus?: boolean;
     hideLikeCounts?: boolean;
     hideShareCounts?: boolean;
@@ -297,4 +297,3 @@ export default function PrivacySettingsScreen() {
         </ThemedView>
     );
 }
-

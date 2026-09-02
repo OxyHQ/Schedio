@@ -1,24 +1,15 @@
-# Backend Dockerfile for DigitalOcean App Platform
-FROM node:18-alpine
+FROM oven/bun:1.3.14-alpine
 
 WORKDIR /app
 
-# Copy root package files
-COPY package*.json ./
-COPY packages/backend/package*.json ./packages/backend/
-COPY packages/shared-types ./packages/shared-types/
+COPY package.json bun.lock bunfig.toml ./
+COPY packages/backend/package.json ./packages/backend/package.json
+COPY packages/frontend/package.json ./packages/frontend/package.json
+COPY packages/shared-types/package.json ./packages/shared-types/package.json
+RUN bun install --frozen-lockfile --ignore-scripts
 
-# Install dependencies
-RUN npm install --workspace=@allo/backend --workspace=@allo/shared-types
-
-# Copy backend source
 COPY packages/backend ./packages/backend
 
-# Build shared types
-RUN npm run build:shared-types
-
-# Expose port
+ENV NODE_ENV=production
 EXPOSE 8080
-
-# Start the backend
-CMD ["npm", "run", "start:backend"]
+CMD ["bun", "packages/backend/server.ts"]

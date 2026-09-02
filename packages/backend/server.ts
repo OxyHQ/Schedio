@@ -1,6 +1,6 @@
 // --- Imports ---
 import express from "express";
-import { connectToDatabase } from "./src/utils/database";
+import { connectToDatabase } from "./src/db";
 import dotenv from "dotenv";
 import { oxyClient } from "@oxyhq/core";
 import { createOxyAuthMiddleware } from "@oxyhq/core/server";
@@ -15,6 +15,7 @@ import queueRoutes from "./src/routes/queue";
 // Middleware
 import { rateLimiter, bruteForceProtection } from "./src/middleware/security";
 import { logger } from "./src/utils/logger";
+import { validateTokenCipherConfiguration } from "./src/utils/tokenCipher";
 
 // --- Config ---
 dotenv.config();
@@ -38,7 +39,7 @@ app.use(async (req, res, next) => {
     await connectToDatabase();
     next();
   } catch (error) {
-    logger.error("MongoDB connection unavailable:", error);
+    logger.error("PostgreSQL connection unavailable:", error);
     if (res.headersSent) {
       return;
     }
@@ -50,15 +51,14 @@ app.use(async (req, res, next) => {
 app.use((req, res, next) => {
   const allowedOrigins = [
     process.env.FRONTEND_URL || "https://schedio.app",
-    "http://localhost:8081",
-    "http://localhost:8082",
-    "http://192.168.86.44:8081",
+    ...(process.env.NODE_ENV === "production"
+      ? []
+      : ["http://localhost:8081", "http://localhost:8082"]),
   ];
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
-  } else {
-    res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL || "*");
+    res.setHeader("Vary", "Origin");
   }
   res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS");
   res.setHeader(
@@ -105,30 +105,17 @@ app.get("/", async (req, res) => {
   res.json({ message: "Welcome to Schedio API", version: "1.0.0" });
 });
 
-// --- MongoDB Connection ---
-const db = require("mongoose").connection;
-db.on("error", (error: Error) => {
-  logger.error("MongoDB connection error:", error);
-});
-db.once("open", () => {
-  logger.info("Connected to MongoDB successfully");
-  // Load models
-  require("./src/models/UserSettings");
-  require("./src/models/Block");
-  require("./src/models/Restrict");
-  require("./src/models/UserBehavior");
-});
-
 // --- Server Listen ---
 const PORT = process.env.PORT || 3000;
 const bootServer = async () => {
   try {
+    validateTokenCipherConfiguration();
     await connectToDatabase();
     app.listen(PORT, () => {
       logger.info(`Schedio backend server running on port ${PORT}`);
     });
   } catch (error) {
-    logger.error("Failed to start server: unable to connect to MongoDB", error);
+    logger.error("Failed to start server", error);
     process.exit(1);
   }
 };
