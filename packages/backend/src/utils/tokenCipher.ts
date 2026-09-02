@@ -33,8 +33,12 @@ export function encryptSocialToken(plaintext: string): string {
 }
 
 export function decryptSocialToken(envelope: string): string {
-  const [version, ivValue, tagValue, ciphertextValue, extra] = envelope.split(":");
-  if (version !== "v1" || !ivValue || !tagValue || ciphertextValue === undefined || extra) {
+  const parts = envelope.split(":");
+  if (parts.length !== 4) {
+    throw new Error("Invalid social token ciphertext");
+  }
+  const [version, ivValue, tagValue, ciphertextValue] = parts;
+  if (version !== "v1" || !ivValue || !tagValue || ciphertextValue === undefined) {
     throw new Error("Invalid social token ciphertext");
   }
   const iv = Buffer.from(ivValue, "base64url");

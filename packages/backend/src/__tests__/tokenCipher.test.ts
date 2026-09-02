@@ -29,5 +29,6 @@ describe("social token encryption", () => {
     const parts = encrypted.split(":");
     parts[2] = Buffer.alloc(16, 255).toString("base64url");
     expect(() => decryptSocialToken(parts.join(":"))).toThrow();
+    expect(() => decryptSocialToken(`${encrypted}:`)).toThrow("Invalid social token ciphertext");
   });
 });

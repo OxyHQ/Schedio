@@ -67,7 +67,7 @@ Or one at a time:
 
 ```bash
 bun run dev:frontend   # Expo
-bun run dev:backend    # Express with nodemon
+bun run dev:backend    # Express with Bun watch mode
 bun run web            # Expo straight to the browser
 ```
 

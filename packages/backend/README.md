@@ -68,6 +68,10 @@ NODE_ENV=development
 FRONTEND_URL=https://schedio.app
 ```
 
+`SOCIAL_TOKEN_ENCRYPTION_KEY` protects Schedio social-account OAuth tokens. It
+is not an AI inference provider key; inference-provider credentials remain in
+Kaana PostgreSQL and are not configured in Schedio.
+
 ### Running the API
 
 #### Development Mode
