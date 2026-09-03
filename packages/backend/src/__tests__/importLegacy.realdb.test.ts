@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { createTestDatabase, dropTestDatabase } from "@oxyhq/db/testing";
 import postgres from "postgres";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { decryptSocialToken } from "../utils/tokenCipher";
 
 const PACKAGE_ROOT = join(__dirname, "..", "..");
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
@@ -140,12 +141,35 @@ describe.runIf(Boolean(ADMIN_URL))("legacy import transaction", () => {
 
     const client = postgres(testDatabaseUrl);
     const postRows = await client<{ id: string }[]>`select id from posts`;
-    const accountRows = await client<{ accessTokenCiphertext: string }[]>`
-      select access_token_ciphertext as "accessTokenCiphertext" from social_accounts
+    const accountRows = await client<
+      { id: string; accessTokenCiphertext: string; refreshTokenCiphertext: string | null }[]
+    >`
+      select
+        id,
+        access_token_ciphertext as "accessTokenCiphertext",
+        refresh_token_ciphertext as "refreshTokenCiphertext"
+      from social_accounts
     `;
     expect(postRows).toEqual([{ id: "507f1f77bcf86cd799439011" }]);
     expect(accountRows[0]?.accessTokenCiphertext.startsWith("v1:")).toBe(true);
     expect(accountRows[0]?.accessTokenCiphertext).not.toContain("source-access-token");
+    const importedAccount = accountRows[0];
+    expect(importedAccount).toBeDefined();
+    if (!importedAccount) throw new Error("Imported account is missing");
+    process.env.SOCIAL_TOKEN_ENCRYPTION_KEY = environment.SOCIAL_TOKEN_ENCRYPTION_KEY;
+    expect(
+      decryptSocialToken(importedAccount.accessTokenCiphertext, {
+        accountId: importedAccount.id,
+        kind: "access",
+      }),
+    ).toBe("source-access-token");
+    expect(
+      decryptSocialToken(importedAccount.refreshTokenCiphertext as string, {
+        accountId: importedAccount.id,
+        kind: "refresh",
+      }),
+    ).toBe("source-refresh-token");
+    delete process.env.SOCIAL_TOKEN_ENCRYPTION_KEY;
     await client.end();
 
     await expect(command(args, environment)).rejects.toThrow("Target is not empty");

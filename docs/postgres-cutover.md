@@ -15,14 +15,21 @@ verified in PostgreSQL.
 - All eight tables are imported in one transaction. The importer refuses a
   non-empty target and rolls the entire transaction back on a parse, constraint,
   foreign-key or count mismatch.
+- The transaction takes an exclusive lock on all eight target tables before it
+  checks that they are empty and holds it through final count reconciliation.
+  This is a guardrail, not a substitute for the required writer freeze.
 - Social-account access and refresh tokens are encrypted with AES-256-GCM before
-  insertion. They are not returned by the API.
+  insertion and authenticated against the exact account id and token kind, so a
+  ciphertext copied to another row or from access to refresh is rejected. They
+  are not returned by the API.
 - The old store remains untouched until a separately approved retirement after
   the PostgreSQL deployment has been observed and reconciled.
 
 ## 1. Prepare without changing production
 
-Provision a PostgreSQL 17 database and a 32-byte random
+Provision a PostgreSQL 17 database under a new, exact resource identity; never
+reuse the legacy Mongo component identity for an in-place engine change. Create
+a 32-byte random
 `SOCIAL_TOKEN_ENCRYPTION_KEY`, represented as exactly 64 hexadecimal characters.
 Do not place either value in this repository.
 
@@ -104,3 +111,13 @@ If verification fails, stop the new writer before restoring the old service so
 the two stores never accept concurrent writes. Retain both stores and the export
 until reconciliation is complete. Deleting the old database is a separate,
 explicitly approved destructive operation and is not part of this runbook.
+
+Because the checked-in App Platform spec watches `main`, confirm by exact app id
+that automatic deployment is disabled before merging the PostgreSQL runtime.
+The private rendered spec must preserve the legacy database for rollback and
+bind `DATABASE_URL` to the exact new PostgreSQL component; the checked-in
+template deliberately has no database component or connection value. Re-enable
+automatic deployment only after the migrated database and encrypted
+`SOCIAL_TOKEN_ENCRYPTION_KEY` are present in the reviewed live spec. A merge
+while the legacy service still auto-deploys would start the PostgreSQL binary
+before the cutover is ready.

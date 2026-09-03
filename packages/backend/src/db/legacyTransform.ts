@@ -199,16 +199,22 @@ export function transformPublishingSchedule(
 export function transformSocialAccount(value: unknown): typeof socialAccounts.$inferInsert {
   const source = document(value, "social account");
   const created = timestamps(source);
+  const id = objectId(source._id, "_id");
   const refreshToken = optionalText(source.refreshToken, "refreshToken");
   return {
-    id: objectId(source._id, "_id"),
+    id,
     userId: text(source.userId, "userId"),
     platform: closedValue<SocialPlatform>(source.platform, "platform", SOCIAL_PLATFORMS),
     platformUserId: text(source.platformUserId, "platformUserId"),
     platformUsername: text(source.platformUsername, "platformUsername"),
-    accessTokenCiphertext: encryptSocialToken(text(source.accessToken, "accessToken")),
+    accessTokenCiphertext: encryptSocialToken(text(source.accessToken, "accessToken"), {
+      accountId: id,
+      kind: "access",
+    }),
     refreshTokenCiphertext:
-      refreshToken === undefined ? undefined : encryptSocialToken(refreshToken),
+      refreshToken === undefined
+        ? undefined
+        : encryptSocialToken(refreshToken, { accountId: id, kind: "refresh" }),
     tokenExpiresAt: optionalDate(source.tokenExpiresAt, "tokenExpiresAt"),
     profileImageUrl: optionalText(source.profileImageUrl, "profileImageUrl"),
     isActive: booleanValue(source.isActive, true),

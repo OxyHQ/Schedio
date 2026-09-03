@@ -64,18 +64,22 @@ router.post("/", async (req: Request, res: Response) => {
     ) {
       return res.status(400).json({ message: "Social account fields are invalid" });
     }
+    const id = uuidv7();
     const rows = await getDb()
       .insert(socialAccounts)
       .values({
-        id: uuidv7(),
+        id,
         userId,
         platform: platform(input.platform),
         platformUserId: input.platformUserId,
         platformUsername: input.platformUsername,
-        accessTokenCiphertext: encryptSocialToken(input.accessToken),
+        accessTokenCiphertext: encryptSocialToken(input.accessToken, {
+          accountId: id,
+          kind: "access",
+        }),
         refreshTokenCiphertext:
           typeof input.refreshToken === "string" && input.refreshToken.length > 0
-            ? encryptSocialToken(input.refreshToken)
+            ? encryptSocialToken(input.refreshToken, { accountId: id, kind: "refresh" })
             : undefined,
         tokenExpiresAt: date(input.tokenExpiresAt),
         profileImageUrl:

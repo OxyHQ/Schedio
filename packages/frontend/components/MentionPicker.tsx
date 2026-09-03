@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import {
     View,
     Text,
-    TextInput,
     TouchableOpacity,
     StyleSheet,
     FlatList,
-    Keyboard,
 } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
 import { useOxy } from "@oxyhq/services";
@@ -14,7 +12,7 @@ import Avatar from "./Avatar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { UserListSkeleton } from "@/components/shared/Skeleton";
 
-export interface alloUser {
+export interface AlloUser {
     id: string;
     username: string;
     name: string;
@@ -22,14 +20,29 @@ export interface alloUser {
     verified?: boolean;
 }
 
-interface alloPickerProps {
+interface AlloPickerProps {
     query: string;
-    onSelect: (user: alloUser) => void;
+    onSelect: (user: AlloUser) => void;
     onClose: () => void;
     maxHeight?: number;
 }
 
-const alloPicker: React.FC<alloPickerProps> = ({
+interface SearchProfile {
+    readonly id: string;
+    readonly username?: string;
+    readonly handle?: string;
+    readonly name?: string | {
+        readonly full?: string;
+        readonly first?: string;
+        readonly last?: string;
+    };
+    readonly displayName?: string;
+    readonly avatar?: string;
+    readonly profilePicture?: string;
+    readonly verified?: boolean;
+}
+
+const AlloPicker: React.FC<AlloPickerProps> = ({
     query,
     onSelect,
     onClose,
@@ -37,7 +50,7 @@ const alloPicker: React.FC<alloPickerProps> = ({
 }) => {
     const theme = useTheme();
     const { oxyServices } = useOxy();
-    const [users, setUsers] = useState<alloUser[]>([]);
+    const [users, setUsers] = useState<AlloUser[]>([]);
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -52,7 +65,7 @@ const alloPicker: React.FC<alloPickerProps> = ({
                 // Search for users via Oxy services
                 const searchResults = await oxyServices.searchProfiles(query, { limit: 10 });
 
-                const mappedUsers: alloUser[] = (searchResults?.data ?? []).map((profile: any) => {
+                const mappedUsers: AlloUser[] = (searchResults?.data ?? []).map((profile: SearchProfile) => {
                     // Handle name object or string
                     let displayName = profile.username || profile.handle;
                     if (typeof profile.name === 'string') {
@@ -66,8 +79,8 @@ const alloPicker: React.FC<alloPickerProps> = ({
                     }
 
                     return {
-                        id: profile.id || profile._id,
-                        username: profile.username || profile.handle,
+                        id: profile.id,
+                        username: profile.username ?? profile.handle ?? "",
                         name: displayName,
                         avatar: profile.avatar || profile.profilePicture,
                         verified: profile.verified || false,
@@ -210,4 +223,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default alloPicker;
+export default AlloPicker;

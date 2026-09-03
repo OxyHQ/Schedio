@@ -34,7 +34,14 @@ services:
       - key: PORT
         value: "8080"
       - key: DATABASE_URL
-        value: ${schedio-db.DATABASE_URL}
+        scope: RUN_TIME
+        type: SECRET
+      # Deliberately has no checked-in value. Before proposing the rendered
+      # production spec, inject a 64-hex value and let App Platform return its
+      # encrypted EV[...] form for every subsequent update.
+      - key: SOCIAL_TOKEN_ENCRYPTION_KEY
+        scope: RUN_TIME
+        type: SECRET
 
 # Frontend Static Site
 static_sites:
@@ -53,11 +60,7 @@ static_sites:
       - key: EXPO_PUBLIC_API_URL
         value: ${backend.PUBLIC_URL}
 
-# PostgreSQL database. A cutover operator must create and backfill this resource
-# before switching the service; this spec is not an authorization to deploy it.
-databases:
-  - name: schedio-db
-    engine: PG
-    version: "17"
-    production: true
-    cluster_name: schedio-cluster
+# Database resources are deliberately absent from this checked-in template. The
+# private rendered spec must bind DATABASE_URL to the exact, already provisioned
+# and backfilled PostgreSQL component. Never reuse the legacy Mongo component's
+# identity for an in-place engine change.

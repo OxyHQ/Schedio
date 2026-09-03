@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, TouchableOpacity, Platform } from 'react-native';
+import { StyleSheet, TouchableOpacity, Platform, type StyleProp, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Animated, { useAnimatedStyle, SharedValue } from 'react-native-reanimated';
 import { useTheme } from '@/hooks/useTheme';
@@ -14,7 +14,7 @@ interface FloatingActionButtonProps {
     iconSize?: number;
     animatedTranslateY?: SharedValue<number>;
     animatedOpacity?: SharedValue<number>;
-    style?: any;
+    style?: StyleProp<ViewStyle>;
     bottomOffset?: number; // Optional custom bottom offset (overrides auto-detection)
 }
 
@@ -33,38 +33,23 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     const isScreenNotMobile = useIsScreenNotMobile();
     const keyboardVisible = useKeyboardVisibility();
 
-    // Check if custom style includes position
-    const hasCustomPosition = style && typeof style === 'object' && ('position' in style);
-    
-    // Extract positioning styles (position, bottom, right, left, top, zIndex)
-    const extractPositionStyles = (styleObj: any) => {
-        if (!styleObj || typeof styleObj !== 'object') return {};
-        // Handle both object and array of styles
-        const styles = Array.isArray(styleObj) ? styleObj : [styleObj];
-        const merged = Object.assign({}, ...styles.filter(s => s && typeof s === 'object'));
-        const { position, bottom, right, left, top, zIndex } = merged;
-        return { position, bottom, right, left, top, zIndex };
-    };
+    const flattenedStyle = StyleSheet.flatten(style);
+    const hasCustomPosition = flattenedStyle?.position !== undefined;
+    const {
+        position,
+        bottom,
+        right,
+        left,
+        top,
+        zIndex,
+        ...nonPositionStyles
+    } = flattenedStyle ?? {};
+    const suppliedPositionStyles = { position, bottom, right, left, top, zIndex };
 
-    // Extract non-positioning styles (everything except position-related)
-    const extractNonPositionStyles = (styleObj: any) => {
-        if (!styleObj || typeof styleObj !== 'object') return {};
-        // Handle both object and array of styles
-        const styles = Array.isArray(styleObj) ? styleObj : [styleObj];
-        const merged = Object.assign({}, ...styles.filter(s => s && typeof s === 'object'));
-        const { position, bottom, right, left, top, zIndex, ...rest } = merged;
-        return rest;
-    };
-
-    const fabAnimatedStyle = (animatedTranslateY || animatedOpacity)
-        ? useAnimatedStyle(() => {
-                const opacity = animatedOpacity ? animatedOpacity.value : 1;
-                return {
-                    transform: animatedTranslateY ? [{ translateY: animatedTranslateY.value }] : [],
-                    opacity: opacity,
-                };
-            })
-        : undefined;
+    const fabAnimatedStyle = useAnimatedStyle(() => ({
+        transform: animatedTranslateY ? [{ translateY: animatedTranslateY.value }] : [],
+        opacity: animatedOpacity ? animatedOpacity.value : 1,
+    }));
 
     // Determine positioning styles - position above bottom bar or safe area
     // Bottom bar is visible when: !isScreenNotMobile && !keyboardVisible
@@ -76,7 +61,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
         : bottomBarHeight + insets.bottom + marginFromBottom;
     
     const positionStyles = hasCustomPosition 
-        ? extractPositionStyles(style)
+        ? suppliedPositionStyles
         : { 
             position: 'absolute' as const, 
             bottom: defaultBottom, 
@@ -86,12 +71,12 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
 
     // Base FAB styles (visual only, no positioning)
     const baseFabStyle = styles.fabBase;
-    const nonPositionStyles = hasCustomPosition ? extractNonPositionStyles(style) : {};
+    const customVisualStyles = hasCustomPosition ? nonPositionStyles : flattenedStyle;
 
     // Create style without shadows when animating opacity to prevent artifacts
     const fabStyle = animatedOpacity 
-        ? [baseFabStyle, { backgroundColor: theme.colors.primary }, nonPositionStyles, { elevation: 0, shadowOpacity: 0 }]
-        : [baseFabStyle, { backgroundColor: theme.colors.primary }, nonPositionStyles];
+        ? [baseFabStyle, { backgroundColor: theme.colors.primary }, customVisualStyles, { elevation: 0, shadowOpacity: 0 }]
+        : [baseFabStyle, { backgroundColor: theme.colors.primary }, customVisualStyles];
 
     const fabContent = (
         <TouchableOpacity
@@ -119,7 +104,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
     // When not animating, apply positioning directly to TouchableOpacity
     return (
         <TouchableOpacity
-            style={[baseFabStyle, { backgroundColor: theme.colors.primary }, positionStyles, nonPositionStyles]}
+            style={[baseFabStyle, { backgroundColor: theme.colors.primary }, positionStyles, customVisualStyles]}
             onPress={onPress}
             activeOpacity={0.8}
         >

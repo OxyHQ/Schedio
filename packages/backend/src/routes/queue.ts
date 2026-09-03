@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from "express";
 import { getRequiredOxyUserId } from "@oxyhq/core/server";
 import { getDb } from "../db";
 import { posts } from "../db/schema";
+import { toPostDto } from "../utils/postDto";
 
 const router = Router();
 
@@ -14,7 +15,7 @@ router.get("/", async (req: Request, res: Response) => {
       .from(posts)
       .where(and(eq(posts.userId, userId), eq(posts.status, "scheduled")))
       .orderBy(asc(posts.scheduledAt), asc(posts.id));
-    res.json({ queue });
+    res.json({ queue: queue.map(toPostDto) });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch queue" });
   }

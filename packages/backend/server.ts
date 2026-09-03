@@ -1,6 +1,6 @@
 // --- Imports ---
 import express from "express";
-import { connectToDatabase } from "./src/db";
+import { closeDatabase, connectToDatabase } from "./src/db";
 import dotenv from "dotenv";
 import { oxyClient } from "@oxyhq/core";
 import { createOxyAuthMiddleware } from "@oxyhq/core/server";
@@ -107,13 +107,50 @@ app.get("/", async (req, res) => {
 
 // --- Server Listen ---
 const PORT = process.env.PORT || 3000;
+let server: ReturnType<typeof app.listen> | undefined;
+
+function installGracefulShutdown(): void {
+  let shuttingDown = false;
+  const shutdown = (signal: NodeJS.Signals) => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info(`Received ${signal}; stopping Schedio backend`);
+
+    const forceExit = setTimeout(() => {
+      logger.error("Timed out while stopping Schedio backend");
+      process.exit(1);
+    }, 10_000);
+    forceExit.unref();
+
+    const finish = (exitCode: number) => {
+      void closeDatabase().then(
+        () => process.exit(exitCode),
+        (error: unknown) => {
+          logger.error("Failed to close PostgreSQL cleanly", error);
+          process.exit(1);
+        },
+      );
+    };
+
+    if (!server) {
+      finish(0);
+      return;
+    }
+    server.close((error?: Error) => finish(error ? 1 : 0));
+  };
+
+  process.once("SIGTERM", () => shutdown("SIGTERM"));
+  process.once("SIGINT", () => shutdown("SIGINT"));
+}
+
 const bootServer = async () => {
   try {
     validateTokenCipherConfiguration();
     await connectToDatabase();
-    app.listen(PORT, () => {
+    server = app.listen(PORT, () => {
       logger.info(`Schedio backend server running on port ${PORT}`);
     });
+    installGracefulShutdown();
   } catch (error) {
     logger.error("Failed to start server", error);
     process.exit(1);

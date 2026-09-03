@@ -133,6 +133,23 @@ describe("PostgreSQL-only runtime", () => {
     );
     expect(offenders).toEqual([]);
   });
+
+  it("declares the social token key as a runtime-only App Platform secret", () => {
+    const spec = read(".do/app.yaml");
+    expect(spec).toMatch(
+      /- key: SOCIAL_TOKEN_ENCRYPTION_KEY\n\s+scope: RUN_TIME\n\s+type: SECRET(?:\n|$)/,
+    );
+    expect(spec).not.toMatch(/SOCIAL_TOKEN_ENCRYPTION_KEY\n\s+value:/);
+  });
+
+  it("cannot mutate the legacy database component through the checked-in template", () => {
+    const spec = read(".do/app.yaml");
+    expect(spec).toMatch(/- key: DATABASE_URL\n\s+scope: RUN_TIME\n\s+type: SECRET/);
+    expect(spec).not.toMatch(/- key: DATABASE_URL\n\s+value:/);
+    expect(spec).not.toMatch(/^databases:/m);
+    expect(spec).not.toContain("engine: MONGODB");
+    expect(spec).not.toContain("cluster_name: schedio-cluster");
+  });
 });
 
 describe("the gate can distinguish executable code from prose", () => {

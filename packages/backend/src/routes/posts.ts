@@ -4,6 +4,7 @@ import { Router, type Request, type Response } from "express";
 import { getRequiredOxyUserId } from "@oxyhq/core/server";
 import { getDb } from "../db";
 import { POST_STATUSES, posts, type PostStatus } from "../db/schema";
+import { toPostDto } from "../utils/postDto";
 
 const router = Router();
 
@@ -41,7 +42,7 @@ router.get("/", async (req: Request, res: Response) => {
       .from(posts)
       .where(eq(posts.userId, userId))
       .orderBy(desc(posts.createdAt), desc(posts.id));
-    res.json({ posts: rows });
+    res.json({ posts: rows.map(toPostDto) });
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch posts" });
   }
@@ -69,7 +70,7 @@ router.post("/", async (req: Request, res: Response) => {
       .returning();
     const post = rows[0];
     if (!post) throw new Error("Post insert returned no row");
-    return res.status(201).json({ message: "Post created", post });
+    return res.status(201).json({ message: "Post created", post: toPostDto(post) });
   } catch (error) {
     return res.status(500).json({ message: "Failed to create post" });
   }
@@ -84,7 +85,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       where: and(eq(posts.id, id), eq(posts.userId, userId)),
     });
     if (!post) return res.status(404).json({ message: "Post not found" });
-    return res.json({ post });
+    return res.json({ post: toPostDto(post) });
   } catch (error) {
     return res.status(500).json({ message: "Failed to fetch post" });
   }
@@ -115,7 +116,7 @@ router.put("/:id", async (req: Request, res: Response) => {
       .returning();
     const post = rows[0];
     if (!post) return res.status(404).json({ message: "Post not found" });
-    return res.json({ message: "Post updated", post });
+    return res.json({ message: "Post updated", post: toPostDto(post) });
   } catch (error) {
     return res.status(500).json({ message: "Failed to update post" });
   }
@@ -150,7 +151,7 @@ router.post("/:id/publish", async (req: Request, res: Response) => {
       .returning();
     const post = rows[0];
     if (!post) return res.status(404).json({ message: "Post not found" });
-    return res.json({ message: "Post published", post });
+    return res.json({ message: "Post published", post: toPostDto(post) });
   } catch (error) {
     return res.status(500).json({ message: "Failed to publish post" });
   }

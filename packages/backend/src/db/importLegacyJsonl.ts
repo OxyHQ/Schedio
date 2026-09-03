@@ -63,12 +63,16 @@ function targetDatabase(databaseUrl: string): string {
   return value;
 }
 
-function parseManifest(value: unknown): ImportManifest {
+export function parseManifest(value: unknown): ImportManifest {
   if (typeof value !== "object" || value === null || Array.isArray(value)) {
     throw new Error("manifest.json must contain an object");
   }
   const manifest = value as Record<string, unknown>;
-  if (manifest.formatVersion !== 1 || typeof manifest.sourceDatabase !== "string") {
+  if (
+    manifest.formatVersion !== 1 ||
+    typeof manifest.sourceDatabase !== "string" ||
+    manifest.sourceDatabase.length === 0
+  ) {
     throw new Error("manifest.json formatVersion/sourceDatabase is invalid");
   }
   if (typeof manifest.collections !== "object" || manifest.collections === null) {
@@ -83,7 +87,7 @@ function parseManifest(value: unknown): ImportManifest {
     }
     const entry = raw as Record<string, unknown>;
     if (
-      typeof entry.file !== "string" ||
+      entry.file !== `${name}.jsonl` ||
       !Number.isSafeInteger(entry.count) ||
       (entry.count as number) < 0 ||
       typeof entry.sha256 !== "string" ||
@@ -105,6 +109,12 @@ function parseManifest(value: unknown): ImportManifest {
     sourceDatabase: manifest.sourceDatabase,
     collections: collections as Record<CollectionName, CollectionManifest>,
   };
+}
+
+export function assertDistinctDatabaseNames(sourceDatabase: string, targetDatabase: string): void {
+  if (sourceDatabase === targetDatabase) {
+    throw new Error("Legacy source and PostgreSQL target must have distinct database names");
+  }
 }
 
 function loadJsonLines(sourceDirectory: string, entry: CollectionManifest): unknown[] {
@@ -162,6 +172,7 @@ async function main(): Promise<void> {
   const manifest = parseManifest(
     JSON.parse(readFileSync(resolve(sourceDirectory, "manifest.json"), "utf8")) as unknown,
   );
+  assertDistinctDatabaseNames(manifest.sourceDatabase, expectedTarget);
   const documents = Object.fromEntries(
     COLLECTION_NAMES.map((name) => [name, loadJsonLines(sourceDirectory, manifest.collections[name])]),
   ) as Record<CollectionName, unknown[]>;
@@ -180,6 +191,22 @@ async function main(): Promise<void> {
 
   await connectToDatabase();
   await getDb().transaction(async (tx) => {
+    // Counts are a safety boundary, so keep every runtime writer out between
+    // the initial empty-target check and the final reconciliation. The runbook
+    // still freezes writers; this lock makes an accidental concurrent start
+    // block instead of slipping a row in after the last count.
+    await tx.execute(sql.raw(`
+      lock table
+        blocks,
+        posts,
+        post_analytics,
+        publishing_schedules,
+        restricts,
+        social_accounts,
+        user_behaviors,
+        user_settings
+      in access exclusive mode
+    `));
     const targetCounts = {
       blocks: await rowCount(tx, blocks),
       posts: await rowCount(tx, posts),
@@ -228,14 +255,16 @@ async function main(): Promise<void> {
   console.info(`Imported and verified source database ${manifest.sourceDatabase}`);
 }
 
-main().then(
-  async () => {
-    await closeDatabase();
-    process.exit(0);
-  },
-  async (error: unknown) => {
-    console.error(error instanceof Error ? error.message : error);
-    await closeDatabase();
-    process.exit(1);
-  },
-);
+if (require.main === module) {
+  main().then(
+    async () => {
+      await closeDatabase();
+      process.exit(0);
+    },
+    async (error: unknown) => {
+      console.error(error instanceof Error ? error.message : error);
+      await closeDatabase();
+      process.exit(1);
+    },
+  );
+}

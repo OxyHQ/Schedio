@@ -13,12 +13,8 @@
     "build": "expo export --platform web --output-dir dist",
     "build-web": "expo export --platform web --output-dir dist",
     "build-web:prod": "expo export --platform web --output-dir dist",
-    "test": "jest --watchAll",
     "lint": "expo lint",
     "clean": "rm -rf dist .expo"
-  },
-  "jest": {
-    "preset": "jest-expo"
   },
   "dependencies": {
     "@babel/plugin-proposal-export-namespace-from": "^7.18.9",

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { transformPost, transformSocialAccount, transformUserSettings } from "../db/legacyTransform";
+import { decryptSocialToken } from "../utils/tokenCipher";
 
 const ID = "507f1f77bcf86cd799439011";
 const CREATED = { $date: { $numberLong: "1767225600000" } };
@@ -45,6 +46,15 @@ describe("legacy JSONL transform", () => {
     });
     expect(row.accessTokenCiphertext).not.toContain("plaintext-access");
     expect(row.refreshTokenCiphertext).not.toContain("plaintext-refresh");
+    expect(
+      decryptSocialToken(row.accessTokenCiphertext, { accountId: ID, kind: "access" }),
+    ).toBe("plaintext-access");
+    expect(
+      decryptSocialToken(row.refreshTokenCiphertext as string, {
+        accountId: ID,
+        kind: "refresh",
+      }),
+    ).toBe("plaintext-refresh");
   });
 
   it("normalizes the historical allow-allos field only at the import boundary", () => {

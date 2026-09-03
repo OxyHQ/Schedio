@@ -1,9 +1,9 @@
 # Deploying Schedio
 
 Schedio's first-party runtime is PostgreSQL-only. The checked-in DigitalOcean
-spec describes the desired service and database resources; it does not perform a
-production deployment by itself, and merging a code change is not authorization
-to create, migrate or delete production data.
+spec is a fail-closed service template: it deliberately does not name or create
+a production database resource. Merging a code change is not authorization to
+create, migrate or delete production data.
 
 ## Required configuration
 
@@ -55,19 +55,32 @@ reviewed.
 
 ## DigitalOcean App Platform
 
-`.do/app.yaml` builds with Bun, injects the managed PostgreSQL connection into
-the backend and keeps the social-token key out of source control. Add that key
-as an encrypted secret in App Platform before starting the backend.
+`.do/app.yaml` builds with Bun and declares value-less runtime slots for the
+PostgreSQL connection and social-token key. Before proposing the production
+spec, start from the exact app's current rendered spec, attach the exact,
+already provisioned and backfilled PostgreSQL component, and bind
+`DATABASE_URL` to that component. Do not reuse the legacy Mongo component name
+or mutate its engine in place. Inject the new token key once and preserve the
+encrypted `EV[...]` value App Platform returns on every later update. The
+checked-in template is intentionally not deployable as a functioning backend:
+startup fails closed until both values exist.
 
-Apply the spec only after reviewing the live app diff:
+Validate the checked-in template structurally, but never apply that value-less
+file directly to production. Materialize a private rendered spec from the exact
+app's current spec, preserve its encrypted secret value, review the proposed
+diff, then apply that private file:
 
 ```bash
 doctl apps spec validate .do/app.yaml
-doctl apps update the-reviewed-app-id --spec .do/app.yaml
+export SCHEDIO_RENDERED_SPEC_PATH=/absolute/private/path/schedio-app.rendered.yaml
+doctl apps update the-reviewed-app-id --spec "$SCHEDIO_RENDERED_SPEC_PATH"
 ```
 
 Do not infer an app id from its display name. Resolve and review the exact target
-before the update.
+before exporting or updating its spec, and keep the private rendered file out of
+the repository. Disable that exact app's automatic deploy before merging this
+runtime branch; merging while the legacy service still watches `main` can start
+the PostgreSQL binary before schema, data and secrets are ready.
 
 ## Verification
 

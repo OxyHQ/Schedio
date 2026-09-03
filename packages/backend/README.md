@@ -207,7 +207,7 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
   },
   "privacy": {
     "profileVisibility": "public" | "private" | "followers_only",
-    "allowMentions": true,
+    "allowAllos": true,
     "showOnlineStatus": true
   }
 }
