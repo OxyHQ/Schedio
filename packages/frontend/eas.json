@@ -12,18 +12,12 @@
         "buildType": "apk"
       },
       "extends": "production",
-      "distribution": "internal",
-      "env": {
-        "API_URL": "https://api.allo.earth"
-      }
+      "distribution": "internal"
     },
     "production": {
       "node": "20.0.0",
-      "env": {
-        "API_URL": "https://api.allo.earth"
-      },
       "android": {
-        "buildType": "apk" //apk or app-bundle
+        "buildType": "apk"
       },
       "autoIncrement": true
     },
@@ -31,5 +25,5 @@
       "extends": "production",
       "distribution": "internal"
     }
-  },
+  }
 }
