@@ -8,7 +8,7 @@ export interface PrivacySettings {
     profileVisibility?: 'public' | 'private' | 'followers_only';
     showContactInfo?: boolean;
     allowTags?: boolean;
-    allowallos?: boolean;
+    allowAllos?: boolean;
     showOnlineStatus?: boolean;
     hideLikeCounts?: boolean;
     hideShareCounts?: boolean;
@@ -161,4 +161,3 @@ export async function updatePrivacySettingsCache(privacySettings: PrivacySetting
         console.debug('Failed to update privacy settings cache:', error);
     }
 }
-

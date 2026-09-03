@@ -9,12 +9,9 @@ services:
       branch: main
       deploy_on_push: true
 
-    # Build settings
-    build_command: npm install && npm run build:backend
-    run_command: npm run start:backend
+    dockerfile_path: packages/backend/Dockerfile
 
     # Environment
-    environment_slug: node-js
     http_port: 8080
 
     # Instance size
@@ -36,6 +33,15 @@ services:
         value: production
       - key: PORT
         value: "8080"
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        type: SECRET
+      # Deliberately has no checked-in value. Before proposing the rendered
+      # production spec, inject a 64-hex value and let App Platform return its
+      # encrypted EV[...] form for every subsequent update.
+      - key: SOCIAL_TOKEN_ENCRYPTION_KEY
+        scope: RUN_TIME
+        type: SECRET
 
 # Frontend Static Site
 static_sites:
@@ -46,7 +52,7 @@ static_sites:
       deploy_on_push: true
 
     # Build settings
-    build_command: npm install && npm run build:frontend
+    build_command: bun install --frozen-lockfile && bun run build:frontend
     output_dir: packages/frontend/dist
 
     # Environment variables for build
@@ -54,10 +60,7 @@ static_sites:
       - key: EXPO_PUBLIC_API_URL
         value: ${backend.PUBLIC_URL}
 
-# Database (MongoDB)
-databases:
-  - name: schedio-db
-    engine: MONGODB
-    version: "6"
-    production: true
-    cluster_name: schedio-cluster
+# Database resources are deliberately absent from this checked-in template. The
+# private rendered spec must bind DATABASE_URL to the exact, already provisioned
+# and backfilled PostgreSQL component. Never reuse the legacy Mongo component's
+# identity for an in-place engine change.

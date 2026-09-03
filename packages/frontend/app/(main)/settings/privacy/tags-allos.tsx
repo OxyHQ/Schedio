@@ -39,7 +39,7 @@ export default function TagsallosScreen() {
         return () => { mounted = false; };
     }, []);
 
-    const toggle = async (field: 'allowTags' | 'allowallos', value: boolean) => {
+    const toggle = async (field: 'allowTags' | 'allowAllos', value: boolean) => {
         if (saving) return;
         const previous = settings;
         const next = { ...settings, [field]: value };
@@ -118,7 +118,7 @@ export default function TagsallosScreen() {
                                     </Text>
                                 </View>
                             </View>
-                            <Toggle value={settings.allowallos ?? true} onValueChange={(v) => toggle('allowallos', v)} />
+                            <Toggle value={settings.allowAllos ?? true} onValueChange={(v) => toggle('allowAllos', v)} />
                         </View>
                     </View>
                 </ScrollView>

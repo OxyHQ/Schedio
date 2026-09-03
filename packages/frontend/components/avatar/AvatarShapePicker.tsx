@@ -9,36 +9,44 @@ interface AvatarShapePickerProps {
   onSelect: (shape: AvatarShapeKey) => void;
 }
 
-const COLUMNS = 5;
 const CELL_SIZE = 56;
 const ICON_SIZE = 36;
 const GAP = 10;
 
-const ShapeCell: React.FC<{
+const ShapeCell = React.memo(function ShapeCell({
+  shapeKey,
+  isSelected,
+  onPress,
+  fillColor,
+  selectedBorderColor,
+  cellBg,
+}: {
   shapeKey: AvatarShapeKey;
   isSelected: boolean;
   onPress: () => void;
   fillColor: string;
   selectedBorderColor: string;
   cellBg: string;
-}> = React.memo(({ shapeKey, isSelected, onPress, fillColor, selectedBorderColor, cellBg }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    activeOpacity={0.7}
-    style={[
-      styles.cell,
-      {
-        backgroundColor: cellBg,
-        borderColor: isSelected ? selectedBorderColor : 'transparent',
-        borderWidth: 2,
-      },
-    ]}
-  >
-    <Svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 100 100">
-      <Path d={AVATAR_SHAPES[shapeKey]} fill={isSelected ? selectedBorderColor : fillColor} />
-    </Svg>
-  </TouchableOpacity>
-));
+}) {
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={[
+        styles.cell,
+        {
+          backgroundColor: cellBg,
+          borderColor: isSelected ? selectedBorderColor : 'transparent',
+          borderWidth: 2,
+        },
+      ]}
+    >
+      <Svg width={ICON_SIZE} height={ICON_SIZE} viewBox="0 0 100 100">
+        <Path d={AVATAR_SHAPES[shapeKey]} fill={isSelected ? selectedBorderColor : fillColor} />
+      </Svg>
+    </TouchableOpacity>
+  );
+});
 
 const AvatarShapePicker: React.FC<AvatarShapePickerProps> = ({ selected, onSelect }) => {
   const theme = useTheme();

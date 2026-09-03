@@ -4,6 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "description": "Schedio Monorepo - Frontend and Backend",
   "private": true,
+  "packageManager": "bun@1.3.14",
   "workspaces": [
     "packages/*"
   ],
@@ -29,8 +30,7 @@
     "typescript": "~5.9.3"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": "20.19.5"
   },
   "dependencies": {
     "@oxyhq/bloom": "^1.8.0",

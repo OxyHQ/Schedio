@@ -16,7 +16,10 @@ The feed algorithm consists of four main services:
 Throughout the codebase:
 - **Database fields**: Use `oxyUserId` (e.g., `Post.oxyUserId`, `UserBehavior.oxyUserId`)
 - **Function parameters/variables**: Use `userId` or `currentUserId` (these contain Oxy user IDs from `req.user?.id`)
-- **When querying**: Use `UserBehavior.findOne({ oxyUserId: userId })` - the variable `userId` contains an Oxy user ID and is used to query the `oxyUserId` field
+- **When querying**: use an exact Drizzle predicate such as
+  `eq(userBehaviors.oxyUserId, userId)`. The variable `userId` contains an Oxy
+  user ID and is matched only against the `oxyUserId` column; never resolve an
+  account by display name, ordering or a first-row fallback.
 
 **Note**: `req.user?.id` is always an Oxy user ID (not a local user ID), as authentication is handled by Oxy.
 
@@ -174,4 +177,3 @@ The feed controller uses these services to provide personalized feeds:
 - Geographic preference learning
 - Content similarity scoring
 - Trend detection and boosting
-
