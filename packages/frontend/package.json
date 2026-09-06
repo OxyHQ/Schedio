@@ -25,7 +25,7 @@
     "@bitdrift/react-native": "^0.12.6",
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.6",
-    "@oxyhq/bloom": "^1.8.0",
+    "@oxyhq/bloom": "^1.14.0",
     "@oxyhq/core": "^23.0.0",
     "@oxyhq/expo-splash": "^0.1.0",
     "@oxyhq/services": "^30.2.0",
