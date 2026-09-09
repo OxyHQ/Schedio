@@ -18,7 +18,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@oxyhq/core": "^23.3.1",
+    "@oxyhq/core": "^23.3.2",
     "@oxyhq/db": "^0.1.2",
     "dotenv": "^16.6.1",
     "drizzle-orm": "0.45.2",
