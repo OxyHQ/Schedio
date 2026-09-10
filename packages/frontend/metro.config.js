@@ -38,7 +38,7 @@ config.resolver = {
   ],
   // Enable symlinks for npm workspace resolution
   unstable_enableSymlinks: true,
-  // Enable package.json "exports" field resolution (required by @oxyhq/bloom subpath exports)
+  // Enable package.json "exports" field resolution (required by @oxy.so/bloom subpath exports)
   unstable_enablePackageExports: true,
   // Bloom imports `.woff2`/`.woff` font files directly from JS on web
   assetExts: [...config.resolver.assetExts, 'wasm', 'woff2', 'woff'],

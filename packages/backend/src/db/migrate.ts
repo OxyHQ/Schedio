@@ -4,7 +4,7 @@ import {
   type MigrationRun,
   readTargetDatabase,
   runMigrations,
-} from "@oxyhq/db/migrate";
+} from "@oxy.so/db/migrate";
 
 const PACKAGE_ROOT = join(__dirname, "..", "..");
 

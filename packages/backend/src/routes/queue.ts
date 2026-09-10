@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import { getRequiredOxyUserId } from "@oxyhq/core/server";
+import { getRequiredOxyUserId } from "@oxy.so/core/server";
 import { getDb } from "../db";
 import { posts } from "../db/schema";
 import { toPostDto } from "../utils/postDto";

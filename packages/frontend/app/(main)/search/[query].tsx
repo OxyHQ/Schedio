@@ -8,7 +8,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useOxy } from '@oxyhq/services';
+import { useOxy } from '@oxy.so/services';
 import Avatar from '@/components/Avatar';
 import { profilesApi } from '@/utils/api';
 

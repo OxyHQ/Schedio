@@ -2,7 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useUsersStore, useUserByUsername, type UserEntity } from '@/stores/usersStore';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { usePrivacySettings } from './usePrivacySettings';
-import { useOxy } from '@oxyhq/services';
+import { useOxy } from '@oxy.so/services';
 
 export interface ProfileDesign {
   displayName: string;

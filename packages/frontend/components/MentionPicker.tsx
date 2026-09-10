@@ -7,7 +7,7 @@ import {
     FlatList,
 } from "react-native";
 import { useTheme } from "@/hooks/useTheme";
-import { useOxy } from "@oxyhq/services";
+import { useOxy } from "@oxy.so/services";
 import Avatar from "./Avatar";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { UserListSkeleton } from "@/components/shared/Skeleton";

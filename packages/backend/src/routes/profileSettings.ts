@@ -1,7 +1,7 @@
-import { uuidv7 } from "@oxyhq/db";
+import { uuidv7 } from "@oxy.so/db";
 import { and, desc, eq } from "drizzle-orm";
 import { Router, Request, Response } from 'express';
-import { requireOxyAuth, getRequiredOxyUserId } from '@oxyhq/core/server';
+import { requireOxyAuth, getRequiredOxyUserId } from '@oxy.so/core/server';
 import { getDb } from "../db";
 import { blocks, restricts, userBehaviors } from "../db/schema";
 import {

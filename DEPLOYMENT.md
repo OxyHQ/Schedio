@@ -14,7 +14,7 @@ The backend refuses to start without both values:
   32-byte AES-256-GCM key, stored as a platform secret.
 
 Also configure `NODE_ENV=production`, `PORT=8080`, `FRONTEND_URL` and the Oxy
-authentication settings required by `@oxyhq/core`. Do not commit values.
+authentication settings required by `@oxy.so/core`. Do not commit values.
 
 ## Build and start
 

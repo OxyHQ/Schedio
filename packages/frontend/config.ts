@@ -9,7 +9,7 @@ export const OXY_BASE_URL =
   (process.env.NODE_ENV === 'production' ? 'https://api.oxy.so' : 'http://localhost:3001');
 
 // Schedio's registered Oxy OAuth client id (ApplicationCredential publicKey).
-// Required by @oxyhq/services >=10 for the web cold-boot / cross-app SSO flow:
+// Required by @oxy.so/services >=10 for the web cold-boot / cross-app SSO flow:
 // without it the SDK falls back to the page origin as client_id, which the Oxy
 // IdP rejects with `invalid_request`. Public and safe to commit; set per-env via
 // EXPO_PUBLIC_OXY_CLIENT_ID. Register the app (and allowed origins) at console.oxy.so.

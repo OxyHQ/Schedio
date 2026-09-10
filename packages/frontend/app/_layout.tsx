@@ -1,10 +1,10 @@
-// Required polyfill for @oxyhq/services - must be imported first
+// Required polyfill for @oxy.so/services - must be imported first
 import 'react-native-url-polyfill/auto';
 // Import Reanimated early to ensure proper initialization before other modules
 import 'react-native-reanimated';
 
 import NetInfo from '@react-native-community/netinfo';
-import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxyhq/expo-splash';
+import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxy.so/expo-splash';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { useFonts } from "expo-font";
 import { Stack, usePathname } from "expo-router";
@@ -21,17 +21,17 @@ import { ThemedView } from "@/components/ThemedView";
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QUERY_CLIENT_CONFIG } from '@/components/providers/constants';
 
-// Bloom theme provider — required by @oxyhq/services >=10 SDK components
+// Bloom theme provider — required by @oxy.so/services >=10 SDK components
 // (OxySignInButton, bottom sheets) which consume Bloom's `useTheme`. Must wrap
 // every render branch (splash + app) or those components throw
 // "useTheme must be used within a <BloomThemeProvider>".
-import { BloomThemeProvider } from '@oxyhq/bloom/theme';
+import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 // Hooks
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useIsScreenNotMobile } from "@/hooks/useOptimizedMediaQuery";
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy } from '@oxyhq/services';
+import { useOxy } from '@oxy.so/services';
 
 // Services & Utils
 import { AppInitializer } from '@/lib/appInitializer';
@@ -45,7 +45,7 @@ import '../styles/global.css';
 // then hide it once `appIsReady` flips (via `useHideNativeSplashWhenReady`). This
 // makes the native OS splash the SINGLE splash on native — Schedio's white logo
 // centered on the dark brand background with the Oxy symbol pinned to the bottom
-// (configured by `@oxyhq/expo-splash` in app.config.js). The custom
+// (configured by `@oxy.so/expo-splash` in app.config.js). The custom
 // `AppSplashScreen` React overlay is gated to web only. No-op on web (the shared
 // helper guards `Platform.OS === 'web'`).
 preventNativeSplashAutoHide();

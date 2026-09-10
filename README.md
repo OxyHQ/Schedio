@@ -50,11 +50,11 @@ Bun workspaces, three of them:
 
 | Package | What it is |
 |---|---|
-| [`@schedio/frontend`](packages/frontend/) | The Expo app. Expo Router, NativeWind 5, Zustand, i18next, and [`@oxyhq/bloom`](https://www.npmjs.com/package/@oxyhq/bloom) for tokens and primitives |
+| [`@schedio/frontend`](packages/frontend/) | The Expo app. Expo Router, NativeWind 5, Zustand, i18next, and [`@oxy.so/bloom`](https://www.npmjs.com/package/@oxy.so/bloom) for tokens and primitives |
 | [`@schedio/backend`](packages/backend/) | The Express API. PostgreSQL/Drizzle repositories, rate limiting, validation, and route-level Oxy auth |
 | [`@schedio/shared-types`](packages/shared-types/) | The DTOs both sides agree on. Compiled by `postinstall`, before anything else runs |
 
-Sign in, sessions and user records come from the Oxy platform through [`@oxyhq/services`](https://www.npmjs.com/package/@oxyhq/services) in the app and [`@oxyhq/core`](https://www.npmjs.com/package/@oxyhq/core) on the server. Every protected route resolves its user with `getRequiredOxyUserId` from `@oxyhq/core/server`, so no user id is ever taken from the request body. See [github.com/OxyHQ/oxy](https://github.com/OxyHQ/oxy).
+Sign in, sessions and user records come from the Oxy platform through [`@oxy.so/services`](https://www.npmjs.com/package/@oxy.so/services) in the app and [`@oxy.so/core`](https://www.npmjs.com/package/@oxy.so/core) on the server. Every protected route resolves its user with `getRequiredOxyUserId` from `@oxy.so/core/server`, so no user id is ever taken from the request body. See [github.com/OxyHQ/oxy](https://github.com/OxyHQ/oxy).
 
 ## Quick start
 

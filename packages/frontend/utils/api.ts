@@ -1,4 +1,4 @@
-import { oxyClient } from '@oxyhq/core';
+import { oxyClient } from '@oxy.so/core';
 import { Platform } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@/config';
@@ -14,7 +14,7 @@ const API_CONFIG = {
 // app-local Authorization header plumbing is needed (Oxy SDK rule). It is bound to
 // the backend's own base URL (not the Oxy API that oxyClient itself targets).
 // Explicit annotation keeps the emitted type portable under composite builds
-// (the HttpService type isn't exported from the @oxyhq/core barrel).
+// (the HttpService type isn't exported from the @oxy.so/core barrel).
 const backendClient: ReturnType<typeof oxyClient.getClient> =
   oxyClient.createLinkedClient({ baseURL: API_CONFIG.baseURL }).client;
 

@@ -1,4 +1,4 @@
-import { createdAt, updatedAt } from "@oxyhq/db";
+import { createdAt, updatedAt } from "@oxy.so/db";
 import { sql } from "drizzle-orm";
 import {
   boolean,

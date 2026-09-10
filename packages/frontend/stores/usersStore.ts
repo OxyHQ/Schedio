@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { User } from "@oxyhq/core";
+import type { User } from "@oxy.so/core";
 
 /**
  * A cached user entity.

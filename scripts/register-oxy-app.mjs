@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * One-off: register "Schedio" as an Oxy application and mint a PUBLIC credential
- * whose `publicKey` becomes the app's OXY_CLIENT_ID (required by @oxyhq/services
+ * whose `publicKey` becomes the app's OXY_CLIENT_ID (required by @oxy.so/services
  * >=10 for the web cold-boot / cross-app SSO flow).
  *
  * Auth: needs an Oxy access token for the owning account. Provide it via either
@@ -14,7 +14,7 @@
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { OxyServices } from '@oxyhq/core';
+import { OxyServices } from '@oxy.so/core';
 
 const API_BASE_URL = process.env.OXY_BASE_URL || 'https://api.oxy.so';
 

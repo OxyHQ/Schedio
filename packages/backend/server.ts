@@ -2,8 +2,8 @@
 import express from "express";
 import { closeDatabase, connectToDatabase } from "./src/db";
 import dotenv from "dotenv";
-import { oxyClient } from "@oxyhq/core";
-import { createOxyAuthMiddleware } from "@oxyhq/core/server";
+import { oxyClient } from "@oxy.so/core";
+import { createOxyAuthMiddleware } from "@oxy.so/core/server";
 
 // Routers
 import profileSettingsRoutes from "./src/routes/profileSettings";

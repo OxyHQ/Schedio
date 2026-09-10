@@ -5,7 +5,7 @@ import { Header } from "@/components/layout/Header";
 import { HeaderIconButton } from "@/components/layout/HeaderIconButton";
 import { Toggle } from "@/components/Toggle";
 import { BackArrowIcon } from "@/assets/icons/back-arrow-icon";
-import { useOxy } from "@oxyhq/services";
+import { useOxy } from "@oxy.so/services";
 import { useTranslation } from "react-i18next";
 
 import { Ionicons } from "@expo/vector-icons";

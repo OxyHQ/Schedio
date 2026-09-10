@@ -89,7 +89,7 @@ bun run start
 
 ### Authentication
 
-All authenticated endpoints require a Bearer token from Oxy. The backend uses `@oxyhq/services` for authentication middleware.
+All authenticated endpoints require a Bearer token from Oxy. The backend uses `@oxy.so/services` for authentication middleware.
 
 ### Health Check
 
@@ -315,7 +315,7 @@ This package is part of the Schedio monorepo and integrates with:
 
 ### Shared Dependencies
 - Uses `@schedio/shared-types` for type safety across packages
-- Integrates with `@oxyhq/services` for authentication
+- Integrates with `@oxy.so/services` for authentication
 
 ## Notes
 

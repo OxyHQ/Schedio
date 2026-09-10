@@ -1,7 +1,7 @@
-import { uuidv7 } from "@oxyhq/db";
+import { uuidv7 } from "@oxy.so/db";
 import { and, desc, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import { getRequiredOxyUserId } from "@oxyhq/core/server";
+import { getRequiredOxyUserId } from "@oxy.so/core/server";
 import { getDb } from "../db";
 import { POST_STATUSES, posts, type PostStatus } from "../db/schema";
 import { toPostDto } from "../utils/postDto";

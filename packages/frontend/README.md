@@ -135,7 +135,7 @@ This package is part of the Schedio monorepo and integrates with:
 
 - **@schedio/backend**: API server for data and scheduling
 - **@schedio/shared-types**: Shared TypeScript type definitions
-- **@oxyhq/services**: Oxy platform authentication and user management
+- **@oxy.so/services**: Oxy platform authentication and user management
 
 ## Contributing
 

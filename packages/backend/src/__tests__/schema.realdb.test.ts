@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
 import { join } from "node:path";
-import { createTestDatabase, dropTestDatabase } from "@oxyhq/db/testing";
+import { createTestDatabase, dropTestDatabase } from "@oxy.so/db/testing";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { closeDatabase, connectToDatabase, getDb } from "../db";

@@ -1,7 +1,7 @@
-import { uuidv7 } from "@oxyhq/db";
+import { uuidv7 } from "@oxy.so/db";
 import { and, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import { getRequiredOxyUserId } from "@oxyhq/core/server";
+import { getRequiredOxyUserId } from "@oxy.so/core/server";
 import { getDb } from "../db";
 import { SOCIAL_PLATFORMS, socialAccounts, type SocialPlatform } from "../db/schema";
 import { encryptSocialToken } from "../utils/tokenCipher";
