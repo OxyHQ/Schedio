@@ -37,7 +37,7 @@ interface SearchProfile {
         readonly last?: string;
     };
     readonly displayName?: string;
-    readonly avatar?: string;
+    readonly avatar?: string | null;
     readonly profilePicture?: string;
     readonly verified?: boolean;
 }
@@ -67,7 +67,7 @@ const AlloPicker: React.FC<AlloPickerProps> = ({
 
                 const mappedUsers: AlloUser[] = (searchResults?.data ?? []).map((profile: SearchProfile) => {
                     // Handle name object or string
-                    let displayName = profile.username || profile.handle;
+                    let displayName = profile.username || profile.handle || "";
                     if (typeof profile.name === 'string') {
                         displayName = profile.name;
                     } else if (profile.name?.full) {
