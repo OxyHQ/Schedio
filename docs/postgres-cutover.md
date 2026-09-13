@@ -112,12 +112,6 @@ the two stores never accept concurrent writes. Retain both stores and the export
 until reconciliation is complete. Deleting the old database is a separate,
 explicitly approved destructive operation and is not part of this runbook.
 
-Because the checked-in App Platform spec watches `main`, confirm by exact app id
-that automatic deployment is disabled before merging the PostgreSQL runtime.
-The private rendered spec must preserve the legacy database for rollback and
-bind `DATABASE_URL` to the exact new PostgreSQL component; the checked-in
-template deliberately has no database component or connection value. Re-enable
-automatic deployment only after the migrated database and encrypted
-`SOCIAL_TOKEN_ENCRYPTION_KEY` are present in the reviewed live spec. A merge
-while the legacy service still auto-deploys would start the PostgreSQL binary
-before the cutover is ready.
+Before a runtime cutover, verify that the target deployment has the migrated
+PostgreSQL database and `SOCIAL_TOKEN_ENCRYPTION_KEY` configured. Preserve the
+rollback boundary and enable deployment only after that verification.

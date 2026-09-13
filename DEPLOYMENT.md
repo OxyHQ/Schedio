@@ -1,9 +1,7 @@
 # Deploying Schedio
 
-Schedio's first-party runtime is PostgreSQL-only. The checked-in DigitalOcean
-spec is a fail-closed service template: it deliberately does not name or create
-a production database resource. Merging a code change is not authorization to
-create, migrate or delete production data.
+Schedio's runtime uses PostgreSQL. Production provisioning belongs in `oxy-infra`;
+this repository does not carry a provider-specific deployment template.
 
 ## Required configuration
 
@@ -52,35 +50,6 @@ bun run --cwd packages/backend db:migrate \
 
 Remove `--dry-run` only in an approved change window after the output has been
 reviewed.
-
-## DigitalOcean App Platform
-
-`.do/app.yaml` builds with Bun and declares value-less runtime slots for the
-PostgreSQL connection and social-token key. Before proposing the production
-spec, start from the exact app's current rendered spec, attach the exact,
-already provisioned and backfilled PostgreSQL component, and bind
-`DATABASE_URL` to that component. Do not reuse the legacy Mongo component name
-or mutate its engine in place. Inject the new token key once and preserve the
-encrypted `EV[...]` value App Platform returns on every later update. The
-checked-in template is intentionally not deployable as a functioning backend:
-startup fails closed until both values exist.
-
-Validate the checked-in template structurally, but never apply that value-less
-file directly to production. Materialize a private rendered spec from the exact
-app's current spec, preserve its encrypted secret value, review the proposed
-diff, then apply that private file:
-
-```bash
-doctl apps spec validate .do/app.yaml
-export SCHEDIO_RENDERED_SPEC_PATH=/absolute/private/path/schedio-app.rendered.yaml
-doctl apps update the-reviewed-app-id --spec "$SCHEDIO_RENDERED_SPEC_PATH"
-```
-
-Do not infer an app id from its display name. Resolve and review the exact target
-before exporting or updating its spec, and keep the private rendered file out of
-the repository. Disable that exact app's automatic deploy before merging this
-runtime branch; merging while the legacy service still watches `main` can start
-the PostgreSQL binary before schema, data and secrets are ready.
 
 ## Verification
 
