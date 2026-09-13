@@ -1,3 +1,4 @@
+import { startEcosystemActivity, stopEcosystemActivity, ecosystemActivityMiddleware } from './src/ecosystemActivity';
 // --- Imports ---
 import express from "express";
 import { closeDatabase, connectToDatabase } from "./src/db";
@@ -21,6 +22,7 @@ import { validateTokenCipherConfiguration } from "./src/utils/tokenCipher";
 dotenv.config();
 
 const app = express();
+  app.use(ecosystemActivityMiddleware);
 
 // Behind the ALB (single proxy hop) — required for express-rate-limit /
 // express-slow-down to read the real client IP from X-Forwarded-For.
@@ -123,7 +125,7 @@ function installGracefulShutdown(): void {
     forceExit.unref();
 
     const finish = (exitCode: number) => {
-      void closeDatabase().then(
+      void stopEcosystemActivity().then(() => closeDatabase()).then(
         () => process.exit(exitCode),
         (error: unknown) => {
           logger.error("Failed to close PostgreSQL cleanly", error);
@@ -146,6 +148,7 @@ function installGracefulShutdown(): void {
 const bootServer = async () => {
   try {
     validateTokenCipherConfiguration();
+    startEcosystemActivity(() => server?.listening === true);
     await connectToDatabase();
     server = app.listen(PORT, () => {
       logger.info(`Schedio backend server running on port ${PORT}`);
