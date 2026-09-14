@@ -27,6 +27,17 @@ export interface I18nConfig {
 }
 
 /**
+ * Switches the app's display language. This is the only supported way to
+ * change language — all of Schedio's locale bundles are already statically
+ * bundled above, so there is no catalog to fetch first (unlike apps that
+ * lazy-load locale chunks, where calling i18next's `changeLanguage` directly
+ * would switch to a language whose bundle was never loaded).
+ */
+export async function setLanguage(language: string): Promise<void> {
+  await i18n.changeLanguage(language);
+}
+
+/**
  * Loads the saved language preference from storage
  */
 export async function loadSavedLanguage(): Promise<string> {

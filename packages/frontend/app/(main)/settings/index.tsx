@@ -6,6 +6,7 @@ import { HeaderIconButton } from "@/components/layout/HeaderIconButton";
 import { Toggle } from "@/components/Toggle";
 import { BackArrowIcon } from "@/assets/icons/back-arrow-icon";
 import { useOxy } from "@oxy.so/services";
+import { getNativeLanguageName } from "@oxy.so/core";
 import { useTranslation } from "react-i18next";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -28,7 +29,7 @@ const IconComponent = Ionicons;
 export default function SettingsScreen() {
     const { t } = useTranslation();
     const router = useRouter();
-    const { user, showBottomSheet } = useOxy();
+    const { user, showBottomSheet, currentLanguage: oxyCurrentLanguage, currentLanguages: oxyCurrentLanguages } = useOxy();
     const theme = useTheme();
 
     // Determine Expo SDK/version information with safe fallbacks
@@ -137,39 +138,16 @@ export default function SettingsScreen() {
         });
     }, [updateMySettings, mySettings?.appearance?.primaryColor]);
 
-    // Get current language
-    const [currentLanguage, setCurrentLanguage] = useState<string>('en-US');
-    useEffect(() => {
-        const loadLanguage = async () => {
-            try {
-                const LANGUAGE_STORAGE_KEY = 'user_language_preference';
-                const savedLanguage = await getData<string>(LANGUAGE_STORAGE_KEY);
-                const language = savedLanguage || i18n.language || 'en-US';
-                setCurrentLanguage(language);
-            } catch (error) {
-                setCurrentLanguage(i18n.language || 'en-US');
-            }
-        };
-        loadLanguage();
-
-        const handleLanguageChanged = (lng: string) => {
-            setCurrentLanguage(lng);
-        };
-        i18n.on('languageChanged', handleLanguageChanged);
-
-        return () => {
-            i18n.off('languageChanged', handleLanguageChanged);
-        };
-    }, []);
-
-    const getLanguageDisplayName = useCallback((code: string) => {
-        const languages: Record<string, string> = {
-            'en-US': 'English',
-            'es-ES': 'Español',
-            'it-IT': 'Italiano',
-        };
-        return languages[code] || code;
-    }, []);
+    // The app's UI language is an Oxy-account concern, not Schedio's own:
+    // Oxy already resolves it (account locales when signed in, a device/guest
+    // locale otherwise) via OxyProvider's `language` config in AppProviders,
+    // and `useOxy()` reports the same resolved value directly — no local
+    // storage read or `languageChanged` listener needed to keep this in sync.
+    // Account locales when there are any (signed in, or a guest override was
+    // set), else the single resolved device/fallback locale — the same
+    // fallback `LanguageSelectorScreen` itself uses.
+    const selectedLanguages = oxyCurrentLanguages.length > 0 ? oxyCurrentLanguages : [oxyCurrentLanguage];
+    const languageDescription = selectedLanguages.map((code) => getNativeLanguageName(code)).join(', ');
 
     const handleSignOut = async () => {
         const confirmed = await confirmDialog({
@@ -582,7 +560,7 @@ export default function SettingsScreen() {
                         {/* Language Selection */}
                         <TouchableOpacity
                             className={`${SPACING_CLASSES.listItem} flex-row items-center justify-between`}
-                            onPress={() => router.push('/settings/language')}
+                            onPress={() => showBottomSheet?.('LanguageSelector')}
                         >
                             <View className="flex-row items-center flex-1">
                                 <View className={`mr-${SPACING.item.iconMargin} items-center justify-center`}>
@@ -591,7 +569,7 @@ export default function SettingsScreen() {
                                 <View>
                                     <Text className="text-[15px] font-medium mb-0.5" style={{ color: theme.colors.text }}>{t('Language')}</Text>
                                     <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
-                                        {getLanguageDisplayName(currentLanguage)}
+                                        {languageDescription}
                                     </Text>
                                 </View>
                             </View>
