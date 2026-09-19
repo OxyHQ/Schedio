@@ -29,7 +29,6 @@ export default function MainLayout() {
         <Stack.Screen name="accounts" />
         <Stack.Screen name="settings/index" />
         <Stack.Screen name="settings/appearance" />
-        <Stack.Screen name="settings/language" />
         <Stack.Screen name="settings/privacy/index" />
         <Stack.Screen name="settings/privacy/profile-visibility" />
         <Stack.Screen name="settings/privacy/tags-allos" />

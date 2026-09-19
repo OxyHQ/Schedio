@@ -17,8 +17,10 @@ import { OxyProvider } from '@oxy.so/services';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { HomeRefreshProvider } from '@/context/HomeRefreshContext';
-import i18n from '@/lib/i18n';
+import i18n, { setLanguage } from '@/lib/i18n';
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/lib/constants';
 import { OXY_BASE_URL, OXY_CLIENT_ID } from '@/config';
+import { logger } from '@/utils/logger';
 
 interface AppProvidersProps {
   children: React.ReactNode;
@@ -40,7 +42,17 @@ export const AppProviders = memo(function AppProviders({
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <QueryClientProvider client={queryClient}>
-          <OxyProvider baseURL={OXY_BASE_URL} clientId={OXY_CLIENT_ID}>
+          <OxyProvider
+            baseURL={OXY_BASE_URL}
+            clientId={OXY_CLIENT_ID}
+            language={{
+              supportedLocales: SUPPORTED_LANGUAGES,
+              fallbackLocale: DEFAULT_LANGUAGE,
+              onChange: setLanguage,
+              onError: (error, locale) =>
+                logger.error('Failed to follow the Oxy-resolved language', error, { locale }),
+            }}
+          >
             <I18nextProvider i18n={i18n}>
               <BottomSheetModalProvider>
                 <BottomSheetProvider>
