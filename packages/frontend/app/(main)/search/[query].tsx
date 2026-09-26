@@ -105,7 +105,7 @@ export default function SearchResultsScreen() {
                             onPress={() => router.push({ pathname: '/@[username]', params: { username: item.username } })}
                         >
                             <Avatar
-                                source={item.avatar ? oxyServices.getFileDownloadUrl(item.avatar, 'thumb') : undefined}
+                                source={item.avatar ? oxyServices.assets.publicUrl(item.avatar, 'thumb') : undefined}
                                 size={44}
                                 verified={item.verified}
                             />

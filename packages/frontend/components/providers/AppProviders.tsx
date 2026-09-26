@@ -19,7 +19,8 @@ import { BottomSheetProvider } from '@/context/BottomSheetContext';
 import { HomeRefreshProvider } from '@/context/HomeRefreshContext';
 import i18n, { setLanguage } from '@/lib/i18n';
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES } from '@/lib/constants';
-import { OXY_BASE_URL, OXY_CLIENT_ID } from '@/config';
+import { OXY_CLIENT_ID } from '@/config';
+import { oxyServices } from '@/lib/oxyServices';
 import { logger } from '@/utils/logger';
 
 interface AppProvidersProps {
@@ -43,7 +44,7 @@ export const AppProviders = memo(function AppProviders({
       <GestureHandlerRootView style={{ flex: 1 }}>
         <QueryClientProvider client={queryClient}>
           <OxyProvider
-            baseURL={OXY_BASE_URL}
+            oxyServices={oxyServices}
             clientId={OXY_CLIENT_ID}
             language={{
               supportedLocales: SUPPORTED_LANGUAGES,

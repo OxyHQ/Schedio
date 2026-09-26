@@ -6,7 +6,7 @@
 import { Platform } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 
-import { oxyClient } from '@oxy.so/core';
+import { oxyServices } from '@/lib/oxyServices';
 
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import {
@@ -63,7 +63,7 @@ async function loadAppearanceSettings(): Promise<void> {
  */
 async function fetchCurrentUser(): Promise<void> {
   try {
-    await oxyClient.getCurrentUser();
+    await oxyServices.users.me();
   } catch {
     // Expected when the user is not yet authenticated during cold boot
     logger.debug('User not authenticated during init');
@@ -151,7 +151,7 @@ export class AppInitializer {
    * Skips if user is not yet authenticated (token not available).
    */
   static async loadEagerSettings(): Promise<void> {
-    if (!oxyClient.getAccessToken()) return;
+    if (!oxyServices.session.accessToken) return;
 
     await Promise.allSettled([
       loadAppearanceSettings(),

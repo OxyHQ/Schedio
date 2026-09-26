@@ -39,7 +39,7 @@ export default function ProfileScreen() {
         || username;
 
     const counts = data?._count as ProfileCounts | undefined;
-    const avatarUri = data?.avatar ? oxyServices.getFileDownloadUrl(data.avatar, 'full') : undefined;
+    const avatarUri = data?.avatar ? oxyServices.assets.publicUrl(data.avatar, 'full') : undefined;
 
     return (
         <ThemedView className="flex-1">

@@ -46,7 +46,7 @@ export function SideBar() {
     const { signIn } = useAuth();
     const theme = useTheme();
 
-    const avatarUri = user?.avatar ? oxyServices.getFileDownloadUrl(user.avatar as string, 'thumb') : undefined;
+    const avatarUri = user?.avatar ? oxyServices.assets.publicUrl(user.avatar as string, 'thumb') : undefined;
     const myAvatarShape = useMyAvatarShape();
 
     const handleSignOut = async () => {

@@ -51,7 +51,7 @@ export default function BlockedScreen() {
                     const resolved = await Promise.all(
                         ids.map(async (id): Promise<ProfileSummary | null> => {
                             try {
-                                return await oxyServices.getUserById(id);
+                                return await oxyServices.users.get(id);
                             } catch (error) {
                                 console.warn('Could not resolve blocked user:', id, error);
                                 return null;
@@ -83,7 +83,7 @@ export default function BlockedScreen() {
         const handle = setTimeout(async () => {
             setSearching(true);
             try {
-                const response = await oxyServices.searchProfiles(term, { limit: 10 });
+                const response = await oxyServices.users.search(term, { limit: 10 });
                 if (cancelled) return;
                 setSearchResults(response.data ?? []);
             } catch (error) {
@@ -194,7 +194,7 @@ export default function BlockedScreen() {
                                             disabled={blockedIds.includes(profile.id)}
                                         >
                                             <Avatar
-                                                source={profile.avatar ? oxyServices.getFileDownloadUrl(profile.avatar, 'thumb') : undefined}
+                                                source={profile.avatar ? oxyServices.assets.publicUrl(profile.avatar, 'thumb') : undefined}
                                                 size={40}
                                             />
                                             <View className="flex-1 ml-3">
@@ -236,7 +236,7 @@ export default function BlockedScreen() {
                                         )}
                                         <View className="flex-row items-center px-4 py-3">
                                             <Avatar
-                                                source={profile?.avatar ? oxyServices.getFileDownloadUrl(profile.avatar, 'thumb') : undefined}
+                                                source={profile?.avatar ? oxyServices.assets.publicUrl(profile.avatar, 'thumb') : undefined}
                                                 size={40}
                                             />
                                             <View className="flex-1 ml-3">
