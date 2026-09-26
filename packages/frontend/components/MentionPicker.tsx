@@ -63,7 +63,7 @@ const AlloPicker: React.FC<AlloPickerProps> = ({
             setLoading(true);
             try {
                 // Search for users via Oxy services
-                const searchResults = await oxyServices.searchProfiles(query, { limit: 10 });
+                const searchResults = await oxyServices.users.search(query, { limit: 10 });
 
                 const mappedUsers: AlloUser[] = (searchResults?.data ?? []).map((profile: SearchProfile) => {
                     // Handle name object or string
@@ -140,7 +140,7 @@ const AlloPicker: React.FC<AlloPickerProps> = ({
                             }}
                         >
                             <Avatar
-                                source={item.avatar ? { uri: oxyServices.getFileDownloadUrl(item.avatar, 'thumb') } : undefined}
+                                source={item.avatar ? { uri: oxyServices.assets.publicUrl(item.avatar, 'thumb') } : undefined}
                                 size={40}
                             />
                             <View style={styles.userInfo}>

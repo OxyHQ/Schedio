@@ -1,7 +1,7 @@
-import { oxyClient } from '@oxy.so/core';
 import { Platform } from 'react-native';
 import axios from 'axios';
 import { API_URL } from '@/config';
+import { oxyServices } from '@/lib/oxyServices';
 import { CircuitBreaker } from '@/lib/api/retryLogic';
 
 // API Configuration
@@ -12,14 +12,14 @@ const API_CONFIG = {
 // Authenticated client for the Schedio backend. The SDK linked client carries the
 // device-first session and transparently re-mints the access token on 401, so no
 // app-local Authorization header plumbing is needed (Oxy SDK rule). It is bound to
-// the backend's own base URL (not the Oxy API that oxyClient itself targets).
+// the backend's own base URL (not the Oxy API that oxyServices itself targets).
 // Explicit annotation keeps the emitted type portable under composite builds
 // (the HttpService type isn't exported from the @oxy.so/core barrel).
-const backendClient: ReturnType<typeof oxyClient.getClient> =
-  oxyClient.createLinkedClient({ baseURL: API_CONFIG.baseURL }).client;
+const backendClient: typeof oxyServices.http =
+  oxyServices.createLinkedClient({ baseURL: API_CONFIG.baseURL }).client;
 
 // Same linked client, exported for callers that talk to the backend directly.
-const authenticatedClient: ReturnType<typeof oxyClient.getClient> = backendClient;
+const authenticatedClient: typeof oxyServices.http = backendClient;
 
 // Circuit breaker to prevent cascading failures
 // Opens after 5 consecutive failures, stays open for 30 seconds

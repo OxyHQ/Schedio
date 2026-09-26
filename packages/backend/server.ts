@@ -3,8 +3,8 @@ import { startEcosystemActivity, stopEcosystemActivity, ecosystemActivityMiddlew
 import express from "express";
 import { closeDatabase, connectToDatabase } from "./src/db";
 import dotenv from "dotenv";
-import { oxyClient } from "@oxy.so/core";
-import { createOxyAuthMiddleware } from "@oxy.so/core/server";
+import { OXY_API_URL } from "@oxy.so/core";
+import { OxyServer, createOxyAuthMiddleware } from "@oxy.so/core/server";
 
 // Routers
 import profileSettingsRoutes from "./src/routes/profileSettings";
@@ -29,7 +29,7 @@ const app = express();
 app.set("trust proxy", 1);
 
 // Initialize Oxy client for authentication
-export const oxy = oxyClient;
+export const oxy = new OxyServer({ baseURL: OXY_API_URL });
 
 // --- Middleware ---
 app.use(express.json());

@@ -33,7 +33,7 @@ export const BottomBar = () => {
     const theme = useTheme();
 
     const avatarUri = useMemo(() => {
-        return user?.avatar ? oxyServices.getFileDownloadUrl(user.avatar as string, 'thumb') : undefined;
+        return user?.avatar ? oxyServices.assets.publicUrl(user.avatar as string, 'thumb') : undefined;
     }, [user?.avatar, oxyServices]);
 
     // Build navigation items with theme-aware icons

@@ -29,7 +29,7 @@ export default function ProfileCustomizationScreen() {
 
   const avatarUri = useMemo(() => {
     if (!user?.avatar) return undefined;
-    return oxyServices.getFileDownloadUrl(user.avatar as string, 'thumb');
+    return oxyServices.assets.publicUrl(user.avatar as string, 'thumb');
   }, [user?.avatar, oxyServices]);
 
   const displayName = useMemo(() => {

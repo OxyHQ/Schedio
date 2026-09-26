@@ -98,7 +98,7 @@ export function useProfileData(username?: string): {
         const data = await ensureByUsername(
           username,
           async (u): Promise<UserEntity> => {
-            const profile = await oxyServices.getProfileByUsername(u);
+            const profile = await oxyServices.users.byUsername(u);
             return { ...profile, avatar: profile.avatar ?? undefined };
           }
         );
