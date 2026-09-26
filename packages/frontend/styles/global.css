@@ -3,6 +3,10 @@
 @import "tailwindcss/utilities.css";
 @import "nativewind/theme";
 
+/* Bloom's design tokens (radius scale, fill/bg/border aliases) that Bloom and
+   Services components emit as utilities. Schedio's own @theme below wins on overlap. */
+@import "@oxy.so/bloom/design-tokens/theme.css";
+
 /* Paths resolve relative to THIS file (packages/frontend/styles/), not the package root. */
 @source "../app/**/*.{js,jsx,ts,tsx}";
 @source "../components/**/*.{js,jsx,ts,tsx}";
