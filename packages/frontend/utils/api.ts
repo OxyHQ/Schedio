@@ -24,7 +24,7 @@ const authenticatedClient: typeof oxyServices.http = backendClient;
 
 // Circuit breaker to prevent cascading failures
 // Opens after 5 consecutive failures, stays open for 30 seconds
-const apiCircuitBreaker = new CircuitBreaker(5, 60000, 30000);
+const apiCircuitBreaker = new CircuitBreaker(5, 30000);
 
 // Request deduplication cache - prevents duplicate simultaneous requests
 // WhatsApp/Telegram pattern: if same request is in flight, return same promise

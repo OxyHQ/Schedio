@@ -70,11 +70,11 @@ async function fetchCurrentUser(): Promise<void> {
  * Main app initialization function
  * Coordinates all initialization steps
  */
-export class AppInitializer {
+export const AppInitializer = {
   /**
    * Initializes i18n
    */
-  static async initializeI18n(): Promise<InitializationResult> {
+  async initializeI18n(): Promise<InitializationResult> {
     try {
       await initializeI18n();
       return { success: true };
@@ -84,14 +84,14 @@ export class AppInitializer {
         error: error instanceof Error ? error : new Error('Unknown i18n error'),
       };
     }
-  }
+  },
 
   /**
    * Initializes the entire app
    * Only blocks on critical-path work (user + appearance).
    * Notifications are deferred.
    */
-  static async initializeApp(fontsLoaded: boolean): Promise<InitializationResult> {
+  async initializeApp(fontsLoaded: boolean): Promise<InitializationResult> {
     if (!fontsLoaded) {
       return {
         success: false,
@@ -123,27 +123,27 @@ export class AppInitializer {
       }
       return { success: true };
     }
-  }
+  },
 
   /**
    * Deferred initialization — runs after the app is visible.
    */
-  static async initializeDeferred(): Promise<void> {
+  async initializeDeferred(): Promise<void> {
     try {
       await runStartupHealthCheck();
       await setupNotificationsIfNeeded();
     } catch (error) {
       console.warn('[AppInitializer] Deferred init error:', error);
     }
-  }
+  },
 
   /**
    * Loads eager settings that don't block app initialization.
    * Skips if user is not yet authenticated (token not available).
    */
-  static async loadEagerSettings(): Promise<void> {
+  async loadEagerSettings(): Promise<void> {
     if (!oxyServices.session.accessToken) return;
 
     await Promise.allSettled([loadAppearanceSettings()]);
-  }
-}
+  },
+};

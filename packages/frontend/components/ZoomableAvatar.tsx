@@ -92,11 +92,12 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
           imageUri = source.uri;
         }
 
-        if (imageUri && (imageUri.startsWith('http') || imageUri.startsWith('https'))) {
+        const remoteUri = imageUri;
+        if (remoteUri && (remoteUri.startsWith('http') || remoteUri.startsWith('https'))) {
           // Remote image - use React Native's Image.getSize
           const { width, height } = await new Promise<{ width: number; height: number }>(
             (resolve, reject) => {
-              RNImage.getSize(imageUri!, (width, height) => resolve({ width, height }), reject);
+              RNImage.getSize(remoteUri, (width, height) => resolve({ width, height }), reject);
             },
           );
 

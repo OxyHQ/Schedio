@@ -29,7 +29,9 @@ export function cancelRaf(id: number): void {
  * Useful for preventing multiple re-renders
  */
 export function batchUpdates(updates: (() => void)[]): void {
-  updates.forEach((update) => update());
+  for (const update of updates) {
+    update();
+  }
 }
 
 /**
@@ -61,7 +63,8 @@ export function memoize<Args extends any[], Return>(
   return (...args: Args): Return => {
     const key = keyFn ? keyFn(...args) : JSON.stringify(args);
     if (cache.has(key)) {
-      return cache.get(key)!;
+      // has() just confirmed the entry; a cached value may itself be undefined.
+      return cache.get(key) as Return;
     }
     const result = fn(...args);
     cache.set(key, result);

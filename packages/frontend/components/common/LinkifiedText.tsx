@@ -27,7 +27,6 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
       /(\[@([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+|www\.[^\s]+)|(^|[^A-Za-z0-9_])(#[A-Za-z][A-Za-z0-9_]*|\$[A-Z]{1,6}(?:\.[A-Z]{1,2})?)/g;
 
     let lastIndex = 0;
-    let match: RegExpExecArray | null;
     let key = 0;
 
     const pushText = (t: string) => {
@@ -45,7 +44,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
       return { url, trailing };
     };
 
-    while ((match = pattern.exec(text)) !== null) {
+    for (let match = pattern.exec(text); match !== null; match = pattern.exec(text)) {
       const full = match[0];
       const alloFull = match[1]; // [@DisplayName](username)
       const alloDisplay = match[2]; // DisplayName

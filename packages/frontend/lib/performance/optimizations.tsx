@@ -149,9 +149,10 @@ export function useMemoDebug<T>(
   }, deps);
 
   useEffect(() => {
-    if (__DEV__ && debugName && prevDeps.current) {
+    const previous = prevDeps.current;
+    if (__DEV__ && debugName && previous) {
       const changedDeps = deps
-        .map((dep, i) => (dep !== prevDeps.current![i] ? i : -1))
+        .map((dep, i) => (dep !== previous[i] ? i : -1))
         .filter((i) => i !== -1);
 
       if (changedDeps.length > 0) {

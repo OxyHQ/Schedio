@@ -137,7 +137,9 @@ export class OptimisticUpdateManager<T = any> {
    * Notify all listeners
    */
   private notifyListeners(): void {
-    this.listeners.forEach((listener) => listener(new Map(this.updates)));
+    for (const listener of this.listeners) {
+      listener(new Map(this.updates));
+    }
   }
 }
 
@@ -201,9 +203,13 @@ export async function batchOptimisticUpdates<T>(
 
   try {
     await Promise.all(operations.map((op) => op.fn()));
-    updateIds.forEach((id) => manager.confirm(id));
+    for (const id of updateIds) {
+      manager.confirm(id);
+    }
   } catch (error) {
-    updateIds.forEach((id) => manager.fail(id, true));
+    for (const id of updateIds) {
+      manager.fail(id, true);
+    }
     throw error;
   }
 }
