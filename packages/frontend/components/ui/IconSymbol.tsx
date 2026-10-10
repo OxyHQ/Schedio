@@ -3,6 +3,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import type { SymbolWeight } from 'expo-symbols';
 import type { ComponentProps } from 'react';
+// biome-ignore lint/correctness/noUnresolvedImports: react-native declares OpaqueColorValue without `export` in a .d.ts, which TypeScript treats as exported and Biome does not
 import type { OpaqueColorValue, StyleProp, TextStyle } from 'react-native';
 
 /**

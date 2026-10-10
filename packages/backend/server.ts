@@ -6,7 +6,7 @@ import {
 // --- Imports ---
 import express from 'express';
 import { closeDatabase, connectToDatabase } from './src/db';
-import dotenv from 'dotenv';
+import * as dotenv from 'dotenv';
 import { OXY_API_URL } from '@oxy.so/core';
 import { OxyServer, createOxyAuthMiddleware } from '@oxy.so/core/server';
 

@@ -42,7 +42,7 @@
     "rules": {
       "preset": "recommended",
       "a11y": {
-        "noSvgWithoutTitle": "warn"
+        "noSvgWithoutTitle": "error"
       },
       "correctness": {
         "useExhaustiveDependencies": {
@@ -54,13 +54,14 @@
             ]
           }
         },
-        "useHookAtTopLevel": "error"
+        "useHookAtTopLevel": "error",
+        "noUnresolvedImports": "error"
       },
       "suspicious": {
-        "noArrayIndexKey": "warn",
-        "noAssignInExpressions": "warn",
+        "noArrayIndexKey": "error",
+        "noAssignInExpressions": "error",
         "noVar": "error",
-        "useIterableCallbackReturn": "warn"
+        "useIterableCallbackReturn": "error"
       }
     }
   },

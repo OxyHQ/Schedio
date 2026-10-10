@@ -8,6 +8,7 @@
 //   exactly one default React component.
 const { defineConfig } = require('eslint/config');
 const tsParser = require('@typescript-eslint/parser');
+// biome-ignore lint/correctness/noUnresolvedImports: the package's `main` is build/index.js, which Biome does not follow for require(); Node and `expo lint` load it
 const expo = require('eslint-plugin-expo');
 
 module.exports = defineConfig([
