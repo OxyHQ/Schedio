@@ -38,7 +38,7 @@ async function main() {
   const token = resolveToken();
   if (!token) {
     console.error(
-      'No Oxy access token found. Set OXY_ACCESS_TOKEN or write ~/.config/oxy/tokens/oxy.token (mode 600).'
+      'No Oxy access token found. Set OXY_ACCESS_TOKEN or write ~/.config/oxy/tokens/oxy.token (mode 600).',
     );
     process.exit(1);
   }

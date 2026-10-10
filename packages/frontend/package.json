@@ -13,7 +13,8 @@
     "build": "expo export --platform web --output-dir dist",
     "build-web": "expo export --platform web --output-dir dist",
     "build-web:prod": "expo export --platform web --output-dir dist",
-    "lint": "expo lint",
+    "lint": "biome check . && expo lint",
+    "lint:expo": "expo lint",
     "clean": "rm -rf dist .expo"
   },
   "dependencies": {
@@ -97,8 +98,9 @@
     "@tailwindcss/postcss": "4.2.2",
     "@types/react": "~19.2.14",
     "@types/react-dom": "~19.2.3",
+    "@typescript-eslint/parser": "^8.70.1",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~55.0.0",
+    "eslint-plugin-expo": "^1.1.0",
     "typescript": "~5.9.3"
   },
   "private": true

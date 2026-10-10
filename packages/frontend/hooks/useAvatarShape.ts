@@ -28,6 +28,6 @@ export function useAvatarShape(userId?: string): AvatarShapeKey {
  */
 export function useMyAvatarShape(): AvatarShapeKey {
   return useAppearanceStore(
-    (s) => (s.mySettings?.profileCustomization?.avatarShape as AvatarShapeKey) ?? DEFAULT_SHAPE
+    (s) => (s.mySettings?.profileCustomization?.avatarShape as AvatarShapeKey) ?? DEFAULT_SHAPE,
   );
 }

@@ -1,10 +1,10 @@
 function lightenColor(hex: string, percent: number): string {
-    const num = parseInt(hex.slice(1), 16);
-    const amt = Math.round(2.55 * percent);
-    const R = (num >> 16) + amt;
-    const G = (num >> 8 & 0x00FF) + amt;
-    const B = (num & 0x0000FF) + amt;
-    return `#${(0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 + (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 + (B < 255 ? B < 1 ? 0 : B : 255)).toString(16).slice(1).toUpperCase()}`;
+  const num = parseInt(hex.slice(1), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0x00ff) + amt;
+  const B = (num & 0x0000ff) + amt;
+  return `#${(0x1000000 + (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 + (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 + (B < 255 ? (B < 1 ? 0 : B) : 255)).toString(16).slice(1).toUpperCase()}`;
 }
 
 // Updated primary color for better contrast and modern feel
@@ -34,46 +34,46 @@ export const colors = {
   COLOR_BLACK_LIGHT_8: '#FAFAFA',
   COLOR_BLACK_LIGHT_9: '#FDFDFD',
   COLOR_BACKGROUND: lightenColor(primaryColor, 90),
-    
-    // New modern messaging colors (light mode)
-    messageBubbleSent: primaryColor,
-    messageBubbleReceived: '#EDF2F7',
-    messageTextSent: '#FFFFFF',
-    messageTextReceived: '#1A202C',
-    messageTimestamp: '#A0AEC0',
-    messageSeparator: '#CBD5E0',
 
-    // Dark mode messaging colors
-    messageBubbleReceivedDark: '#1A1A1A',
-    messageTextReceivedDark: '#E8E8E8',
-    messageTimestampDark: '#707070',
-    messageSeparatorDark: '#2A2A2A',
+  // New modern messaging colors (light mode)
+  messageBubbleSent: primaryColor,
+  messageBubbleReceived: '#EDF2F7',
+  messageTextSent: '#FFFFFF',
+  messageTextReceived: '#1A202C',
+  messageTimestamp: '#A0AEC0',
+  messageSeparator: '#CBD5E0',
 
-    // Chat UI specific colors (light mode)
-    chatInputBackground: '#F7FAFC',
-    chatInputBorder: '#E2E8F0',
-    chatInputText: '#2D3748',
-    chatInputPlaceholder: '#A0AEC0',
-    chatHeaderBorder: '#E2E8F0',
-    chatUnreadBadge: '#FF3B30',
-    chatTypingIndicator: '#00C853',
+  // Dark mode messaging colors
+  messageBubbleReceivedDark: '#1A1A1A',
+  messageTextReceivedDark: '#E8E8E8',
+  messageTimestampDark: '#707070',
+  messageSeparatorDark: '#2A2A2A',
 
-    // Dark mode chat UI
-    chatInputBackgroundDark: '#0A0A0A',
-    chatInputBorderDark: '#2A2A2A',
-    chatInputTextDark: '#E8E8E8',
-    chatInputPlaceholderDark: '#707070',
-    chatHeaderBorderDark: '#1A1A1A',
-    
-    // Interactive elements
-    buttonPrimary: primaryColor,
-    buttonSecondary: '#718096',
-    buttonDisabled: '#CBD5E0',
-    linkColor: primaryColor,
-    
-    // Status colors
-    online: '#00C853',
-    offline: '#718096',
-    busy: '#FF3B30',
-    away: '#FFCC00',
+  // Chat UI specific colors (light mode)
+  chatInputBackground: '#F7FAFC',
+  chatInputBorder: '#E2E8F0',
+  chatInputText: '#2D3748',
+  chatInputPlaceholder: '#A0AEC0',
+  chatHeaderBorder: '#E2E8F0',
+  chatUnreadBadge: '#FF3B30',
+  chatTypingIndicator: '#00C853',
+
+  // Dark mode chat UI
+  chatInputBackgroundDark: '#0A0A0A',
+  chatInputBorderDark: '#2A2A2A',
+  chatInputTextDark: '#E8E8E8',
+  chatInputPlaceholderDark: '#707070',
+  chatHeaderBorderDark: '#1A1A1A',
+
+  // Interactive elements
+  buttonPrimary: primaryColor,
+  buttonSecondary: '#718096',
+  buttonDisabled: '#CBD5E0',
+  linkColor: primaryColor,
+
+  // Status colors
+  online: '#00C853',
+  offline: '#718096',
+  busy: '#FF3B30',
+  away: '#FFCC00',
 } as const;

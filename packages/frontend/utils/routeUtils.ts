@@ -20,7 +20,7 @@ export interface RouteMatchOptions {
 export const isRouteActive = (
   pathname: string | null | undefined,
   route: string,
-  options: RouteMatchOptions = {}
+  options: RouteMatchOptions = {},
 ): boolean => {
   if (!pathname) return false;
   const { exact = false, startsWith = false, endsWith = false, includes = false } = options;

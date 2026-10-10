@@ -8,13 +8,10 @@ import SEO from '@/components/SEO';
 
 export default function NotFoundScreen() {
   const { t } = useTranslation();
-  
+
   return (
     <>
-      <SEO
-        title={t('seo.notFound.title')}
-        description={t('seo.notFound.description')}
-      />
+      <SEO title={t('seo.notFound.title')} description={t('seo.notFound.description')} />
       <Stack.Screen options={{ title: 'Oops!' }} />
       <ThemedView style={styles.container}>
         <ThemedText type="title">This screen does not exist.</ThemedText>

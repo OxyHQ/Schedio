@@ -41,7 +41,7 @@ const FONT_LOAD_CONFIG = {
  */
 export async function loadFontsWithFallback(
   fontsLoaded: boolean,
-  fontError: Error | null
+  fontError: Error | null,
 ): Promise<FontLoadResult> {
   perfMonitor.mark('fontLoading');
 
@@ -98,7 +98,7 @@ export async function loadFontsWithFallback(
         const loadTime = perfMonitor.measure('fontLoading');
         console.warn(
           `[FontLoader] ⏱ Font loading timeout (${FONT_LOAD_CONFIG.maxWaitTime}ms), ` +
-          `continuing with system fonts. Custom fonts will apply when ready.`
+            `continuing with system fonts. Custom fonts will apply when ready.`,
         );
         resolveTimeout({
           loaded: true,
@@ -133,4 +133,4 @@ export const FontFamily = {
   phudu: 'Phudu',
 } as const;
 
-export type FontFamilyType = typeof FontFamily[keyof typeof FontFamily];
+export type FontFamilyType = (typeof FontFamily)[keyof typeof FontFamily];

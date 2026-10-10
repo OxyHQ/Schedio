@@ -24,11 +24,7 @@ interface LazyLottieViewProps extends LottieViewProps {
   fallback?: React.ReactNode;
 }
 
-export const LazyLottieView: React.FC<LazyLottieViewProps> = ({
-  fallback,
-  style,
-  ...props
-}) => {
+export const LazyLottieView: React.FC<LazyLottieViewProps> = ({ fallback, style, ...props }) => {
   const defaultFallback = (
     <View style={[{ justifyContent: 'center', alignItems: 'center' }, style]}>
       <ActivityIndicator size="small" />

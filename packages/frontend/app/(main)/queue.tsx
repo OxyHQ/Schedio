@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 export default function QueueScreen() {
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Queue" }} />
+      <Header options={{ title: 'Queue' }} />
       <View style={styles.content}>
         <EmptyState
           title="Your Queue"

@@ -1,9 +1,9 @@
-import { createHash } from "node:crypto";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-import { sql } from "drizzle-orm";
-import type { PgTable } from "drizzle-orm/pg-core";
-import { closeDatabase, connectToDatabase, getDb, type SchedioDatabaseOrTransaction } from ".";
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { sql } from 'drizzle-orm';
+import type { PgTable } from 'drizzle-orm/pg-core';
+import { closeDatabase, connectToDatabase, getDb, type SchedioDatabaseOrTransaction } from '.';
 import {
   transformBlock,
   transformPost,
@@ -13,7 +13,7 @@ import {
   transformSocialAccount,
   transformUserBehavior,
   transformUserSettings,
-} from "./legacyTransform";
+} from './legacyTransform';
 import {
   blocks,
   postAnalytics,
@@ -23,18 +23,18 @@ import {
   socialAccounts,
   userBehaviors,
   userSettings,
-} from "./schema";
-import { validateTokenCipherConfiguration } from "../utils/tokenCipher";
+} from './schema';
+import { validateTokenCipherConfiguration } from '../utils/tokenCipher';
 
 const COLLECTION_NAMES = [
-  "blocks",
-  "posts",
-  "postanalytics",
-  "publishingschedules",
-  "restricts",
-  "socialaccounts",
-  "userbehaviors",
-  "usersettings",
+  'blocks',
+  'posts',
+  'postanalytics',
+  'publishingschedules',
+  'restricts',
+  'socialaccounts',
+  'userbehaviors',
+  'usersettings',
 ] as const;
 type CollectionName = (typeof COLLECTION_NAMES)[number];
 
@@ -52,37 +52,40 @@ interface ImportManifest {
 
 function argument(name: string): string {
   const prefix = `--${name}=`;
-  const value = process.argv.slice(2).find((item) => item.startsWith(prefix))?.slice(prefix.length);
+  const value = process.argv
+    .slice(2)
+    .find((item) => item.startsWith(prefix))
+    ?.slice(prefix.length);
   if (!value) throw new Error(`--${name}=... is required`);
   return value;
 }
 
 function targetDatabase(databaseUrl: string): string {
-  const value = new URL(databaseUrl).pathname.replace(/^\//, "");
-  if (!value) throw new Error("DATABASE_URL does not name a database");
+  const value = new URL(databaseUrl).pathname.replace(/^\//, '');
+  if (!value) throw new Error('DATABASE_URL does not name a database');
   return value;
 }
 
 export function parseManifest(value: unknown): ImportManifest {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    throw new Error("manifest.json must contain an object");
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new Error('manifest.json must contain an object');
   }
   const manifest = value as Record<string, unknown>;
   if (
     manifest.formatVersion !== 1 ||
-    typeof manifest.sourceDatabase !== "string" ||
+    typeof manifest.sourceDatabase !== 'string' ||
     manifest.sourceDatabase.length === 0
   ) {
-    throw new Error("manifest.json formatVersion/sourceDatabase is invalid");
+    throw new Error('manifest.json formatVersion/sourceDatabase is invalid');
   }
-  if (typeof manifest.collections !== "object" || manifest.collections === null) {
-    throw new Error("manifest.json collections is invalid");
+  if (typeof manifest.collections !== 'object' || manifest.collections === null) {
+    throw new Error('manifest.json collections is invalid');
   }
   const collectionRecord = manifest.collections as Record<string, unknown>;
   const collections: Partial<Record<CollectionName, CollectionManifest>> = {};
   for (const name of COLLECTION_NAMES) {
     const raw = collectionRecord[name];
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
+    if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
       throw new Error(`manifest.json is missing collection ${name}`);
     }
     const entry = raw as Record<string, unknown>;
@@ -90,7 +93,7 @@ export function parseManifest(value: unknown): ImportManifest {
       entry.file !== `${name}.jsonl` ||
       !Number.isSafeInteger(entry.count) ||
       (entry.count as number) < 0 ||
-      typeof entry.sha256 !== "string" ||
+      typeof entry.sha256 !== 'string' ||
       !/^[0-9a-f]{64}$/.test(entry.sha256)
     ) {
       throw new Error(`manifest.json collection ${name} is invalid`);
@@ -102,7 +105,7 @@ export function parseManifest(value: unknown): ImportManifest {
     };
   }
   if (Object.keys(collectionRecord).length !== COLLECTION_NAMES.length) {
-    throw new Error("manifest.json contains an unexpected collection");
+    throw new Error('manifest.json contains an unexpected collection');
   }
   return {
     formatVersion: 1,
@@ -113,7 +116,7 @@ export function parseManifest(value: unknown): ImportManifest {
 
 export function assertDistinctDatabaseNames(sourceDatabase: string, targetDatabase: string): void {
   if (sourceDatabase === targetDatabase) {
-    throw new Error("Legacy source and PostgreSQL target must have distinct database names");
+    throw new Error('Legacy source and PostgreSQL target must have distinct database names');
   }
 }
 
@@ -123,14 +126,16 @@ function loadJsonLines(sourceDirectory: string, entry: CollectionManifest): unkn
     throw new Error(`manifest file escapes the source directory: ${entry.file}`);
   }
   const bytes = readFileSync(path);
-  const digest = createHash("sha256").update(bytes).digest("hex");
+  const digest = createHash('sha256').update(bytes).digest('hex');
   if (digest !== entry.sha256) throw new Error(`SHA-256 mismatch for ${entry.file}`);
   const lines = bytes
-    .toString("utf8")
+    .toString('utf8')
     .split(/\r?\n/)
     .filter((line) => line.trim().length > 0);
   if (lines.length !== entry.count) {
-    throw new Error(`Count mismatch for ${entry.file}: expected ${entry.count}, read ${lines.length}`);
+    throw new Error(
+      `Count mismatch for ${entry.file}: expected ${entry.count}, read ${lines.length}`,
+    );
   }
   return lines.map((line, index) => {
     try {
@@ -154,27 +159,32 @@ async function rowCount<T extends PgTable>(
   db: SchedioDatabaseOrTransaction,
   table: T,
 ): Promise<number> {
-  const rows = await db.execute(sql<{ value: number }>`select count(*)::int as value from ${table}`);
+  const rows = await db.execute(
+    sql<{ value: number }>`select count(*)::int as value from ${table}`,
+  );
   const value = Number(rows[0]?.value);
-  if (!Number.isSafeInteger(value) || value < 0) throw new Error("Invalid target row count");
+  if (!Number.isSafeInteger(value) || value < 0) throw new Error('Invalid target row count');
   return value;
 }
 
 async function main(): Promise<void> {
-  const sourceDirectory = resolve(argument("source-dir"));
-  const expectedTarget = argument("target-database");
+  const sourceDirectory = resolve(argument('source-dir'));
+  const expectedTarget = argument('target-database');
   const databaseUrl = process.env.DATABASE_URL;
-  if (!databaseUrl) throw new Error("DATABASE_URL is required");
+  if (!databaseUrl) throw new Error('DATABASE_URL is required');
   if (targetDatabase(databaseUrl) !== expectedTarget) {
-    throw new Error("DATABASE_URL does not match --target-database");
+    throw new Error('DATABASE_URL does not match --target-database');
   }
 
   const manifest = parseManifest(
-    JSON.parse(readFileSync(resolve(sourceDirectory, "manifest.json"), "utf8")) as unknown,
+    JSON.parse(readFileSync(resolve(sourceDirectory, 'manifest.json'), 'utf8')) as unknown,
   );
   assertDistinctDatabaseNames(manifest.sourceDatabase, expectedTarget);
   const documents = Object.fromEntries(
-    COLLECTION_NAMES.map((name) => [name, loadJsonLines(sourceDirectory, manifest.collections[name])]),
+    COLLECTION_NAMES.map((name) => [
+      name,
+      loadJsonLines(sourceDirectory, manifest.collections[name]),
+    ]),
   ) as Record<CollectionName, unknown[]>;
 
   validateTokenCipherConfiguration();
@@ -195,7 +205,8 @@ async function main(): Promise<void> {
     // the initial empty-target check and the final reconciliation. The runbook
     // still freezes writers; this lock makes an accidental concurrent start
     // block instead of slipping a row in after the last count.
-    await tx.execute(sql.raw(`
+    await tx.execute(
+      sql.raw(`
       lock table
         blocks,
         posts,
@@ -206,7 +217,8 @@ async function main(): Promise<void> {
         user_behaviors,
         user_settings
       in access exclusive mode
-    `));
+    `),
+    );
     const targetCounts = {
       blocks: await rowCount(tx, blocks),
       posts: await rowCount(tx, posts),

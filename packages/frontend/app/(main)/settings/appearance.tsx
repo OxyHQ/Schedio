@@ -1,11 +1,5 @@
 import React, { useEffect, useMemo, useState, useCallback } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Switch,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { colors as baseColors } from '@/styles/colors';
 import { Header } from '@/components/layout/Header';
@@ -25,7 +19,6 @@ const APP_ICONS = [
   { id: 'classic', label: 'Classic', bgColor: '#21C063', logoColor: '#FFFFFF' },
   { id: 'classic-x', label: 'Classic X', bgColor: '#718096', logoColor: '#FFFFFF' },
 ];
-
 
 export default function AppearanceSettingsScreen() {
   const mySettings = useAppearanceStore((state) => state.mySettings);
@@ -63,12 +56,12 @@ export default function AppearanceSettingsScreen() {
 
   const selectedColorTheme = useMemo(
     () => COLOR_THEMES.find((t) => t.id === selectedColorThemeId) || COLOR_THEMES[0],
-    [selectedColorThemeId]
+    [selectedColorThemeId],
   );
 
   const selectedVariant = useMemo(
     () => selectedColorTheme[effectiveMode],
-    [selectedColorTheme, effectiveMode]
+    [selectedColorTheme, effectiveMode],
   );
 
   const onSelectColorTheme = useCallback(
@@ -82,7 +75,7 @@ export default function AppearanceSettingsScreen() {
         },
       });
     },
-    [updateMySettings, selectedThemeMode]
+    [updateMySettings, selectedThemeMode],
   );
 
   const onSelectThemeMode = useCallback(
@@ -96,7 +89,7 @@ export default function AppearanceSettingsScreen() {
         },
       });
     },
-    [updateMySettings, selectedColorThemeId, selectedColorTheme]
+    [updateMySettings, selectedColorThemeId, selectedColorTheme],
   );
 
   return (
@@ -115,7 +108,10 @@ export default function AppearanceSettingsScreen() {
       />
       <ScrollView className={SPACING_CLASSES.screen} showsVerticalScrollIndicator={false}>
         {/* THEME MODE */}
-        <Text className={SPACING_CLASSES.sectionTitle} style={{ color: theme.colors.textSecondary }}>
+        <Text
+          className={SPACING_CLASSES.sectionTitle}
+          style={{ color: theme.colors.textSecondary }}
+        >
           THEME MODE
         </Text>
         <View className={`flex-row gap-${SPACING.content.gap} mb-${SPACING.content.gapLarge}`}>
@@ -148,7 +144,10 @@ export default function AppearanceSettingsScreen() {
         </View>
 
         {/* COLOR THEME */}
-        <Text className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`} style={{ color: theme.colors.textSecondary }}>
+        <Text
+          className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`}
+          style={{ color: theme.colors.textSecondary }}
+        >
           COLOR THEME
         </Text>
 
@@ -174,7 +173,10 @@ export default function AppearanceSettingsScreen() {
                 activeOpacity={0.8}
               >
                 {/* Mini preview */}
-                <View className="w-full h-[60px] p-2.5 justify-between" style={{ backgroundColor: variant.chatBackground }}>
+                <View
+                  className="w-full h-[60px] p-2.5 justify-between"
+                  style={{ backgroundColor: variant.chatBackground }}
+                >
                   <View
                     className="w-[60%] h-3.5 rounded-[7px] self-start"
                     style={{ backgroundColor: variant.bubbleReceived }}
@@ -203,7 +205,9 @@ export default function AppearanceSettingsScreen() {
           className="rounded-2xl border overflow-hidden"
           style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
         >
-          <View className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pt-${SPACING.item.paddingHorizontal} pb-${SPACING.item.paddingHorizontal}`}>
+          <View
+            className={`flex-row items-center justify-between ${SPACING_CLASSES.listItem} pt-${SPACING.item.paddingHorizontal} pb-${SPACING.item.paddingHorizontal}`}
+          >
             <Text className="text-base" style={{ color: theme.colors.text }}>
               Auto-Night Mode
             </Text>
@@ -218,7 +222,10 @@ export default function AppearanceSettingsScreen() {
         </View>
 
         {/* APP ICON */}
-        <Text className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`} style={{ color: theme.colors.textSecondary }}>
+        <Text
+          className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`}
+          style={{ color: theme.colors.textSecondary }}
+        >
           APP ICON
         </Text>
         <View className={`flex-row gap-${SPACING.item.paddingHorizontal} py-1`}>
@@ -258,4 +265,3 @@ export default function AppearanceSettingsScreen() {
     </ThemedView>
   );
 }
-

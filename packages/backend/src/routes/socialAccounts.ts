@@ -1,10 +1,10 @@
-import { uuidv7 } from "@oxy.so/db";
-import { and, eq } from "drizzle-orm";
-import { Router, type Request, type Response } from "express";
-import { getRequiredOxyUserId } from "@oxy.so/core/server";
-import { getDb } from "../db";
-import { SOCIAL_PLATFORMS, socialAccounts, type SocialPlatform } from "../db/schema";
-import { encryptSocialToken } from "../utils/tokenCipher";
+import { uuidv7 } from '@oxy.so/db';
+import { and, eq } from 'drizzle-orm';
+import { Router, type Request, type Response } from 'express';
+import { getRequiredOxyUserId } from '@oxy.so/core/server';
+import { getDb } from '../db';
+import { SOCIAL_PLATFORMS, socialAccounts, type SocialPlatform } from '../db/schema';
+import { encryptSocialToken } from '../utils/tokenCipher';
 
 const router = Router();
 
@@ -23,23 +23,23 @@ const PUBLIC_ACCOUNT_COLUMNS = {
 } as const;
 
 function platform(value: unknown): SocialPlatform {
-  if (typeof value !== "string" || !(SOCIAL_PLATFORMS as readonly string[]).includes(value)) {
-    throw new Error("platform is invalid");
+  if (typeof value !== 'string' || !(SOCIAL_PLATFORMS as readonly string[]).includes(value)) {
+    throw new Error('platform is invalid');
   }
   return value as SocialPlatform;
 }
 
 function date(value: unknown): Date | undefined {
-  if (value === undefined || value === null || value === "") return undefined;
-  if (typeof value !== "string" && typeof value !== "number" && !(value instanceof Date)) {
-    throw new Error("tokenExpiresAt must be a date");
+  if (value === undefined || value === null || value === '') return undefined;
+  if (typeof value !== 'string' && typeof value !== 'number' && !(value instanceof Date)) {
+    throw new Error('tokenExpiresAt must be a date');
   }
   const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) throw new Error("tokenExpiresAt must be a valid date");
+  if (Number.isNaN(parsed.getTime())) throw new Error('tokenExpiresAt must be a valid date');
   return parsed;
 }
 
-router.get("/", async (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const userId = getRequiredOxyUserId(req);
     const accounts = await getDb()
@@ -48,21 +48,21 @@ router.get("/", async (req: Request, res: Response) => {
       .where(and(eq(socialAccounts.userId, userId), eq(socialAccounts.isActive, true)));
     res.json({ accounts });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch social accounts" });
+    res.status(500).json({ message: 'Failed to fetch social accounts' });
   }
 });
 
-router.post("/", async (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const userId = getRequiredOxyUserId(req);
     const input = (req.body ?? {}) as Record<string, unknown>;
     if (
-      typeof input.platformUserId !== "string" ||
-      typeof input.platformUsername !== "string" ||
-      typeof input.accessToken !== "string" ||
+      typeof input.platformUserId !== 'string' ||
+      typeof input.platformUsername !== 'string' ||
+      typeof input.accessToken !== 'string' ||
       input.accessToken.length === 0
     ) {
-      return res.status(400).json({ message: "Social account fields are invalid" });
+      return res.status(400).json({ message: 'Social account fields are invalid' });
     }
     const id = uuidv7();
     const rows = await getDb()
@@ -75,40 +75,40 @@ router.post("/", async (req: Request, res: Response) => {
         platformUsername: input.platformUsername,
         accessTokenCiphertext: encryptSocialToken(input.accessToken, {
           accountId: id,
-          kind: "access",
+          kind: 'access',
         }),
         refreshTokenCiphertext:
-          typeof input.refreshToken === "string" && input.refreshToken.length > 0
-            ? encryptSocialToken(input.refreshToken, { accountId: id, kind: "refresh" })
+          typeof input.refreshToken === 'string' && input.refreshToken.length > 0
+            ? encryptSocialToken(input.refreshToken, { accountId: id, kind: 'refresh' })
             : undefined,
         tokenExpiresAt: date(input.tokenExpiresAt),
         profileImageUrl:
-          typeof input.profileImageUrl === "string" ? input.profileImageUrl : undefined,
+          typeof input.profileImageUrl === 'string' ? input.profileImageUrl : undefined,
       })
       .returning(PUBLIC_ACCOUNT_COLUMNS);
     const account = rows[0];
-    if (!account) throw new Error("Social account insert returned no row");
-    return res.status(201).json({ message: "Account connected", account });
+    if (!account) throw new Error('Social account insert returned no row');
+    return res.status(201).json({ message: 'Account connected', account });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to connect account" });
+    return res.status(500).json({ message: 'Failed to connect account' });
   }
 });
 
-router.delete("/:id", async (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const userId = getRequiredOxyUserId(req);
     const id = req.params.id;
-    if (typeof id !== "string") return res.status(400).json({ message: "id is invalid" });
+    if (typeof id !== 'string') return res.status(400).json({ message: 'id is invalid' });
     const rows = await getDb()
       .update(socialAccounts)
       .set({ isActive: false, updatedAt: new Date() })
       .where(and(eq(socialAccounts.id, id), eq(socialAccounts.userId, userId)))
       .returning(PUBLIC_ACCOUNT_COLUMNS);
     const account = rows[0];
-    if (!account) return res.status(404).json({ message: "Account not found" });
-    return res.json({ message: "Account disconnected" });
+    if (!account) return res.status(404).json({ message: 'Account not found' });
+    return res.json({ message: 'Account disconnected' });
   } catch (error) {
-    return res.status(500).json({ message: "Failed to disconnect account" });
+    return res.status(500).json({ message: 'Failed to disconnect account' });
   }
 });
 

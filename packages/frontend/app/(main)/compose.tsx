@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 export default function ComposeScreen() {
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Compose" }} />
+      <Header options={{ title: 'Compose' }} />
       <View style={styles.content}>
         <EmptyState
           title="Create a Post"

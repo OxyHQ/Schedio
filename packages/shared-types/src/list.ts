@@ -6,13 +6,13 @@ import { Timestamps } from './common';
 
 export enum ListVisibility {
   PUBLIC = 'public',
-  PRIVATE = 'private'
+  PRIVATE = 'private',
 }
 
 export enum ListType {
   USER = 'user',
   TOPIC = 'topic',
-  CURATED = 'curated'
+  CURATED = 'curated',
 }
 
 export interface List {
@@ -73,4 +73,4 @@ export interface ListStats {
   totalMembers: number;
   totalSubscribers: number;
   mostPopularLists: List[];
-} 
+}

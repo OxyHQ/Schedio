@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 export default function AccountsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Accounts" }} />
+      <Header options={{ title: 'Accounts' }} />
       <View style={styles.content}>
         <EmptyState
           title="Social Accounts"

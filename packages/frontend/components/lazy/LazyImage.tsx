@@ -66,7 +66,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
           observer.disconnect();
         }
       },
-      { threshold, rootMargin }
+      { threshold, rootMargin },
     );
 
     // On web a style-based RN View ref resolves to the underlying DOM element,
@@ -107,7 +107,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
       // Retry with exponential backoff
       const delay = Math.min(1000 * 2 ** retryCount, 5000);
       setTimeout(() => {
-        setRetryCount(prev => prev + 1);
+        setRetryCount((prev) => prev + 1);
         setHasError(false);
       }, delay);
     } else {

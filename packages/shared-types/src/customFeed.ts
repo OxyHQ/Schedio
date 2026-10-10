@@ -32,4 +32,3 @@ export interface CustomFeedListResponse {
   items: CustomFeed[];
   total: number;
 }
-

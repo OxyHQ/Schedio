@@ -74,4 +74,3 @@ export const AppProviders = memo(function AppProviders({
     </SafeAreaProvider>
   );
 });
-

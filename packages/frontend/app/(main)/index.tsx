@@ -11,7 +11,7 @@ export default function DashboardScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Dashboard" }} />
+      <Header options={{ title: 'Dashboard' }} />
       <View style={styles.content}>
         <EmptyState
           title="Welcome to Schedio"

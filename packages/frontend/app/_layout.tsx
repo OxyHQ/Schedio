@@ -6,18 +6,18 @@ import 'react-native-reanimated';
 import NetInfo from '@react-native-community/netinfo';
 import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxy.so/expo-splash';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
-import { useFonts } from "expo-font";
-import { Stack, usePathname } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState, memo } from "react";
-import { AppState, Platform, StyleSheet, View, type AppStateStatus } from "react-native";
+import { useFonts } from 'expo-font';
+import { Stack, usePathname } from 'expo-router';
+import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
 
 // Components
 import AppSplashScreen from '@/components/AppSplashScreen';
 import { NotificationPermissionGate } from '@/components/notifications/NotificationPermissionGate';
 import RegisterPush from '@/components/notifications/RegisterPushToken';
-import { SideBar } from "@/components/SideBar";
-import { BottomBar } from "@/components/layout/BottomBar";
-import { ThemedView } from "@/components/ThemedView";
+import { SideBar } from '@/components/SideBar';
+import { BottomBar } from '@/components/layout/BottomBar';
+import { ThemedView } from '@/components/ThemedView';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QUERY_CLIENT_CONFIG } from '@/components/providers/constants';
 
@@ -28,8 +28,8 @@ import { QUERY_CLIENT_CONFIG } from '@/components/providers/constants';
 import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 
 // Hooks
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useIsScreenNotMobile } from "@/hooks/useOptimizedMediaQuery";
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useIsScreenNotMobile } from '@/hooks/useOptimizedMediaQuery';
 import { useTheme } from '@/hooks/useTheme';
 import { useOxy } from '@oxy.so/services';
 
@@ -76,31 +76,37 @@ const MainLayout: React.FC<MainLayoutProps> = memo(({ isScreenNotMobile }) => {
   const needsAuth = !currentUser;
   const shouldShowBottomBar = !isScreenNotMobile;
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      width: '100%',
-      marginHorizontal: 'auto',
-      flexDirection: isScreenNotMobile ? 'row' : 'column',
-      backgroundColor: theme.colors.background,
-    },
-    mainContent: {
-      marginHorizontal: isScreenNotMobile ? 'auto' : 0,
-      justifyContent: 'space-between',
-      flexDirection: isScreenNotMobile ? 'row' : 'column',
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-    mainContentWrapper: {
-      flex: isScreenNotMobile ? 2.2 : 1,
-      ...(isScreenNotMobile ? {
-        borderLeftWidth: 0.5,
-        borderRightWidth: 0.5,
-        borderColor: theme.colors.border,
-      } : {}),
-      backgroundColor: theme.colors.background,
-    },
-  }), [isScreenNotMobile, theme.colors.background, theme.colors.border]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          width: '100%',
+          marginHorizontal: 'auto',
+          flexDirection: isScreenNotMobile ? 'row' : 'column',
+          backgroundColor: theme.colors.background,
+        },
+        mainContent: {
+          marginHorizontal: isScreenNotMobile ? 'auto' : 0,
+          justifyContent: 'space-between',
+          flexDirection: isScreenNotMobile ? 'row' : 'column',
+          flex: 1,
+          backgroundColor: theme.colors.background,
+        },
+        mainContentWrapper: {
+          flex: isScreenNotMobile ? 2.2 : 1,
+          ...(isScreenNotMobile
+            ? {
+                borderLeftWidth: 0.5,
+                borderRightWidth: 0.5,
+                borderColor: theme.colors.border,
+              }
+            : {}),
+          backgroundColor: theme.colors.background,
+        },
+      }),
+    [isScreenNotMobile, theme.colors.background, theme.colors.border],
+  );
 
   return (
     <View style={styles.container}>
@@ -137,7 +143,7 @@ export default function RootLayout() {
     'Inter-Medium': require('@/assets/fonts/inter/Inter-Medium.otf'),
     'Inter-SemiBold': require('@/assets/fonts/inter/Inter-SemiBold.otf'),
     'Inter-Bold': require('@/assets/fonts/inter/Inter-Bold.otf'),
-    'Phudu': require('@/assets/fonts/Phudu-VariableFont_wght.ttf'),
+    Phudu: require('@/assets/fonts/Phudu-VariableFont_wght.ttf'),
   });
 
   // WEB only: the custom <AppSplashScreen> fades out once init completes; its
@@ -162,7 +168,6 @@ export default function RootLayout() {
       setSplashState((prev) => ({ ...prev, initializationComplete: true }));
     }
   }, [fontsLoaded, fontError]);
-
 
   useEffect(() => {
     AppInitializer.initializeI18n().catch((error) => {
@@ -277,9 +282,7 @@ export default function RootLayout() {
 
   return (
     <BloomThemeProvider mode={colorScheme}>
-      <ThemedView style={{ flex: 1 }}>
-        {appContent}
-      </ThemedView>
+      <ThemedView style={{ flex: 1 }}>{appContent}</ThemedView>
     </BloomThemeProvider>
   );
 }

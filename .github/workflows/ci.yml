@@ -54,6 +54,27 @@ jobs:
               - '!docs/**'
               - '!**/*.md'
 
+  # Biome checks formatting and lint across the whole repo; the frontend's
+  # minimal ESLint config then runs the eslint-plugin-expo rules Biome has no
+  # equivalent for. Cheap enough to run on every pull request and push.
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.14
+      - run: bun install --frozen-lockfile
+      - name: Biome
+        run: bunx biome ci .
+      - name: Expo ESLint rules
+        run: bun run --filter @schedio/frontend lint:expo
+
   backend:
     name: Backend build and tests
     needs: changes

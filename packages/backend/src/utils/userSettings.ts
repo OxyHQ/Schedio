@@ -1,13 +1,13 @@
-import { uuidv7 } from "@oxy.so/db";
-import { eq } from "drizzle-orm";
-import { getDb, type SchedioDatabase } from "../db";
+import { uuidv7 } from '@oxy.so/db';
+import { eq } from 'drizzle-orm';
+import { getDb, type SchedioDatabase } from '../db';
 import {
   PROFILE_VISIBILITIES,
   THEME_MODES,
   userSettings,
   type ProfileVisibility,
   type ThemeMode,
-} from "../db/schema";
+} from '../db/schema';
 
 /**
  * Default profile customization settings
@@ -109,7 +109,7 @@ export async function ensureUserSettings(
     where: eq(userSettings.oxyUserId, oxyUserId),
   });
   if (!existing) {
-    throw new Error("User settings insert conflicted but no row exists");
+    throw new Error('User settings insert conflicted but no row exists');
   }
   return toUserSettingsDto(existing);
 }
@@ -151,17 +151,17 @@ export async function updateUserSettings(
     })
     .returning();
   const row = rows[0];
-  if (!row) throw new Error("User settings upsert returned no row");
+  if (!row) throw new Error('User settings upsert returned no row');
   return toUserSettingsDto(row);
 }
 
 function strings(value: unknown): string[] | undefined {
-  if (!Array.isArray(value) || value.some((item) => typeof item !== "string")) return undefined;
+  if (!Array.isArray(value) || value.some((item) => typeof item !== 'string')) return undefined;
   return [...value];
 }
 
 function record(value: unknown): Record<string, unknown> | undefined {
-  return typeof value === "object" && value !== null && !Array.isArray(value)
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : undefined;
 }
@@ -175,41 +175,41 @@ export function settingsPatchFromBody(body: unknown): UserSettingsPatch {
 
   if (
     appearance &&
-    typeof appearance.themeMode === "string" &&
+    typeof appearance.themeMode === 'string' &&
     (THEME_MODES as readonly string[]).includes(appearance.themeMode)
   ) {
     patch.appearanceThemeMode = appearance.themeMode;
   }
   if (appearance && appearance.primaryColor === null) patch.appearancePrimaryColor = null;
-  if (appearance && typeof appearance.primaryColor === "string") {
+  if (appearance && typeof appearance.primaryColor === 'string') {
     patch.appearancePrimaryColor = appearance.primaryColor.trim() || null;
   }
   if (input.profileHeaderImage === null) patch.profileHeaderImage = null;
-  if (typeof input.profileHeaderImage === "string") {
+  if (typeof input.profileHeaderImage === 'string') {
     patch.profileHeaderImage = input.profileHeaderImage.trim() || null;
   }
 
   if (
     privacy &&
-    typeof privacy.profileVisibility === "string" &&
+    typeof privacy.profileVisibility === 'string' &&
     (PROFILE_VISIBILITIES as readonly string[]).includes(privacy.profileVisibility)
   ) {
     patch.privacyProfileVisibility = privacy.profileVisibility;
   }
   const privacyBooleans = {
-    showContactInfo: "privacyShowContactInfo",
-    allowTags: "privacyAllowTags",
-    allowAllos: "privacyAllowAllos",
-    showOnlineStatus: "privacyShowOnlineStatus",
-    hideLikeCounts: "privacyHideLikeCounts",
-    hideShareCounts: "privacyHideShareCounts",
-    hideReplyCounts: "privacyHideReplyCounts",
-    hideSaveCounts: "privacyHideSaveCounts",
+    showContactInfo: 'privacyShowContactInfo',
+    allowTags: 'privacyAllowTags',
+    allowAllos: 'privacyAllowAllos',
+    showOnlineStatus: 'privacyShowOnlineStatus',
+    hideLikeCounts: 'privacyHideLikeCounts',
+    hideShareCounts: 'privacyHideShareCounts',
+    hideReplyCounts: 'privacyHideReplyCounts',
+    hideSaveCounts: 'privacyHideSaveCounts',
   } as const;
   if (privacy) {
     for (const [inputKey, column] of Object.entries(privacyBooleans)) {
       const value = privacy[inputKey];
-      if (typeof value === "boolean") patch[column] = value;
+      if (typeof value === 'boolean') patch[column] = value;
     }
     const hiddenWords = strings(privacy.hiddenWords);
     const restrictedUsers = strings(privacy.restrictedUsers);
@@ -220,18 +220,18 @@ export function settingsPatchFromBody(body: unknown): UserSettingsPatch {
   }
 
   if (customization) {
-    if (typeof customization.coverPhotoEnabled === "boolean") {
+    if (typeof customization.coverPhotoEnabled === 'boolean') {
       patch.profileCoverPhotoEnabled = customization.coverPhotoEnabled;
     }
-    if (typeof customization.minimalistMode === "boolean") {
+    if (typeof customization.minimalistMode === 'boolean') {
       patch.profileMinimalistMode = customization.minimalistMode;
     }
     if (customization.displayName === null) patch.profileDisplayName = null;
-    if (typeof customization.displayName === "string") {
+    if (typeof customization.displayName === 'string') {
       patch.profileDisplayName = customization.displayName.trim() || null;
     }
     if (customization.coverImage === null) patch.profileCoverImage = null;
-    if (typeof customization.coverImage === "string") {
+    if (typeof customization.coverImage === 'string') {
       patch.profileCoverImage = customization.coverImage.trim() || null;
     }
   }
@@ -242,15 +242,14 @@ export function settingsPatchFromBody(body: unknown): UserSettingsPatch {
 /**
  * Extracts public profile design data from UserSettings document
  */
-export function extractPublicProfileData(
-  doc: UserSettingsDto,
-  userId: string
-) {
+export function extractPublicProfileData(doc: UserSettingsDto, userId: string) {
   return {
     oxyUserId: userId,
-    appearance: doc.appearance.primaryColor ? {
-      primaryColor: doc.appearance.primaryColor,
-    } : undefined,
+    appearance: doc.appearance.primaryColor
+      ? {
+          primaryColor: doc.appearance.primaryColor,
+        }
+      : undefined,
     profileHeaderImage: doc?.profileHeaderImage,
     profileCustomization: doc.profileCustomization,
   };

@@ -7,12 +7,16 @@ import { ThemedView } from '@/components/ThemedView';
 export default function MainLayout() {
   const theme = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.background,
-    },
-  }), [theme.colors.background]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          backgroundColor: theme.colors.background,
+        },
+      }),
+    [theme.colors.background],
+  );
 
   return (
     <ThemedView style={styles.container}>

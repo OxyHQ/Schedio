@@ -25,7 +25,7 @@
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
   wait: number,
-  options: { leading?: boolean; trailing?: boolean } = { trailing: true }
+  options: { leading?: boolean; trailing?: boolean } = { trailing: true },
 ): T & { cancel: () => void; flush: () => void } {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastArgs: any[] | null = null;
@@ -103,7 +103,7 @@ export function debounce<T extends (...args: any[]) => any>(
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): T & { cancel: () => void } {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastRan: number = 0;
@@ -130,12 +130,15 @@ export function throttle<T extends (...args: any[]) => any>(
         clearTimeout(timeoutId);
       }
 
-      timeoutId = setTimeout(() => {
-        if (Date.now() - lastRan >= wait && lastArgs && lastThis) {
-          func.apply(lastThis, lastArgs);
-          lastRan = Date.now();
-        }
-      }, wait - (now - lastRan));
+      timeoutId = setTimeout(
+        () => {
+          if (Date.now() - lastRan >= wait && lastArgs && lastThis) {
+            func.apply(lastThis, lastArgs);
+            lastRan = Date.now();
+          }
+        },
+        wait - (now - lastRan),
+      );
     }
   }
 
@@ -157,7 +160,7 @@ export function throttle<T extends (...args: any[]) => any>(
  * });
  */
 export function rafDebounce<T extends (...args: any[]) => any>(
-  func: T
+  func: T,
 ): T & { cancel: () => void } {
   let rafId: number | null = null;
   let lastArgs: any[] | null = null;

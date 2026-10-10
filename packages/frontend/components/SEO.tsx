@@ -49,23 +49,28 @@ export const SEO: React.FC<SEOProps> = ({
 }) => {
   const pathname = usePathname();
   const { t } = useTranslation();
-  
+
   // Generate full URL
-  const fullUrl = url || (Platform.OS === 'web' && typeof window !== 'undefined' 
-    ? `${window.location.origin}${pathname}`
-    : `https://schedio.app${pathname}`);
+  const fullUrl =
+    url ||
+    (Platform.OS === 'web' && typeof window !== 'undefined'
+      ? `${window.location.origin}${pathname}`
+      : `https://schedio.app${pathname}`);
 
   // Use provided siteName or translated default
   const finalSiteName = siteName || t('seo.siteName', { defaultValue: defaultSEO.siteName });
-  
+
   // Default title if not provided (translated)
-  const pageTitle = title || t('seo.defaultTitle', { defaultValue: `${finalSiteName} - Social Platform` });
-  
+  const pageTitle =
+    title || t('seo.defaultTitle', { defaultValue: `${finalSiteName} - Social Platform` });
+
   // Default description if not provided (translated)
-  const pageDescription = description || t('seo.defaultDescription', { 
-    defaultValue: `Join ${finalSiteName} and connect with people around the world.`,
-    siteName: finalSiteName
-  });
+  const pageDescription =
+    description ||
+    t('seo.defaultDescription', {
+      defaultValue: `Join ${finalSiteName} and connect with people around the world.`,
+      siteName: finalSiteName,
+    });
 
   // Default image (you should add your logo/image)
   const pageImage = image || 'https://schedio.app/og-image.png';
@@ -81,7 +86,7 @@ export const SEO: React.FC<SEOProps> = ({
       <title>{pageTitle}</title>
       <meta name="title" content={pageTitle} />
       <meta name="description" content={pageDescription} />
-      
+
       {/* Open Graph / Facebook */}
       <meta property="og:type" content={type} />
       <meta property="og:url" content={fullUrl} />
@@ -89,7 +94,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta property="og:description" content={pageDescription} />
       <meta property="og:image" content={pageImage} />
       <meta property="og:site_name" content={siteName} />
-      
+
       {/* Twitter Card */}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:url" content={fullUrl} />
@@ -98,7 +103,7 @@ export const SEO: React.FC<SEOProps> = ({
       <meta name="twitter:image" content={pageImage} />
       {twitterHandle && <meta name="twitter:site" content={twitterHandle} />}
       {twitterHandle && <meta name="twitter:creator" content={twitterHandle} />}
-      
+
       {/* Article specific tags */}
       {type === 'article' && (
         <>
@@ -107,7 +112,7 @@ export const SEO: React.FC<SEOProps> = ({
           {modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
         </>
       )}
-      
+
       {/* Additional meta tags */}
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
       <link rel="canonical" href={fullUrl} />
@@ -116,4 +121,3 @@ export const SEO: React.FC<SEOProps> = ({
 };
 
 export default SEO;
-

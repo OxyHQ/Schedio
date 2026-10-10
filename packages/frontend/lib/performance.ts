@@ -54,7 +54,7 @@ export const perfLog = isProduction
  */
 export function memoize<Args extends any[], Return>(
   fn: (...args: Args) => Return,
-  keyFn?: (...args: Args) => string
+  keyFn?: (...args: Args) => string,
 ): (...args: Args) => Return {
   const cache = new Map<string, Return>();
 
@@ -68,4 +68,3 @@ export function memoize<Args extends any[], Return>(
     return result;
   };
 }
-

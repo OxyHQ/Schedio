@@ -10,13 +10,13 @@ export enum PostType {
   VIDEO = 'video',
   POLL = 'poll',
   REPOST = 'repost',
-  QUOTE = 'quote'
+  QUOTE = 'quote',
 }
 
 export enum PostVisibility {
   PUBLIC = 'public',
   FOLLOWERS_ONLY = 'followers_only',
-  PRIVATE = 'private'
+  PRIVATE = 'private',
 }
 
 export interface MediaItem {
@@ -166,4 +166,4 @@ export interface PostFilters {
   dateFrom?: string;
   dateTo?: string;
   isEdited?: boolean;
-} 
+}

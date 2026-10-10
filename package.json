@@ -17,7 +17,10 @@
     "build:frontend": "bun run --filter '@schedio/frontend' build",
     "build:backend": "bun run --filter '@schedio/backend' build",
     "test": "bun run --filter '*' test",
-    "lint": "bun run --filter '*' lint",
+    "lint": "biome check . && bun run --filter '@schedio/frontend' lint:expo",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "typecheck": "bun run --filter '*' typecheck",
     "clean": "bun run --filter '*' clean && rm -rf node_modules",
     "install:all": "bun install",
     "start:frontend": "bun run --filter '@schedio/frontend' start",
@@ -26,6 +29,7 @@
     "postinstall": "bun run build:shared-types"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.15",
     "@types/node": "^20.0.0",
     "typescript": "~5.9.3"
   },

@@ -9,10 +9,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { oxyServices } from '@/lib/oxyServices';
 
 import { useAppearanceStore } from '@/stores/appearanceStore';
-import {
-  hasNotificationPermission,
-  setupNotifications,
-} from '@/utils/notifications';
+import { hasNotificationPermission, setupNotifications } from '@/utils/notifications';
 import { logger } from '@/utils/logger';
 import { initializeI18n } from './i18n';
 import { INITIALIZATION_TIMEOUT } from './constants';
@@ -95,9 +92,7 @@ export class AppInitializer {
    * Only blocks on critical-path work (user + appearance).
    * Notifications are deferred.
    */
-  static async initializeApp(
-    fontsLoaded: boolean
-  ): Promise<InitializationResult> {
+  static async initializeApp(fontsLoaded: boolean): Promise<InitializationResult> {
     if (!fontsLoaded) {
       return {
         success: false,
@@ -109,10 +104,7 @@ export class AppInitializer {
       const STARTUP_TIMEOUT_MS = 2000;
 
       await Promise.race([
-        Promise.all([
-          fetchCurrentUser(),
-          loadAppearanceSettings(),
-        ]),
+        Promise.all([fetchCurrentUser(), loadAppearanceSettings()]),
         new Promise<void>((resolve) => setTimeout(resolve, STARTUP_TIMEOUT_MS)),
       ]);
 
@@ -153,8 +145,6 @@ export class AppInitializer {
   static async loadEagerSettings(): Promise<void> {
     if (!oxyServices.session.accessToken) return;
 
-    await Promise.allSettled([
-      loadAppearanceSettings(),
-    ]);
+    await Promise.allSettled([loadAppearanceSettings()]);
   }
 }

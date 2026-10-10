@@ -9,7 +9,7 @@ export enum MediaType {
   VIDEO = 'video',
   AUDIO = 'audio',
   GIF = 'gif',
-  DOCUMENT = 'document'
+  DOCUMENT = 'document',
 }
 
 export enum MediaStatus {
@@ -17,7 +17,7 @@ export enum MediaStatus {
   PROCESSING = 'processing',
   READY = 'ready',
   FAILED = 'failed',
-  DELETED = 'deleted'
+  DELETED = 'deleted',
 }
 
 export interface Media {
@@ -203,4 +203,4 @@ export interface MediaStats {
   byStatus: Record<MediaStatus, number>;
   averageFileSize: number;
   mostUsedMedia: Media[];
-} 
+}

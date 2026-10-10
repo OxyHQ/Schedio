@@ -1,7 +1,7 @@
-import { useState } from "react";
-import * as Location from "expo-location";
-import { useTranslation } from "react-i18next";
-import { toast } from "@oxy.so/bloom/toast";
+import { useState } from 'react';
+import * as Location from 'expo-location';
+import { useTranslation } from 'react-i18next';
+import { toast } from '@oxy.so/bloom/toast';
 
 export interface LocationData {
   latitude: number;
@@ -19,8 +19,8 @@ export const useLocationManager = () => {
     try {
       // Request permissions
       const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        toast.error(t("Location permission denied"));
+      if (status !== 'granted') {
+        toast.error(t('Location permission denied'));
         return;
       }
 
@@ -40,15 +40,15 @@ export const useLocationManager = () => {
         latitude: currentLocation.coords.latitude,
         longitude: currentLocation.coords.longitude,
         address: address
-          ? `${address.city || address.subregion || ""}, ${address.region || ""}`
+          ? `${address.city || address.subregion || ''}, ${address.region || ''}`
           : `${currentLocation.coords.latitude.toFixed(4)}, ${currentLocation.coords.longitude.toFixed(4)}`,
       };
 
       setLocation(locationData);
-      toast.success(t("Location added"));
+      toast.success(t('Location added'));
     } catch (error) {
-      console.error("Error getting location:", error);
-      toast.error(t("Failed to get location"));
+      console.error('Error getting location:', error);
+      toast.error(t('Failed to get location'));
     } finally {
       setIsGettingLocation(false);
     }
@@ -56,7 +56,7 @@ export const useLocationManager = () => {
 
   const removeLocation = () => {
     setLocation(null);
-    toast.success(t("Location removed"));
+    toast.success(t('Location removed'));
   };
 
   return {

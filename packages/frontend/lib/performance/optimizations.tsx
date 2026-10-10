@@ -16,7 +16,7 @@ import { InteractionManager } from 'react-native';
  */
 export function debounce<T extends (...args: any[]) => any>(
   func: T,
-  wait: number
+  wait: number,
 ): (...args: Parameters<T>) => void {
   let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
@@ -68,7 +68,7 @@ export function useDebounce<T>(value: T, delay: number): T {
  */
 export function throttle<T extends (...args: any[]) => any>(
   func: T,
-  limit: number
+  limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
   let lastRan: number;
@@ -137,7 +137,7 @@ export function useAfterInteractions(): boolean {
 export function useMemoDebug<T>(
   factory: () => T,
   deps: React.DependencyList,
-  debugName?: string
+  debugName?: string,
 ): T {
   const prevDeps = useRef<React.DependencyList | undefined>(undefined);
 
@@ -168,19 +168,14 @@ export function useMemoDebug<T>(
  * Stable callback that doesn't change between renders
  * Prevents unnecessary re-renders of child components
  */
-export function useStableCallback<T extends (...args: any[]) => any>(
-  callback: T
-): T {
+export function useStableCallback<T extends (...args: any[]) => any>(callback: T): T {
   const callbackRef = useRef(callback);
 
   useEffect(() => {
     callbackRef.current = callback;
   });
 
-  return useCallback(
-    ((...args: any[]) => callbackRef.current(...args)) as T,
-    []
-  );
+  return useCallback(((...args: any[]) => callbackRef.current(...args)) as T, []);
 }
 
 /**
@@ -232,7 +227,7 @@ export function getItemLayout(itemHeight: number) {
  */
 export function memoWithProps<P>(
   Component: React.ComponentType<P>,
-  propsAreEqual?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean
+  propsAreEqual?: (prevProps: Readonly<P>, nextProps: Readonly<P>) => boolean,
 ): React.MemoExoticComponent<React.ComponentType<P>> {
   return React.memo(Component, propsAreEqual);
 }
@@ -246,12 +241,7 @@ export function shallowEqual(objA: any, objB: any): boolean {
     return true;
   }
 
-  if (
-    typeof objA !== 'object' ||
-    objA === null ||
-    typeof objB !== 'object' ||
-    objB === null
-  ) {
+  if (typeof objA !== 'object' || objA === null || typeof objB !== 'object' || objB === null) {
     return false;
   }
 
@@ -291,7 +281,7 @@ export function useRAF(callback: () => void, deps: React.DependencyList): void {
  */
 export function useIntersection(
   ref: React.RefObject<any>,
-  options?: IntersectionObserverInit
+  options?: IntersectionObserverInit,
 ): boolean {
   const [isIntersecting, setIsIntersecting] = React.useState(false);
 

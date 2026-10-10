@@ -30,18 +30,14 @@ export const Toggle: React.FC<ToggleProps> = ({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && (
-        <Text style={[styles.label, { color: theme.colors.text }]}>
-          {label}
-        </Text>
-      )}
+      {label && <Text style={[styles.label, { color: theme.colors.text }]}>{label}</Text>}
       <TouchableOpacity
         style={[
           styles.switchContainer,
           {
             backgroundColor: value ? theme.colors.primary : theme.colors.border,
             opacity: disabled ? 0.5 : 1,
-          }
+          },
         ]}
         onPress={() => !disabled && onValueChange(!value)}
         activeOpacity={0.8}
@@ -60,7 +56,7 @@ export const Toggle: React.FC<ToggleProps> = ({
                   }),
                 },
               ],
-            }
+            },
           ]}
         />
       </TouchableOpacity>
@@ -91,4 +87,3 @@ const styles = StyleSheet.create({
     borderRadius: 11,
   },
 });
-

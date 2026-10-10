@@ -36,16 +36,8 @@ const ShapedAvatar: React.FC<ShapedAvatarProps> = ({ shape, size, children }) =>
             <Path d={pathData} />
           </ClipPath>
         </Defs>
-        <ForeignObject
-          x={0}
-          y={0}
-          width={100}
-          height={100}
-          clipPath={`url(#${clipId})`}
-        >
-          <View style={{ width: '100%', height: '100%' }}>
-            {children}
-          </View>
+        <ForeignObject x={0} y={0} width={100} height={100} clipPath={`url(#${clipId})`}>
+          <View style={{ width: '100%', height: '100%' }}>{children}</View>
         </ForeignObject>
       </Svg>
     </View>

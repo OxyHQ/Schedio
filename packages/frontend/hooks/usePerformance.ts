@@ -9,10 +9,7 @@ import { useCallback, useMemo, useRef } from 'react';
  * Debounce hook for expensive operations
  * Prevents function calls until delay has passed since last call
  */
-export function useDebounce<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
+export function useDebounce<T extends (...args: any[]) => any>(callback: T, delay: number): T {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   return useCallback(
@@ -24,7 +21,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
         callback(...args);
       }, delay);
     }) as T,
-    [callback, delay]
+    [callback, delay],
   );
 }
 
@@ -32,10 +29,7 @@ export function useDebounce<T extends (...args: any[]) => any>(
  * Throttle hook for frequent events
  * Limits function calls to once per delay period
  */
-export function useThrottle<T extends (...args: any[]) => any>(
-  callback: T,
-  delay: number
-): T {
+export function useThrottle<T extends (...args: any[]) => any>(callback: T, delay: number): T {
   const lastRunRef = useRef<number>(0);
 
   return useCallback(
@@ -46,7 +40,7 @@ export function useThrottle<T extends (...args: any[]) => any>(
         callback(...args);
       }
     }) as T,
-    [callback, delay]
+    [callback, delay],
   );
 }
 
@@ -64,8 +58,7 @@ export function useStableRef<T>(value: T, deps: React.DependencyList): T {
  */
 export function useStableCallback<T extends (...args: any[]) => any>(
   callback: T,
-  deps: React.DependencyList
+  deps: React.DependencyList,
 ): T {
   return useCallback(callback, deps);
 }
-

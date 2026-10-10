@@ -1,6 +1,6 @@
 /**
  * Secure Storage Wrapper
- * 
+ *
  * Provides a unified interface for secure storage that works on both native and web.
  * On native platforms, uses Expo SecureStore (if available).
  * On web or when SecureStore is unavailable, falls back to AsyncStorage.
@@ -20,11 +20,11 @@ async function checkSecureStoreAvailability(): Promise<boolean> {
   if (isWeb) {
     return false; // SecureStore is not available on web
   }
-  
+
   if (isSecureStoreAvailable !== null) {
     return isSecureStoreAvailable;
   }
-  
+
   try {
     isSecureStoreAvailable = await SecureStore.isAvailableAsync();
     return isSecureStoreAvailable;
@@ -41,7 +41,7 @@ async function checkSecureStoreAvailability(): Promise<boolean> {
 export async function getSecureItem(key: string): Promise<string | null> {
   try {
     const useSecureStore = await checkSecureStoreAvailability();
-    
+
     if (useSecureStore) {
       // On native platforms with SecureStore available
       return await SecureStore.getItemAsync(key);
@@ -67,7 +67,7 @@ export async function getSecureItem(key: string): Promise<string | null> {
 export async function setSecureItem(key: string, value: string): Promise<boolean> {
   try {
     const useSecureStore = await checkSecureStoreAvailability();
-    
+
     if (useSecureStore) {
       // On native platforms with SecureStore available
       await SecureStore.setItemAsync(key, value);
@@ -96,7 +96,7 @@ export async function setSecureItem(key: string, value: string): Promise<boolean
 export async function removeSecureItem(key: string): Promise<boolean> {
   try {
     const useSecureStore = await checkSecureStoreAvailability();
-    
+
     if (useSecureStore) {
       // On native platforms with SecureStore available
       await SecureStore.deleteItemAsync(key);
@@ -118,4 +118,3 @@ export async function removeSecureItem(key: string): Promise<boolean> {
     }
   }
 }
-

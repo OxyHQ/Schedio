@@ -53,7 +53,9 @@ class PerformanceMonitor {
     const duration = this.measure(name);
     if (duration !== null) {
       if (threshold && duration > threshold) {
-        console.warn(`[Performance] ${name} took ${duration.toFixed(2)}ms (threshold: ${threshold}ms)`);
+        console.warn(
+          `[Performance] ${name} took ${duration.toFixed(2)}ms (threshold: ${threshold}ms)`,
+        );
       } else {
         console.log(`[Performance] ${name} took ${duration.toFixed(2)}ms`);
       }
@@ -79,7 +81,7 @@ class PerformanceMonitor {
    * Get average duration for a specific metric
    */
   getAverage(name: string): number | null {
-    const filtered = this.measurements.filter(m => m.name === name && m.duration);
+    const filtered = this.measurements.filter((m) => m.name === name && m.duration);
     if (filtered.length === 0) return null;
 
     const sum = filtered.reduce((acc, m) => acc + (m.duration || 0), 0);
@@ -100,10 +102,7 @@ export const perfMonitor = new PerformanceMonitor();
 /**
  * Measure API call performance
  */
-export async function measureApiCall<T>(
-  name: string,
-  apiCall: () => Promise<T>
-): Promise<T> {
+export async function measureApiCall<T>(name: string, apiCall: () => Promise<T>): Promise<T> {
   perfMonitor.mark(name);
   try {
     const result = await apiCall();
@@ -118,10 +117,7 @@ export async function measureApiCall<T>(
 /**
  * Measure render time
  */
-export function measureRender<T>(
-  name: string,
-  renderFn: () => T
-): T {
+export function measureRender<T>(name: string, renderFn: () => T): T {
   perfMonitor.mark(name);
   const result = renderFn();
   perfMonitor.measureAndLog(name, 16); // Warn if > 16ms (60fps threshold)

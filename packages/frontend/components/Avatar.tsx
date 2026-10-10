@@ -46,45 +46,55 @@ const Avatar: React.FC<AvatarProps> = ({
   const theme = useTheme();
   const [errored, setErrored] = React.useState(false);
 
-  const imageSource = source && !errored
-    ? (typeof source === 'string' ? { uri: source } : source)
-    : DefaultAvatar;
+  const imageSource =
+    source && !errored ? (typeof source === 'string' ? { uri: source } : source) : DefaultAvatar;
 
   const Container: any = onPress ? TouchableOpacity : View;
 
-  const inner = source && !errored ? (
-    useAnimated ? (
-      <AnimatedImage
-        source={imageSource}
-        onError={() => setErrored(true)}
-        contentFit="cover"
-        style={[StyleSheet.absoluteFill, imageStyle]}
-        placeholder={DefaultAvatar}
-        transition={200}
-        cachePolicy="memory-disk"
-        priority="normal"
-      />
+  const inner =
+    source && !errored ? (
+      useAnimated ? (
+        <AnimatedImage
+          source={imageSource}
+          onError={() => setErrored(true)}
+          contentFit="cover"
+          style={[StyleSheet.absoluteFill, imageStyle]}
+          placeholder={DefaultAvatar}
+          transition={200}
+          cachePolicy="memory-disk"
+          priority="normal"
+        />
+      ) : (
+        <Image
+          source={imageSource}
+          onError={() => setErrored(true)}
+          contentFit="cover"
+          style={[StyleSheet.absoluteFill, imageStyle]}
+          placeholder={DefaultAvatar}
+          transition={200}
+          cachePolicy="memory-disk"
+          priority="normal"
+        />
+      )
     ) : (
-      <Image
-        source={imageSource}
-        onError={() => setErrored(true)}
-        contentFit="cover"
-        style={[StyleSheet.absoluteFill, imageStyle]}
-        placeholder={DefaultAvatar}
-        transition={200}
-        cachePolicy="memory-disk"
-        priority="normal"
-      />
-    )
-  ) : (
-    <View style={[styles.fallback, { width: size, height: size, backgroundColor: theme.colors.backgroundSecondary }]}>
-      {label ? (
-        <Text style={[styles.fallbackText, { fontSize: Math.round(size * 0.4), color: theme.colors.text }]}>
-          {label}
-        </Text>
-      ) : null}
-    </View>
-  );
+      <View
+        style={[
+          styles.fallback,
+          { width: size, height: size, backgroundColor: theme.colors.backgroundSecondary },
+        ]}
+      >
+        {label ? (
+          <Text
+            style={[
+              styles.fallbackText,
+              { fontSize: Math.round(size * 0.4), color: theme.colors.text },
+            ]}
+          >
+            {label}
+          </Text>
+        ) : null}
+      </View>
+    );
 
   const content = (
     <View style={[{ width: size, height: size }, style]}>

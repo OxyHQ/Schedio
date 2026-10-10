@@ -5,7 +5,7 @@ export const shadowStyle = (opts?: { elevation?: number; web?: string }) => {
   const elev = opts?.elevation ?? 2;
   const web = opts?.web ?? `0px ${elev}px ${elev * 2}px ${colors.shadow}`;
   return Platform.select({
-    web: ({ boxShadow: web } as unknown) as object,
+    web: { boxShadow: web } as unknown as object,
     default: {
       elevation: elev,
       shadowColor: colors.shadow,

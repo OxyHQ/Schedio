@@ -15,4 +15,4 @@ export { MicIcon } from './mic-icon';
 // Types
 export type { IconProps } from './types';
 
-export { CalendarIcon } from './calendar-icon'; 
+export { CalendarIcon } from './calendar-icon';
