@@ -37,7 +37,7 @@ interface AppProvidersProps {
  */
 export const AppProviders = memo(function AppProviders({
   children,
-  colorScheme,
+  // colorScheme stays in the props so memo() still re-renders when it changes.
   queryClient,
 }: AppProvidersProps) {
   return (

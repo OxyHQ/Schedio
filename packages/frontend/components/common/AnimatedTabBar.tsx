@@ -47,8 +47,6 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   const scrollRef = useRef<Animated.ScrollView>(null);
   const [layoutReady, setLayoutReady] = useState(false);
 
-  const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
-
   // Track scroll offset when scrolling horizontally
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -135,7 +133,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       ]}
     >
       <Container style={styles.tabsContainer} {...containerProps}>
-        {tabs.map((tab, index) => (
+        {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
             style={styles.tab}

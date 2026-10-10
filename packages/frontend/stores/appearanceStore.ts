@@ -114,7 +114,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
       }
 
       return doc ?? null;
-    } catch (e) {
+    } catch {
       return null;
     }
   },

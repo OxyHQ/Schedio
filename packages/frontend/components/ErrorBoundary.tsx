@@ -34,7 +34,7 @@ class ErrorBoundaryBase extends Component<Props, State> {
     errorCount: 0,
   };
 
-  static getDerivedStateFromError(error: Error): Partial<State> {
+  static getDerivedStateFromError(_error: Error): Partial<State> {
     return { hasError: true };
   }
 

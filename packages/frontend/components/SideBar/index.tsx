@@ -19,7 +19,6 @@ import { AnalyticsIcon, AnalyticsIconActive } from '@/assets/icons/analytics-ico
 // Hooks
 import { useTheme } from '@/hooks/useTheme';
 import { useOxy, useAuth } from '@oxy.so/services';
-import { useMyAvatarShape } from '@/hooks/useAvatarShape';
 
 // Utils
 import { confirmDialog } from '@/utils/alerts';
@@ -34,14 +33,9 @@ const WindowHeight = Dimensions.get('window').height;
 export function SideBar() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isAuthenticated: _isAuthenticated, user, logout, oxyServices } = useOxy();
+  const { isAuthenticated: _isAuthenticated, user, logout } = useOxy();
   const { signIn } = useAuth();
   const theme = useTheme();
-
-  const avatarUri = user?.avatar
-    ? oxyServices.assets.publicUrl(user.avatar as string, 'thumb')
-    : undefined;
-  const myAvatarShape = useMyAvatarShape();
 
   const handleSignOut = async () => {
     const confirmed = await confirmDialog({

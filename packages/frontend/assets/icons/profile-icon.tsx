@@ -30,7 +30,7 @@ export const ProfileIconActive = ({
   style?: ViewStyle;
 }) => {
   return (
-    <View style={{ width: size, height: size }}>
+    <View style={[{ width: size, height: size }, style]}>
       <Svg width={size} height={size} viewBox="0 0 26 26" fill="none">
         <Circle cx="13" cy="7.25" r="4" stroke={color} strokeWidth="2.5" fill={color} />
         <Path

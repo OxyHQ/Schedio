@@ -1,12 +1,3 @@
-type LoggerFunction = (message: string, ...args: unknown[]) => void;
-
-interface Logger {
-  info: LoggerFunction;
-  warn: LoggerFunction;
-  error: LoggerFunction;
-  debug: LoggerFunction;
-}
-
 export const logger = {
   info: (message: string, ...args: unknown[]) => {
     console.log(`[INFO] ${message}`, ...args);

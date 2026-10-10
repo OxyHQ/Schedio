@@ -126,7 +126,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
 
   // 4. Check Zustand store
   try {
-    const { useAppearanceStore } = await import('../stores/appearanceStore');
+    await import('../stores/appearanceStore');
 
     checks.push({
       name: 'Zustand Stores',
@@ -144,7 +144,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
   // 5. Check React Query
   try {
     const { QueryClient } = await import('@tanstack/react-query');
-    const testClient = new QueryClient();
+    new QueryClient();
     checks.push({
       name: 'React Query',
       status: 'pass',
@@ -160,7 +160,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
 
   // 6. Check expo-image (Avatar optimization)
   try {
-    const { Image } = await import('expo-image');
+    await import('expo-image');
     checks.push({
       name: 'expo-image',
       status: 'pass',
@@ -176,7 +176,7 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
 
   // 7. Check NetInfo (network monitoring)
   try {
-    const NetInfo = await import('@react-native-community/netinfo');
+    await import('@react-native-community/netinfo');
     checks.push({
       name: 'NetInfo',
       status: 'pass',
@@ -192,13 +192,13 @@ export async function runHealthCheck(): Promise<HealthCheckResult> {
 
   // 9. Check FlashList (virtual scrolling - optional but recommended)
   try {
-    const { FlashList } = await import('@shopify/flash-list');
+    await import('@shopify/flash-list');
     checks.push({
       name: 'FlashList',
       status: 'pass',
       message: 'Virtual scrolling available for message lists',
     });
-  } catch (error) {
+  } catch {
     checks.push({
       name: 'FlashList',
       status: 'warning',

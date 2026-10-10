@@ -71,12 +71,10 @@ export function throttle<T extends (...args: any[]) => any>(
   limit: number,
 ): (...args: Parameters<T>) => void {
   let inThrottle: boolean;
-  let lastRan: number;
 
   return function throttled(...args: Parameters<T>) {
     if (!inThrottle) {
       func(...args);
-      lastRan = Date.now();
       inThrottle = true;
 
       setTimeout(() => {
@@ -215,7 +213,7 @@ export const FLATLIST_OPTIMIZATIONS = {
  * />
  */
 export function getItemLayout(itemHeight: number) {
-  return (data: any, index: number) => ({
+  return (_data: any, index: number) => ({
     length: itemHeight,
     offset: itemHeight * index,
     index,

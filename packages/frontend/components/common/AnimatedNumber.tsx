@@ -45,7 +45,6 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
   React.useEffect(() => {
     if (previousValue.current !== value) {
-      const oldValue = previousValue.current;
       previousValue.current = value;
 
       // Start animation

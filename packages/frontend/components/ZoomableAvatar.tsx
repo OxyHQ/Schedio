@@ -107,7 +107,7 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
           }
         }
         // For local images, dimensions will be captured via onLoad
-      } catch (error) {
+      } catch {
         // If getSize fails, dimensions will be captured via onLoad if available
         // Silently fail - onLoad will handle it
       }

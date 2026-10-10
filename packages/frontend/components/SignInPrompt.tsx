@@ -1,35 +1,13 @@
 import type React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { OxySignInButton, useAuth } from '@oxy.so/services';
+import { OxySignInButton } from '@oxy.so/services';
 import { Logo } from './Logo';
 import { colors } from '../styles/colors';
 import { useTheme } from '@/hooks/useTheme';
 
-interface SignInPromptProps {
-  onSignInPress?: () => void;
-}
-
-const SignInPrompt: React.FC<SignInPromptProps> = ({ onSignInPress }) => {
-  const { signIn } = useAuth();
+const SignInPrompt: React.FC = () => {
   const theme = useTheme();
-
-  const handleSignInPress = async () => {
-    if (onSignInPress) {
-      onSignInPress();
-    } else {
-      try {
-        await signIn();
-      } catch (error: any) {
-        // Handle authentication cancellation gracefully
-        if (error?.message?.includes('cancelled') || error?.message?.includes('closed')) {
-          return;
-        }
-        // Log other errors
-        console.error('Authentication error:', error);
-      }
-    }
-  };
 
   return (
     <View style={[styles.signInContainer, { backgroundColor: theme.colors.backgroundSecondary }]}>

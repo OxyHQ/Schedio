@@ -21,7 +21,6 @@ const APP_ICONS = [
 
 export default function AppearanceSettingsScreen() {
   const mySettings = useAppearanceStore((state) => state.mySettings);
-  const loading = useAppearanceStore((state) => state.loading);
   const loadMySettings = useAppearanceStore((state) => state.loadMySettings);
   const updateMySettings = useAppearanceStore((state) => state.updateMySettings);
   const theme = useTheme();
@@ -56,11 +55,6 @@ export default function AppearanceSettingsScreen() {
   const selectedColorTheme = useMemo(
     () => COLOR_THEMES.find((t) => t.id === selectedColorThemeId) || COLOR_THEMES[0],
     [selectedColorThemeId],
-  );
-
-  const selectedVariant = useMemo(
-    () => selectedColorTheme[effectiveMode],
-    [selectedColorTheme, effectiveMode],
   );
 
   const onSelectColorTheme = useCallback(

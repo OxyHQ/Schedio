@@ -6,7 +6,6 @@ import { HeaderIconButton } from '@/components/layout/HeaderIconButton';
 import { BackArrowIcon } from '@/assets/icons/back-arrow-icon';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useOxy } from '@oxy.so/services';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { authenticatedClient } from '@/utils/api';
@@ -28,7 +27,6 @@ interface PrivacySettings {
 export default function PrivacySettingsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { user } = useOxy();
 
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({});
   const [loading, setLoading] = useState(true);
@@ -49,18 +47,6 @@ export default function PrivacySettingsScreen() {
       console.error('Error loading privacy settings:', error);
       setPrivacySettings({ profileVisibility: 'public' });
       setLoading(false);
-    }
-  };
-
-  const updatePrivacySettings = async (updates: Partial<PrivacySettings>) => {
-    try {
-      const newSettings = { ...privacySettings, ...updates };
-      await authenticatedClient.put('/profile/settings', {
-        privacy: newSettings,
-      });
-      setPrivacySettings(newSettings);
-    } catch (error) {
-      console.error('Error updating privacy settings:', error);
     }
   };
 
