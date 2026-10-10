@@ -194,7 +194,7 @@ export function SideBar() {
           </View>
 
           <View style={styles.footer}>
-            {user && user.id ? (
+            {user?.id ? (
               <SideBarItem
                 isActive={false}
                 icon={<IconComponent name="log-out-outline" size={20} color={theme.colors.text} />}

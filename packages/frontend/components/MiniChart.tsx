@@ -28,10 +28,10 @@ const MiniChart: React.FC<MiniChartProps> = ({
   const theme = useTheme();
 
   // Use provided colors or theme defaults
-  const defaultBarColor = barColor || theme.colors.primary + '40';
+  const defaultBarColor = barColor || `${theme.colors.primary}40`;
   const defaultTodayColor = todayColor || theme.colors.primary;
-  const defaultEmptyColor = emptyColor || theme.colors.primary + '20';
-  const defaultLabelColor = labelColor || theme.colors.primary + '60';
+  const defaultEmptyColor = emptyColor || `${theme.colors.primary}20`;
+  const defaultLabelColor = labelColor || `${theme.colors.primary}60`;
   const defaultTodayLabelColor = todayLabelColor || theme.colors.primary;
 
   // Ensure we always have 7 values

@@ -14,8 +14,8 @@ export const NoUpdatesIllustration: React.FC<NoUpdatesIllustrationProps> = ({
   height = 200,
 }) => {
   const strokeNeutral = colors.COLOR_BLACK_LIGHT_2;
-  const accentA = colors.primaryColor + '15';
-  const accentB = colors.primaryColor + '99';
+  const accentA = `${colors.primaryColor}15`;
+  const accentB = `${colors.primaryColor}99`;
   const white = colors.primaryLight;
 
   return (

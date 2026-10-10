@@ -65,7 +65,7 @@ async function main() {
   console.log('\n==============================================');
   console.log('OXY_CLIENT_ID (publicKey) =', prod.credential.publicKey);
   console.log('==============================================');
-  console.log('\nSet it: EXPO_PUBLIC_OXY_CLIENT_ID=' + prod.credential.publicKey);
+  console.log(`\nSet it: EXPO_PUBLIC_OXY_CLIENT_ID=${prod.credential.publicKey}`);
 }
 
 main().catch((err) => {

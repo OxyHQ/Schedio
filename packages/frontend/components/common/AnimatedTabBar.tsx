@@ -60,7 +60,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   useLayoutEffect(() => {
     const layout = tabLayouts.current[activeTabId];
 
-    if (!layout || !layout.textWidth || layout.width === 0 || layout.x < 0) {
+    if (!layout?.textWidth || layout.width === 0 || layout.x < 0) {
       // Wait for layout to be measured - will be updated by onLayout callbacks
       return;
     }
