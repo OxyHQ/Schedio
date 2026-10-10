@@ -20,11 +20,11 @@ const LoadingTopSpinner: React.FC<AvatarProps> = ({ size = 40, iconSize = 25, st
     const opacity = useSharedValue(showLoading ? 1 : 0);
     const translateY = useSharedValue(showLoading ? 0 : -targetHeight);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: re-run only when the inputs change; the Reanimated shared values are stable
     useEffect(() => {
         height.value = withTiming(showLoading ? targetHeight : 0, { duration: 250, easing: Easing.out(Easing.cubic) });
         opacity.value = withTiming(showLoading ? 1 : 0, { duration: 250, easing: Easing.out(Easing.cubic) });
         translateY.value = withTiming(showLoading ? 0 : -targetHeight, { duration: 250, easing: Easing.out(Easing.cubic) });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [showLoading, targetHeight]);
 
     const containerAnimated = useAnimatedStyle(() => ({

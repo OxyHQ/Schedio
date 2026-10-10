@@ -118,7 +118,7 @@ EXPO_PUBLIC_POSTHOG_KEY=your_posthog_key
 - `bun run ios` — Run on iOS simulator
 - `bun run web` — Run in web browser
 - `bun run build-web` — Build static web output
-- `bun run lint` — Lint codebase
+- `bun run lint` — Biome check (format + lint, config in the repo root `biome.json`), then `expo lint` for the eslint-plugin-expo rules Biome lacks
 - `bun run test` — Run tests
 
 ## Navigation

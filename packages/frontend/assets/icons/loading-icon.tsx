@@ -7,13 +7,13 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTim
 export const Loading = ({ color = colors.primaryColor, size = 26, style: styleProp }: { color?: string; size?: number; style?: ViewStyle }) => {
     const rotation = useSharedValue(0);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: start the spinner once on mount; `rotation` is a stable Reanimated shared value
     React.useEffect(() => {
         rotation.value = withRepeat(
             withTiming(360, { duration: 400, easing: Easing.linear }),
             -1,
             false
         );
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const animatedStyle = useAnimatedStyle(() => ({

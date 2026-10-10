@@ -9,7 +9,8 @@
         "build": "tsc",
         "dev": "tsc --watch",
         "clean": "rm -rf dist",
-        "lint": "tsc --noEmit",
+        "lint": "biome check .",
+    "typecheck": "tsc --noEmit",
         "test": "echo \"No tests specified\" && exit 0",
         "prepublishOnly": "bun run build"
     },

@@ -88,7 +88,10 @@ bun run build:frontend      # static web export
 bun run build:backend
 bun run start:frontend
 bun run start:backend
-bun run lint
+bun run lint                # Biome check, then the frontend's Expo ESLint rules
+bun run lint:fix            # apply Biome's safe fixes and formatting
+bun run format              # Biome formatter only
+bun run typecheck           # tsc in every package that has a typecheck script
 bun run clean               # build artifacts and node_modules
 ```
 
