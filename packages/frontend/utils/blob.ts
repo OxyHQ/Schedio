@@ -109,7 +109,7 @@ export function createMixedBlob(
 /**
  * Helper function to check if a value is a Blob
  */
-export function isBlob(value: any): value is Blob {
+export function isBlob(value: unknown): value is Blob {
   return value instanceof Blob;
 }
 

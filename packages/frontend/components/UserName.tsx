@@ -1,5 +1,13 @@
 import React from 'react';
-import { Text, TouchableOpacity, StyleSheet, View, type TextStyle } from 'react-native';
+import {
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  View,
+  type StyleProp,
+  type TextStyle,
+  type ViewStyle,
+} from 'react-native';
 import { VerifiedIcon } from '@/assets/icons/verified-icon';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -11,7 +19,7 @@ interface Props {
   variant?: 'default' | 'small';
   style?: {
     name?: TextStyle;
-    container?: any;
+    container?: StyleProp<ViewStyle>;
   };
 }
 

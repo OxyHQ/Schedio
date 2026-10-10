@@ -6,20 +6,20 @@ type ScrollEvent = {
   nativeEvent?: {
     contentOffset?: { x?: number; y?: number } | number;
     target?: { scrollTop?: number };
-    [key: string]: any;
+    [key: string]: unknown;
   };
   target?: { scrollTop?: number };
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type WheelLikeEvent = {
   deltaY?: number;
   preventDefault?: () => void;
-  target?: any;
+  target?: unknown;
   nativeEvent?: {
     deltaY?: number;
     preventDefault?: () => void;
-    target?: any;
+    target?: unknown;
   };
 };
 
@@ -42,7 +42,7 @@ type LayoutScrollContextValue = {
    */
   createAnimatedScrollHandler: (
     listener?: (event: ScrollEvent) => void,
-  ) => (...args: any[]) => void;
+  ) => (...args: unknown[]) => void;
   /**
    * Direct setter for components that need to programmatically adjust the global scroll position.
    */
@@ -65,7 +65,9 @@ interface LayoutScrollProviderProps {
 }
 
 function extractOffsetY(event: ScrollEvent): number {
-  const nativeEvent = event?.nativeEvent ?? event;
+  // Some callers pass the native payload itself rather than a wrapping event.
+  const nativeEvent: ScrollEvent['nativeEvent'] =
+    event?.nativeEvent ?? (event as ScrollEvent['nativeEvent']);
   if (!nativeEvent) return 0;
 
   const contentOffset = nativeEvent.contentOffset;
@@ -129,7 +131,9 @@ export function LayoutScrollProvider({
 
       return Animated.event([{ nativeEvent: { contentOffset: { y: scrollY } } }], {
         useNativeDriver: false, // Required for scroll position
-        listener: (event: any) => {
+        listener: (nativeScrollEvent: unknown) => {
+          // ScrollEvent is the loose shape both native and web scroll events satisfy.
+          const event = nativeScrollEvent as ScrollEvent;
           const now = Date.now();
           // Always update scrollY state (required for animations)
           handleScroll(event);

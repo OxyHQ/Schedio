@@ -26,6 +26,7 @@ import { ROUTES, routeMatchers, isRouteActive } from '@/utils/routeUtils';
 
 // Types
 import type { NavigationItem } from '@/types/navigation';
+import { errorMessage } from '@/utils/errors';
 
 const IconComponent = Ionicons;
 const WindowHeight = Dimensions.get('window').height;
@@ -207,11 +208,9 @@ export function SideBar() {
                 onPress={async () => {
                   try {
                     await signIn();
-                  } catch (error: any) {
-                    if (
-                      !error?.message?.includes('cancelled') &&
-                      !error?.message?.includes('closed')
-                    ) {
+                  } catch (error) {
+                    const message = errorMessage(error) ?? '';
+                    if (!message.includes('cancelled') && !message.includes('closed')) {
                       console.error('Authentication error:', error);
                     }
                   }

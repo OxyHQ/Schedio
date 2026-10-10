@@ -1,6 +1,15 @@
 import type React from 'react';
 import { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated, Platform } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Animated,
+  Platform,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ToggleProps {
@@ -8,7 +17,7 @@ interface ToggleProps {
   onValueChange: (value: boolean) => void;
   label?: string;
   disabled?: boolean;
-  containerStyle?: any;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 export const Toggle: React.FC<ToggleProps> = ({

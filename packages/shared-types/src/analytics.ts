@@ -32,7 +32,7 @@ export interface AnalyticsData {
   period: AnalyticsPeriod;
   value: number;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UserAnalytics {

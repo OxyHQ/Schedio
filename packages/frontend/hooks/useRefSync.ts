@@ -18,7 +18,7 @@ export const useRefSync = <T>(value: T) => {
  * Sync multiple values to refs at once
  * Returns an object with all the refs
  */
-export const useMultiRefSync = <T extends Record<string, any>>(
+export const useMultiRefSync = <T extends Record<string, unknown>>(
   values: T,
 ): { [K in keyof T]: React.MutableRefObject<T[K]> } => {
   const refs = {} as { [K in keyof T]: React.MutableRefObject<T[K]> };

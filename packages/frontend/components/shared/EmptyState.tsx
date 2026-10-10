@@ -9,7 +9,7 @@ export interface EmptyStateProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  lottieSource?: any;
+  lottieSource?: React.ComponentProps<typeof LottieView>['source'];
   imageSource?: ImageSourcePropType;
   lottieSize?: number;
   imageSize?: number;

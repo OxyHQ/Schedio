@@ -22,23 +22,30 @@
  * debouncedSearch('hello'); // Will only execute after 300ms of no calls
  * debouncedSearch.cancel(); // Cancel pending execution
  */
-export function debounce<T extends (...args: any[]) => any>(
-  func: T,
+export function debounce<This, Args extends unknown[], R>(
+  func: (this: This, ...args: Args) => R,
   wait: number,
   options: { leading?: boolean; trailing?: boolean } = { trailing: true },
-): T & { cancel: () => void; flush: () => void } {
+): ((this: This, ...args: Args) => R | undefined) & {
+  cancel: () => void;
+  flush: () => R | undefined;
+} {
   let timeoutId: NodeJS.Timeout | null = null;
-  let lastArgs: any[] | null = null;
-  let lastThis: any = null;
-  let result: any;
+  // A pending call is marked by its arguments. `this` is undefined for a plain
+  // (non-method) call in strict mode, so it cannot mark one.
+  let lastArgs: Args | null = null;
+  let lastThis: This | undefined;
+  let result: R | undefined;
 
   const { leading = false, trailing = true } = options;
 
   function invokeFunc() {
-    if (lastArgs && lastThis) {
-      result = func.apply(lastThis, lastArgs);
+    if (lastArgs) {
+      const args = lastArgs;
+      const thisArg = lastThis as This;
       lastArgs = null;
-      lastThis = null;
+      lastThis = undefined;
+      result = func.apply(thisArg, args);
     }
   }
 
@@ -48,18 +55,19 @@ export function debounce<T extends (...args: any[]) => any>(
       timeoutId = null;
     }
     lastArgs = null;
-    lastThis = null;
+    lastThis = undefined;
   }
 
   function flush() {
     if (timeoutId !== null) {
-      cancel();
+      clearTimeout(timeoutId);
+      timeoutId = null;
       invokeFunc();
     }
     return result;
   }
 
-  function debounced(this: any, ...args: any[]) {
+  function debounced(this: This, ...args: Args) {
     lastArgs = args;
     lastThis = this;
 
@@ -84,7 +92,7 @@ export function debounce<T extends (...args: any[]) => any>(
   debounced.cancel = cancel;
   debounced.flush = flush;
 
-  return debounced as T & { cancel: () => void; flush: () => void };
+  return debounced;
 }
 
 /**
@@ -101,14 +109,14 @@ export function debounce<T extends (...args: any[]) => any>(
  *
  * window.addEventListener('scroll', throttledScroll);
  */
-export function throttle<T extends (...args: any[]) => any>(
-  func: T,
+export function throttle<This, Args extends unknown[]>(
+  func: (this: This, ...args: Args) => unknown,
   wait: number,
-): T & { cancel: () => void } {
+): ((this: This, ...args: Args) => void) & { cancel: () => void } {
   let timeoutId: NodeJS.Timeout | null = null;
   let lastRan: number = 0;
-  let lastArgs: any[] | null = null;
-  let lastThis: any = null;
+  let lastArgs: Args | null = null;
+  let lastThis: This | undefined;
 
   function cancel() {
     if (timeoutId !== null) {
@@ -117,7 +125,7 @@ export function throttle<T extends (...args: any[]) => any>(
     }
   }
 
-  function throttled(this: any, ...args: any[]) {
+  function throttled(this: This, ...args: Args) {
     const now = Date.now();
     lastArgs = args;
     lastThis = this;
@@ -132,8 +140,8 @@ export function throttle<T extends (...args: any[]) => any>(
 
       timeoutId = setTimeout(
         () => {
-          if (Date.now() - lastRan >= wait && lastArgs && lastThis) {
-            func.apply(lastThis, lastArgs);
+          if (Date.now() - lastRan >= wait && lastArgs) {
+            func.apply(lastThis as This, lastArgs);
             lastRan = Date.now();
           }
         },
@@ -144,7 +152,7 @@ export function throttle<T extends (...args: any[]) => any>(
 
   throttled.cancel = cancel;
 
-  return throttled as T & { cancel: () => void };
+  return throttled;
 }
 
 /**
@@ -159,12 +167,12 @@ export function throttle<T extends (...args: any[]) => any>(
  *   updateUI();
  * });
  */
-export function rafDebounce<T extends (...args: any[]) => any>(
-  func: T,
-): T & { cancel: () => void } {
+export function rafDebounce<This, Args extends unknown[]>(
+  func: (this: This, ...args: Args) => unknown,
+): ((this: This, ...args: Args) => void) & { cancel: () => void } {
   let rafId: number | null = null;
-  let lastArgs: any[] | null = null;
-  let lastThis: any = null;
+  let lastArgs: Args | null = null;
+  let lastThis: This | undefined;
 
   function cancel() {
     if (rafId !== null) {
@@ -172,10 +180,10 @@ export function rafDebounce<T extends (...args: any[]) => any>(
       rafId = null;
     }
     lastArgs = null;
-    lastThis = null;
+    lastThis = undefined;
   }
 
-  function debounced(this: any, ...args: any[]) {
+  function debounced(this: This, ...args: Args) {
     lastArgs = args;
     lastThis = this;
 
@@ -184,16 +192,16 @@ export function rafDebounce<T extends (...args: any[]) => any>(
     }
 
     rafId = requestAnimationFrame(() => {
-      if (lastArgs && lastThis) {
-        func.apply(lastThis, lastArgs);
+      if (lastArgs) {
+        func.apply(lastThis as This, lastArgs);
       }
       rafId = null;
       lastArgs = null;
-      lastThis = null;
+      lastThis = undefined;
     });
   }
 
   debounced.cancel = cancel;
 
-  return debounced as T & { cancel: () => void };
+  return debounced;
 }

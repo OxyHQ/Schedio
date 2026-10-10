@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { authenticatedClient } from '@/utils/api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { errorStatus } from '@/utils/errors';
 
 const PRIVACY_SETTINGS_CACHE_KEY = '@allo_privacy_settings';
 
@@ -50,9 +51,9 @@ export function usePrivacySettings(userId?: string | null): PrivacySettings | nu
             hideSaveCounts: false,
           });
         }
-      } catch (error: any) {
+      } catch (error) {
         // If 404, user might not have settings yet - use defaults
-        if (error?.response?.status === 404) {
+        if (errorStatus(error) === 404) {
           setSettings({
             profileVisibility: 'public',
             hideLikeCounts: false,
@@ -145,8 +146,8 @@ export function useCurrentUserPrivacySettings(): PrivacySettings | null {
             console.debug('Failed to cache default privacy settings:', cacheErr);
           }
         }
-      } catch (error: any) {
-        if (error?.response?.status === 404) {
+      } catch (error) {
+        if (errorStatus(error) === 404) {
           const defaultSettings = {
             profileVisibility: 'public' as const,
             hideLikeCounts: false,

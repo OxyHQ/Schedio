@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import { useUsersStore, useUserByUsername, type UserEntity } from '@/stores/usersStore';
-import { useAppearanceStore } from '@/stores/appearanceStore';
+import { useAppearanceStore, type UserAppearance } from '@/stores/appearanceStore';
 import { usePrivacySettings } from './usePrivacySettings';
 import { useOxy } from '@oxy.so/services';
 
@@ -23,13 +23,16 @@ export interface ProfileData {
   privacy?: {
     profileVisibility?: 'public' | 'private' | 'followers_only';
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
  * Computes profile design values from Oxy profile + backend customization settings
  */
-function computeDesign(oxyProfile: any, appearance: any): ProfileDesign {
+function computeDesign(
+  oxyProfile: UserEntity | null | undefined,
+  appearance: UserAppearance | undefined,
+): ProfileDesign {
   if (!oxyProfile) {
     return {
       displayName: '',

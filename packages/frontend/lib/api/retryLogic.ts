@@ -6,6 +6,7 @@
  */
 
 import axios from 'axios';
+import { errorResponse, errorStatus } from '@/utils/errors';
 
 export interface RetryConfig {
   maxRetries?: number;
@@ -13,7 +14,7 @@ export interface RetryConfig {
   maxDelayMs?: number;
   backoffMultiplier?: number;
   retryableStatusCodes?: number[];
-  shouldRetry?: (error: any, attempt: number) => boolean;
+  shouldRetry?: (error: unknown, attempt: number) => boolean;
 }
 
 const DEFAULT_CONFIG: Required<RetryConfig> = {
@@ -42,14 +43,14 @@ function calculateDelay(attempt: number, config: Required<RetryConfig>): number 
 /**
  * Check if error is retryable
  */
-function isRetryableError(error: any, config: Required<RetryConfig>): boolean {
+function isRetryableError(error: unknown, config: Required<RetryConfig>): boolean {
   // Network errors (no response)
-  if (!error.response) {
+  if (!errorResponse(error)) {
     return true;
   }
 
   // Check status code
-  const status = error.response?.status;
+  const status = errorStatus(error);
   if (status && config.retryableStatusCodes.includes(status)) {
     return true;
   }
@@ -83,7 +84,7 @@ export async function retryWithBackoff<T>(
   config: RetryConfig = {},
 ): Promise<T> {
   const fullConfig = { ...DEFAULT_CONFIG, ...config };
-  let lastError: any;
+  let lastError: unknown;
 
   for (let attempt = 0; attempt <= fullConfig.maxRetries; attempt++) {
     try {
@@ -136,7 +137,7 @@ export async function retryWithBackoff<T>(
  *   { maxRetries: 3 }
  * );
  */
-export function withRetry<TArgs extends any[], TReturn>(
+export function withRetry<TArgs extends unknown[], TReturn>(
   fn: (...args: TArgs) => Promise<TReturn>,
   config: RetryConfig = {},
 ): (...args: TArgs) => Promise<TReturn> {
@@ -157,7 +158,7 @@ export function withRetry<TArgs extends any[], TReturn>(
 export async function batchRetry<T>(
   requests: (() => Promise<T>)[],
   config: RetryConfig = {},
-): Promise<Array<{ success: true; data: T } | { success: false; error: any }>> {
+): Promise<Array<{ success: true; data: T } | { success: false; error: unknown }>> {
   return Promise.all(
     requests.map(async (request) => {
       try {
@@ -205,10 +206,10 @@ export class CircuitBreaker {
       }
 
       return result;
-    } catch (error: any) {
+    } catch (error) {
       // Don't count auth errors (401/403) toward circuit breaker —
       // these are not transient service failures
-      const status = error?.response?.status;
+      const status = errorStatus(error);
       if (status === 401 || status === 403) {
         throw error;
       }

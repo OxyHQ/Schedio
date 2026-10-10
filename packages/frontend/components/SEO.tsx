@@ -4,7 +4,7 @@ import { usePathname } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 
 // Only import Head on web to avoid native errors
-let Head: any = null;
+let Head: React.ComponentType<{ children?: React.ReactNode }> | null = null;
 if (Platform.OS === 'web') {
   try {
     // Try multiple import methods for compatibility

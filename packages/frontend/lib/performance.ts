@@ -54,7 +54,7 @@ export const perfLog = isProduction
 /**
  * Memoize expensive computations
  */
-export function memoize<Args extends any[], Return>(
+export function memoize<Args extends unknown[], Return>(
   fn: (...args: Args) => Return,
   keyFn?: (...args: Args) => string,
 ): (...args: Args) => Return {
