@@ -5,7 +5,7 @@ import { toPostDto } from "../utils/postDto";
 const CREATED_AT = new Date("2026-09-01T10:00:00.000Z");
 
 describe("PostgreSQL API wire contract", () => {
-  it("uses the exact post id and public platforms key without Mongo aliases", () => {
+  it("uses the exact post id and public platforms key without alias keys", () => {
     const dto = toPostDto({
       id: "507f1f77bcf86cd799439011",
       userId: "oxy-user",
@@ -27,7 +27,7 @@ describe("PostgreSQL API wire contract", () => {
     expect(dto).not.toHaveProperty("platformIds");
   });
 
-  it("uses the canonical allowAllos setting without Mongo aliases", () => {
+  it("uses the canonical allowAllos setting without alias keys", () => {
     const dto = toUserSettingsDto({
       id: "507f1f77bcf86cd799439012",
       oxyUserId: "oxy-user",

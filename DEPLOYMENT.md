@@ -31,15 +31,10 @@ bun install --frozen-lockfile
 bun run build:frontend
 ```
 
-## Schema and existing data
+## Schema
 
-Use [docs/postgres-cutover.md](docs/postgres-cutover.md) before changing any live
-service configuration. It requires an independently reviewed target database
-name, an additive migration, a write freeze, source hashes and counts, an
-all-or-nothing import into an empty target, row-content reconciliation and a
-verified rollback boundary.
-
-The migrator has no implicit phase or target:
+The target database name is read from the provisioned resource and reviewed
+independently of the connection URL. The migrator has no implicit phase or target:
 
 ```bash
 bun run --cwd packages/backend db:migrate \
@@ -53,7 +48,14 @@ reviewed.
 
 ## Verification
 
-After a deployment, prove the exact commit/image is running and complete the six
-runtime probes in the cutover runbook. A healthy empty response is not evidence
-that migrated data is readable; use known non-empty ids and compare content as
-well as counts.
+After a deployment, prove the exact commit/image is running, then verify:
+
+1. `/api/health` is 200 and the process remains stable.
+2. An authenticated settings read returns a known, non-empty user's values.
+3. A known post is readable only by its owner.
+4. Queue and analytics reads return rows for known ids.
+5. Social-account reads contain no access or refresh token fields.
+6. A new write and read-back succeed.
+
+A healthy empty response is not evidence that stored data is readable; use known
+non-empty ids and compare content as well as counts.
