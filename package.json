@@ -17,7 +17,7 @@
     "build:frontend": "bun run --filter '@schedio/frontend' build",
     "build:backend": "bun run --filter '@schedio/backend' build",
     "test": "bun run --filter '*' test",
-    "lint": "biome check . && bun run --filter '@schedio/frontend' lint:expo",
+    "lint": "biome check --error-on-warnings . && bun run --filter '@schedio/frontend' lint:expo",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "bun run --filter '*' typecheck",
