@@ -1,5 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
+import type React from 'react';
+import { TouchableOpacity, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 interface HeaderIconButtonProps {

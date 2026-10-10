@@ -3,7 +3,7 @@
  * Shared between frontend and backend
  */
 
-import { Post as DomainPost, PostContent, PostVisibility } from './post';
+import type { Post as DomainPost, PostContent, PostVisibility } from './post';
 
 // Common user interface for feed items
 export interface FeedUser {

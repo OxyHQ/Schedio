@@ -3,11 +3,11 @@ import {
   View,
   Animated,
   StyleSheet,
-  ImageSourcePropType,
+  type ImageSourcePropType,
   Text,
-  StyleProp,
-  ViewStyle,
-  ImageStyle,
+  type StyleProp,
+  type ViewStyle,
+  type ImageStyle,
   TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';

@@ -1,5 +1,6 @@
-import React, { useMemo } from 'react';
-import { Text, StyleProp, TextStyle, Linking } from 'react-native';
+import type React from 'react';
+import { useMemo } from 'react';
+import { Text, type StyleProp, type TextStyle, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTheme } from '@/hooks/useTheme';
 

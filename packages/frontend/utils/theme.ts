@@ -2,8 +2,14 @@
  * Theme utilities for consistent theming across the app
  */
 
-import { StyleSheet, ViewStyle, TextStyle, ImageStyle, StyleProp } from 'react-native';
-import { Theme } from '@/hooks/useTheme';
+import {
+  StyleSheet,
+  type ViewStyle,
+  type TextStyle,
+  type ImageStyle,
+  type StyleProp,
+} from 'react-native';
+import type { Theme } from '@/hooks/useTheme';
 
 /**
  * Flatten an array of styles into a single style object

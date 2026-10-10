@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import Svg, { Path, Rect } from 'react-native-svg';
-import { IconProps } from './types';
+import type { IconProps } from './types';
 
 export const CalendarIcon: React.FC<IconProps> = ({ size = 20, color = '#000' }) => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

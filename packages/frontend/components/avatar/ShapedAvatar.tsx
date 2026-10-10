@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, StyleSheet } from 'react-native';
 import Svg, { Defs, ClipPath, Path, ForeignObject } from 'react-native-svg';
-import { AVATAR_SHAPES, AvatarShapeKey, DEFAULT_SHAPE } from './avatarShapes';
+import { AVATAR_SHAPES, type AvatarShapeKey, DEFAULT_SHAPE } from './avatarShapes';
 
 interface ShapedAvatarProps {
   shape?: AvatarShapeKey;

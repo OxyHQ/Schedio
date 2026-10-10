@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ViewStyle, Platform } from 'react-native';
+import { StyleSheet, View, Text, type ViewStyle, Platform } from 'react-native';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 interface Props {

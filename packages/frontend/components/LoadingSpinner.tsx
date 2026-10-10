@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ViewStyle, TextStyle } from 'react-native';
+import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 import { Loading } from '@/assets/icons/loading-icon';
 import { useTheme } from '@/hooks/useTheme';
 

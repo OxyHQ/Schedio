@@ -9,7 +9,7 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ViewStyle,
+  type ViewStyle,
 } from 'react-native';
 import { colors } from '../styles/colors';
 import { useTheme } from '@/hooks/useTheme';

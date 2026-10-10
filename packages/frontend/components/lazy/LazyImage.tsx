@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Image as ExpoImage } from 'expo-image';
 import { View, StyleSheet, Animated } from 'react-native';
 import type { ImageProps } from 'expo-image';

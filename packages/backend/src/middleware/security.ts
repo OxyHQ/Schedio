@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 import slowDown from 'express-slow-down';
-import { Request, RequestHandler } from 'express';
+import type { Request, RequestHandler } from 'express';
 
 // Rate limiting middleware (exclude file uploads)
 const rateLimiter = rateLimit({

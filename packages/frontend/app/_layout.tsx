@@ -8,7 +8,8 @@ import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxy.
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { Stack, usePathname } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
 
 // Components

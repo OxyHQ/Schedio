@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';

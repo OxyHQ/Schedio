@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useAppearanceStore } from '@/stores/appearanceStore';
-import { AvatarShapeKey, DEFAULT_SHAPE } from '@/components/avatar/avatarShapes';
+import { type AvatarShapeKey, DEFAULT_SHAPE } from '@/components/avatar/avatarShapes';
 
 /**
  * Returns the avatar shape for a given user ID.

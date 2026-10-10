@@ -1,5 +1,13 @@
 import React, { useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, ViewStyle, Platform, Vibration, Pressable } from 'react-native';
+import {
+  StyleSheet,
+  View,
+  Text,
+  type ViewStyle,
+  Platform,
+  Vibration,
+  Pressable,
+} from 'react-native';
 import { Link, usePathname, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

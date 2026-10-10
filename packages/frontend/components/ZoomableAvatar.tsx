@@ -2,7 +2,7 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  ImageSourcePropType,
+  type ImageSourcePropType,
   Pressable,
   Modal,
   Platform,

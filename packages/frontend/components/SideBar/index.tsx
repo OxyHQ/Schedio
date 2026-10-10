@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions, Platform, View, ViewStyle, StyleSheet, Pressable } from 'react-native';
+import { Dimensions, Platform, View, type ViewStyle, StyleSheet, Pressable } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';

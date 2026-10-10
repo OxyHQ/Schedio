@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
+import type React from 'react';
+import { useRef, useEffect, useLayoutEffect, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
   useSharedValue,
