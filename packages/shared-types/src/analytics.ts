@@ -2,8 +2,6 @@
  * Analytics-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum AnalyticsPeriod {
   HOUR = 'hour',
   DAY = 'day',

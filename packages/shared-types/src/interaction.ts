@@ -2,8 +2,6 @@
  * Interaction-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum InteractionType {
   LIKE = 'like',
   REPOST = 'repost',

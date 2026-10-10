@@ -12,7 +12,6 @@ import { useAppearanceStore } from '@/stores/appearanceStore';
 import { hasNotificationPermission, setupNotifications } from '@/utils/notifications';
 import { logger } from '@/utils/logger';
 import { initializeI18n } from './i18n';
-import { INITIALIZATION_TIMEOUT } from './constants';
 import { runStartupHealthCheck } from '@/utils/appHealthCheck';
 
 export interface InitializationResult {

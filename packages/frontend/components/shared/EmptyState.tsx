@@ -2,7 +2,6 @@ import type React from 'react';
 import { useMemo } from 'react';
 import { View, StyleSheet, Image, type ImageSourcePropType } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 

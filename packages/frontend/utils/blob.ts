@@ -23,8 +23,6 @@
  *   const slicedText = await slice.text();
  */
 
-import { Platform } from 'react-native';
-
 /**
  * Platform-aware Blob implementation
  *

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { View, Text, ScrollView } from 'react-native';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { Header } from '@/components/layout/Header';

@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { AVATAR_SHAPES, AVATAR_SHAPE_META, type AvatarShapeKey } from './avatarShapes';
 import { useTheme } from '@/hooks/useTheme';

@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -11,7 +11,6 @@ import {
   View,
   type ViewStyle,
 } from 'react-native';
-import { colors } from '../styles/colors';
 import { useTheme } from '@/hooks/useTheme';
 import { Search } from '@/assets/icons/search-icon';
 

@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState, useRef, useMemo } from 'react';
-import { View, Text, TouchableOpacity, Alert, Platform, ScrollView, Animated } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, Alert, Platform, Animated } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/layout/Header';
 import { HeaderIconButton } from '@/components/layout/HeaderIconButton';
@@ -22,7 +22,6 @@ import {
   getDevicePushToken,
 } from '@/utils/notifications';
 import { useTheme } from '@/hooks/useTheme';
-import { getThemedBorder, getThemedShadow } from '@/utils/theme';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import i18n from 'i18next';

@@ -2,8 +2,6 @@
  * List-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum ListVisibility {
   PUBLIC = 'public',
   PRIVATE = 'private',

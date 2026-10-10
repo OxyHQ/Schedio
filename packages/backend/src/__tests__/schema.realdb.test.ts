@@ -4,7 +4,7 @@ import { createTestDatabase, dropTestDatabase } from '@oxy.so/db/testing';
 import { eq, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { closeDatabase, connectToDatabase, getDb } from '../db';
-import { postAnalytics, posts, socialAccounts, userSettings } from '../db/schema';
+import { postAnalytics, posts, userSettings } from '../db/schema';
 
 const PACKAGE_ROOT = join(__dirname, '..', '..');
 const ADMIN_URL = process.env.TEST_DATABASE_URL;

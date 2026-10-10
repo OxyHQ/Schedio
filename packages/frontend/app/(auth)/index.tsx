@@ -1,4 +1,3 @@
-import React from 'react';
 import { View, StyleSheet, Text, Image } from 'react-native';
 import { OxySignInButton } from '@oxy.so/services';
 import { ThemedText } from '@/components/ThemedText';

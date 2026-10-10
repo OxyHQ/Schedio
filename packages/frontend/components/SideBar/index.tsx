@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions, Platform, View, type ViewStyle, StyleSheet, Pressable } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { useMediaQuery } from 'react-responsive';
@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 // Components
 import { SideBarItem } from './SideBarItem';
 import { Logo } from '@/components/Logo';
-import Avatar from '@/components/Avatar';
 
 // Icons
 import { Home, HomeActive } from '@/assets/icons/home-icon';

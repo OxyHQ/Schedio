@@ -2,8 +2,6 @@
  * Notification-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum NotificationType {
   LIKE = 'like',
   REPOST = 'repost',

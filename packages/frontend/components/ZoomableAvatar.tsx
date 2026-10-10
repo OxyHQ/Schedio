@@ -17,7 +17,6 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
-  runOnUI,
   Easing,
 } from 'react-native-reanimated';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';

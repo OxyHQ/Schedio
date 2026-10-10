@@ -2,8 +2,6 @@
  * Profile-related types shared across allo frontend and backend
  */
 
-import { Timestamps } from './common';
-
 export enum ProfileVisibility {
   PUBLIC = 'public',
   PRIVATE = 'private',
