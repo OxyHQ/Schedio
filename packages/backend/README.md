@@ -322,4 +322,3 @@ This package is part of the Schedio monorepo and integrates with:
 - **No User Management**: Users are managed by the Oxy platform. The backend only stores Oxy user IDs.
 - **Authentication**: All authenticated endpoints use Oxy's authentication middleware.
 - **Database**: PostgreSQL only. `DATABASE_URL` is mandatory and the service fails startup if the database or social-token encryption key is unavailable.
-- **Cutover**: [the PostgreSQL cutover runbook](../../docs/postgres-cutover.md) is the source of truth. Merging code does not authorize a production migration.
