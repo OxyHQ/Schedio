@@ -45,7 +45,15 @@
         "noSvgWithoutTitle": "warn"
       },
       "correctness": {
-        "useExhaustiveDependencies": "warn",
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            "hooks": [
+              { "name": "useSharedValue", "stableResult": true },
+              { "name": "useAnimatedRef", "stableResult": true }
+            ]
+          }
+        },
         "useHookAtTopLevel": "error"
       },
       "suspicious": {

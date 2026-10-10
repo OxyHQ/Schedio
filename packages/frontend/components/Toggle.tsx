@@ -27,7 +27,7 @@ export const Toggle: React.FC<ToggleProps> = ({
       duration: 200,
       useNativeDriver: Platform.OS !== 'web',
     }).start();
-  }, [value]);
+  }, [value, switchAnimation]);
 
   return (
     <View style={[styles.container, containerStyle]}>

@@ -163,18 +163,18 @@ export function useCurrentUserPrivacySettings(): PrivacySettings | null {
           }
         } else {
           console.debug('Could not load current user privacy settings:', error);
-          // If we have cached settings, keep using them
-          if (!settings && cachedPrivacySettings) {
-            setSettings(cachedPrivacySettings);
-          } else if (!settings) {
-            setSettings({
-              profileVisibility: 'public',
-              hideLikeCounts: false,
-              hideShareCounts: false,
-              hideReplyCounts: false,
-              hideSaveCounts: false,
-            });
-          }
+          // Keep whatever is already shown; otherwise fall back to the cache, then defaults.
+          setSettings(
+            (current) =>
+              current ??
+              cachedPrivacySettings ?? {
+                profileVisibility: 'public',
+                hideLikeCounts: false,
+                hideShareCounts: false,
+                hideReplyCounts: false,
+                hideSaveCounts: false,
+              },
+          );
         }
       }
     };

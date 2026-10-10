@@ -144,6 +144,7 @@ export function useMemoDebug<T>(
       console.log(`[Memo] Computing ${debugName}`);
     }
     return factory();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: forwards the caller-supplied dependency list, like the React hook it wraps
   }, deps);
 
   useEffect(() => {
@@ -268,6 +269,7 @@ export function useRAF(callback: () => void, deps: React.DependencyList): void {
   useEffect(() => {
     const id = requestAnimationFrame(callback);
     return () => cancelAnimationFrame(id);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: forwards the caller-supplied dependency list, like the React hook it wraps
   }, deps);
 }
 

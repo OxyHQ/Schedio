@@ -182,7 +182,7 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
         }, 10);
       }
     }
-  }, [isZoomed, size]);
+  }, [isZoomed, size, SCREEN_WIDTH, SCREEN_HEIGHT, MAX_ZOOM_SIZE]);
 
   const handleDismiss = useCallback(() => {
     // Animate back to original position with smooth, coordinated animations

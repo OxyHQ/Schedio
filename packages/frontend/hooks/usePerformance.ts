@@ -49,6 +49,7 @@ export function useThrottle<T extends (...args: any[]) => any>(callback: T, dela
  * Returns a stable reference that only changes when dependencies change
  */
 export function useStableRef<T>(value: T, deps: React.DependencyList): T {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: forwards the caller-supplied dependency list, like the React hook it wraps
   return useMemo(() => value, deps);
 }
 
@@ -60,5 +61,6 @@ export function useStableCallback<T extends (...args: any[]) => any>(
   callback: T,
   deps: React.DependencyList,
 ): T {
+  // biome-ignore lint/correctness/useExhaustiveDependencies: forwards the caller-supplied dependency list, like the React hook it wraps
   return useCallback(callback, deps);
 }

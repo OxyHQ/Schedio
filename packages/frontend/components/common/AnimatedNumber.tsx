@@ -54,7 +54,7 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
       // Animate counter value smoothly
       counterValue.value = withTiming(value, { duration });
     }
-  }, [value, duration, progress, counterValue]);
+  }, [value, duration]);
 
   const animStyle = useAnimatedStyle(() => {
     return {

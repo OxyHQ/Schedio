@@ -32,23 +32,23 @@ export default function PrivacySettingsScreen() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadPrivacySettings = async () => {
+      try {
+        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+          '/profile/settings/me',
+        );
+        const settings = response.data;
+        setPrivacySettings(settings?.privacy || { profileVisibility: 'public' });
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading privacy settings:', error);
+        setPrivacySettings({ profileVisibility: 'public' });
+        setLoading(false);
+      }
+    };
+
     loadPrivacySettings();
   }, []);
-
-  const loadPrivacySettings = async () => {
-    try {
-      const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
-        '/profile/settings/me',
-      );
-      const settings = response.data;
-      setPrivacySettings(settings?.privacy || { profileVisibility: 'public' });
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading privacy settings:', error);
-      setPrivacySettings({ profileVisibility: 'public' });
-      setLoading(false);
-    }
-  };
 
   const handlePrivateProfilePress = () => {
     router.push('/settings/privacy/profile-visibility');

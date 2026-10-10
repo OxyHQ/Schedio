@@ -55,6 +55,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   });
 
   // Update indicator position when active tab changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: layoutReady is a trigger, not a read: it re-runs the effect once onLayout has filled the tabLayouts ref
   useLayoutEffect(() => {
     const layout = tabLayouts.current[activeTabId];
 
@@ -94,7 +95,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       position: basePosition,
       width: indicatorWidthValue,
     });
-  }, [activeTabId, indicatorPosition, indicatorWidth, layoutReady, instanceId]);
+  }, [activeTabId, layoutReady, instanceId]);
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     // Adjust indicator position by subtracting scroll offset when scrollEnabled
