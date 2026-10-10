@@ -76,6 +76,7 @@ const MiniChart: React.FC<MiniChartProps> = ({
           const isEmpty = !hasData || value === 0;
 
           return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: one bar or label per chart slot; the slot position is its identity
             <View key={i} style={styles.chartBarContainer}>
               <View
                 style={[
@@ -100,6 +101,7 @@ const MiniChart: React.FC<MiniChartProps> = ({
             const isToday = i === todayIndex;
             return (
               <Text
+                // biome-ignore lint/suspicious/noArrayIndexKey: one bar or label per chart slot; the slot position is its identity
                 key={i}
                 style={[
                   styles.chartLabel,
