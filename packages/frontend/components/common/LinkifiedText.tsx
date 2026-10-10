@@ -22,7 +22,8 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
     // 1) allos in format [@DisplayName](username) - from backend
     // 2) URLs: http(s)://... or www....
     // 3) Entities with preceding boundary capture: hashtags, cashtags
-    const pattern = /(\[@([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+|www\.[^\s]+)|(^|[^A-Za-z0-9_])(#[A-Za-z][A-Za-z0-9_]*|\$[A-Z]{1,6}(?:\.[A-Z]{1,2})?)/g;
+    const pattern =
+      /(\[@([^\]]+)\]\(([^)]+)\))|(https?:\/\/[^\s]+|www\.[^\s]+)|(^|[^A-Za-z0-9_])(#[A-Za-z][A-Za-z0-9_]*|\$[A-Z]{1,6}(?:\.[A-Z]{1,2})?)/g;
 
     let lastIndex = 0;
     let match: RegExpExecArray | null;
@@ -45,9 +46,9 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
 
     while ((match = pattern.exec(text)) !== null) {
       const full = match[0];
-      const alloFull = match[1];      // [@DisplayName](username)
-      const alloDisplay = match[2];   // DisplayName
-      const alloUsername = match[3];  // username
+      const alloFull = match[1]; // [@DisplayName](username)
+      const alloDisplay = match[2]; // DisplayName
+      const alloUsername = match[3]; // username
       const urlCandidate = match[4];
       const boundary = match[5] ?? '';
       const entity = match[6];
@@ -61,10 +62,12 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
           <Text
             key={`m-${key++}`}
             style={[{ color: theme.colors.primary }, linkStyle]}
-            onPress={() => router.push({ pathname: '/@[username]', params: { username: alloUsername } })}
+            onPress={() =>
+              router.push({ pathname: '/@[username]', params: { username: alloUsername } })
+            }
           >
             {alloDisplay}
-          </Text>
+          </Text>,
         );
         lastIndex = start + full.length;
       } else if (urlCandidate) {
@@ -80,7 +83,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
             onPress={() => Linking.openURL(href)}
           >
             {url}
-          </Text>
+          </Text>,
         );
         pushText(trailing);
         lastIndex = start + full.length;
@@ -99,7 +102,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
               onPress={() => router.push(`/search/${q}`)}
             >
               {entity}
-            </Text>
+            </Text>,
           );
         } else if (entity.startsWith('$')) {
           const symbol = entity.slice(1);
@@ -111,7 +114,7 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
               onPress={() => router.push(`/search/${q}`)}
             >
               {entity}
-            </Text>
+            </Text>,
           );
         } else {
           pushText(entity);
@@ -126,7 +129,12 @@ export const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, style, linkS
   }, [text, linkStyle, router, theme.colors.primary]);
 
   if (!text) return null;
-  return <Text style={style}>{nodes}{suffix}</Text>;
+  return (
+    <Text style={style}>
+      {nodes}
+      {suffix}
+    </Text>
+  );
 };
 
 export default LinkifiedText;

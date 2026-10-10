@@ -17,17 +17,17 @@ export const SPACING = {
    * Screen-level spacing (outer container padding)
    */
   screen: {
-    horizontal: 4,  // 16px - Standard horizontal padding for screens
-    vertical: 4,    // 16px - Standard vertical padding for screens
-    top: 2,         // 8px - Top padding when header is present
-    bottom: 10,     // 40px - Bottom padding for scroll views (safe area)
+    horizontal: 4, // 16px - Standard horizontal padding for screens
+    vertical: 4, // 16px - Standard vertical padding for screens
+    top: 2, // 8px - Top padding when header is present
+    bottom: 10, // 40px - Bottom padding for scroll views (safe area)
   },
 
   /**
    * Section spacing (vertical gaps between major sections)
    */
   section: {
-    gap: 6,         // 24px - Gap between major sections
+    gap: 6, // 24px - Gap between major sections
     titleMargin: 2, // 8px - Margin below section titles
   },
 
@@ -35,38 +35,38 @@ export const SPACING = {
    * Card/Container spacing
    */
   card: {
-    padding: 4,     // 16px - Internal padding for cards
-    gap: 3,         // 12px - Gap between items inside cards
-    radius: 16,     // 16px - Border radius for cards (use directly, not Tailwind unit)
+    padding: 4, // 16px - Internal padding for cards
+    gap: 3, // 12px - Gap between items inside cards
+    radius: 16, // 16px - Border radius for cards (use directly, not Tailwind unit)
   },
 
   /**
    * List item spacing
    */
   item: {
-    paddingVertical: 3.5,    // 14px - Vertical padding for list items
-    paddingHorizontal: 4,    // 16px - Horizontal padding for list items
-    gap: 3,                  // 12px - Gap between items in a list
-    iconMargin: 3,           // 12px - Margin for icons next to text
+    paddingVertical: 3.5, // 14px - Vertical padding for list items
+    paddingHorizontal: 4, // 16px - Horizontal padding for list items
+    gap: 3, // 12px - Gap between items in a list
+    iconMargin: 3, // 12px - Margin for icons next to text
   },
 
   /**
    * Content spacing (text, buttons, etc.)
    */
   content: {
-    gap: 2,         // 8px - Gap between related content
-    gapSmall: 1.5,  // 6px - Small gap (e.g., between message bubbles)
-    gapLarge: 4,    // 16px - Large gap between unrelated content
+    gap: 2, // 8px - Gap between related content
+    gapSmall: 1.5, // 6px - Small gap (e.g., between message bubbles)
+    gapLarge: 4, // 16px - Large gap between unrelated content
   },
 
   /**
    * Common border radius values (in pixels, not Tailwind units)
    */
   radius: {
-    small: 8,       // Small radius (buttons, chips)
-    medium: 12,     // Medium radius (inputs, cards)
-    large: 16,      // Large radius (modals, major cards)
-    xlarge: 20,     // Extra large radius (special containers)
+    small: 8, // Small radius (buttons, chips)
+    medium: 12, // Medium radius (inputs, cards)
+    large: 16, // Large radius (modals, major cards)
+    xlarge: 20, // Extra large radius (special containers)
   },
 } as const;
 

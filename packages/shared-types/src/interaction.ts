@@ -13,13 +13,13 @@ export enum InteractionType {
   FOLLOW = 'follow',
   BLOCK = 'block',
   MUTE = 'mute',
-  REPORT = 'report'
+  REPORT = 'report',
 }
 
 export enum InteractionStatus {
   ACTIVE = 'active',
   REMOVED = 'removed',
-  HIDDEN = 'hidden'
+  HIDDEN = 'hidden',
 }
 
 export interface Interaction {
@@ -140,14 +140,14 @@ export enum ReportReason {
   MISINFORMATION = 'misinformation',
   COPYRIGHT = 'copyright',
   IMPERSONATION = 'impersonation',
-  OTHER = 'other'
+  OTHER = 'other',
 }
 
 export enum ReportStatus {
   PENDING = 'pending',
   UNDER_REVIEW = 'under_review',
   RESOLVED = 'resolved',
-  DISMISSED = 'dismissed'
+  DISMISSED = 'dismissed',
 }
 
 export interface CreateCommentRequest {
@@ -192,4 +192,4 @@ export interface InteractionStats {
   totalBlocks: number;
   totalMutes: number;
   totalReports: number;
-} 
+}

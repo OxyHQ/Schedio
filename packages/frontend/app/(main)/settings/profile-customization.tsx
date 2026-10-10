@@ -58,10 +58,7 @@ export default function ProfileCustomizationScreen() {
         options={{
           title: t('settings.profileCustomization.title'),
           leftComponents: [
-            <HeaderIconButton
-              key="back"
-              onPress={() => router.back()}
-            >
+            <HeaderIconButton key="back" onPress={() => router.back()}>
               <BackArrowIcon size={20} color={theme.colors.text} />
             </HeaderIconButton>,
           ],
@@ -101,10 +98,7 @@ export default function ProfileCustomizationScreen() {
           className="rounded-xl border p-4"
           style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
         >
-          <AvatarShapePicker
-            selected={currentAvatarShape}
-            onSelect={handleAvatarShapeSelect}
-          />
+          <AvatarShapePicker selected={currentAvatarShape} onSelect={handleAvatarShapeSelect} />
         </View>
 
         {/* Info Text */}

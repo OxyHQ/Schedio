@@ -57,7 +57,9 @@ export function useUserFirstName(userId?: string): string | undefined {
 
     // If it's the current user, use current user data
     if (userId === currentUser?.id) {
-      return currentUser.name?.first || currentUser.name?.full?.split(' ')[0] || currentUser.username;
+      return (
+        currentUser.name?.first || currentUser.name?.full?.split(' ')[0] || currentUser.username
+      );
     }
 
     // Otherwise, use fetched user data
@@ -92,4 +94,3 @@ export function useUserUsername(userId?: string): string | undefined {
     return user?.username || user?.handle;
   }, [userId, user, currentUser]);
 }
-

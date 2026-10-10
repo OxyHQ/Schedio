@@ -1,9 +1,9 @@
-import { uuidv7 } from "@oxy.so/db";
-import { and, desc, eq } from "drizzle-orm";
+import { uuidv7 } from '@oxy.so/db';
+import { and, desc, eq } from 'drizzle-orm';
 import { Router, Request, Response } from 'express';
 import { requireOxyAuth, getRequiredOxyUserId } from '@oxy.so/core/server';
-import { getDb } from "../db";
-import { blocks, restricts, userBehaviors } from "../db/schema";
+import { getDb } from '../db';
+import { blocks, restricts, userBehaviors } from '../db/schema';
 import {
   ensureUserSettings,
   extractPublicProfileData,
@@ -45,7 +45,7 @@ router.get('/settings/me', async (req: Request, res: Response) => {
 router.get('/settings/:userId', async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
-    
+
     const validationError = validateRequired(userId, 'userId');
     if (validationError) {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
@@ -103,11 +103,16 @@ router.delete('/settings/behavior', async (req: Request, res: Response) => {
       { success: true },
       rows.length > 0
         ? 'Personalization data reset successfully'
-        : 'No personalization data to reset'
+        : 'No personalization data to reset',
     );
   } catch (err) {
     logger.error('[ProfileSettings] Error resetting user behavior:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to reset personalization data');
+    return sendErrorResponse(
+      res,
+      500,
+      'Internal Server Error',
+      'Failed to reset personalization data',
+    );
   }
 });
 
@@ -137,7 +142,7 @@ router.post('/blocks', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
     const { blockedId } = req.body;
-    
+
     const validationError = validateRequired(blockedId, 'blockedId');
     if (validationError || typeof blockedId !== 'string') {
       return sendErrorResponse(res, 400, 'Bad Request', 'Missing or invalid blockedId');
@@ -165,9 +170,9 @@ router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
     const { blockedId } = req.params;
-    
+
     const validationError = validateRequired(blockedId, 'blockedId');
-    if (validationError || typeof blockedId !== "string") {
+    if (validationError || typeof blockedId !== 'string') {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
     }
 
@@ -213,7 +218,7 @@ router.post('/restricts', async (req: Request, res: Response) => {
   try {
     const oxyUserId = getRequiredOxyUserId(req);
     const { restrictedId } = req.body;
-    
+
     const validationError = validateRequired(restrictedId, 'restrictedId');
     if (validationError || typeof restrictedId !== 'string') {
       return sendErrorResponse(res, 400, 'Bad Request', 'Missing or invalid restrictedId');
@@ -241,9 +246,9 @@ router.delete('/restricts/:restrictedId', async (req: Request, res: Response) =>
   try {
     const oxyUserId = getRequiredOxyUserId(req);
     const { restrictedId } = req.params;
-    
+
     const validationError = validateRequired(restrictedId, 'restrictedId');
-    if (validationError || typeof restrictedId !== "string") {
+    if (validationError || typeof restrictedId !== 'string') {
       return sendErrorResponse(res, 400, 'Bad Request', validationError);
     }
 

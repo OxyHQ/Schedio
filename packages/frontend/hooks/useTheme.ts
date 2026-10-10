@@ -1,13 +1,13 @@
-import { useMemo } from "react";
-import { useColorScheme } from "@/hooks/useColorScheme";
-import { useAppearanceStore } from "@/stores/appearanceStore";
-import { colors as baseColors } from "@/styles/colors";
-import { getColorTheme } from "@/styles/colorThemes";
+import { useMemo } from 'react';
+import { useColorScheme } from '@/hooks/useColorScheme';
+import { useAppearanceStore } from '@/stores/appearanceStore';
+import { colors as baseColors } from '@/styles/colors';
+import { getColorTheme } from '@/styles/colorThemes';
 
 /**
  * Centralized theme system that provides consistent theming across the app
  * Following Oxy AI Development Instructions for theming
- * 
+ *
  * This hook does NOT depend on OxyProvider to avoid context errors.
  * It uses the local appearance store which syncs with Oxy settings.
  */
@@ -17,35 +17,35 @@ export interface ThemeColors {
   background: string;
   backgroundSecondary: string;
   backgroundTertiary: string;
-  
+
   // Text colors
   text: string;
   textSecondary: string;
   textTertiary: string;
-  
+
   // Border colors
   border: string;
   borderLight: string;
-  
+
   // Primary brand colors
   primary: string;
   primaryLight: string;
   primaryDark: string;
-  
+
   // Secondary/Oxy brand color
   secondary: string;
-  
+
   // Interactive colors
   tint: string;
   icon: string;
   iconActive: string;
-  
+
   // Status colors
   success: string;
   error: string;
   warning: string;
   info: string;
-  
+
   // Component-specific
   card: string;
   shadow: string;
@@ -62,7 +62,7 @@ export interface ThemeColors {
 }
 
 export interface Theme {
-  mode: "light" | "dark";
+  mode: 'light' | 'dark';
   colors: ThemeColors;
   isDark: boolean;
   isLight: boolean;
@@ -71,7 +71,7 @@ export interface Theme {
 /**
  * Main theme hook - use this throughout the app for consistent theming
  * Instead of hardcoded colors, always use theme.colors.xxx
- * 
+ *
  * This hook uses the local appearance store which is synced with Oxy user settings,
  * so it indirectly integrates with OxyProvider without requiring the context.
  */
@@ -86,14 +86,15 @@ export function useTheme(): Theme {
 
   // Get user's custom primary color (if set) or use default
   // This comes from Oxy user settings via the appearance store
-  const customPrimaryColor = mySettings?.appearance?.primaryColor || selectedColorTheme.primaryColor;
+  const customPrimaryColor =
+    mySettings?.appearance?.primaryColor || selectedColorTheme.primaryColor;
 
-  const isDark = colorScheme === "dark";
-  const isLight = colorScheme === "light";
+  const isDark = colorScheme === 'dark';
+  const isLight = colorScheme === 'light';
 
   // Get the appropriate theme variant (light or dark)
   const themeVariant = isDark ? selectedColorTheme.dark : selectedColorTheme.light;
-  
+
   const colors = useMemo<ThemeColors>(() => {
     if (isDark) {
       return {
@@ -101,32 +102,32 @@ export function useTheme(): Theme {
         background: baseColors.primaryDark,
         backgroundSecondary: baseColors.primaryDark_1,
         backgroundTertiary: baseColors.primaryDark_2,
-        
+
         text: baseColors.COLOR_BLACK_LIGHT_6,
         textSecondary: baseColors.COLOR_BLACK_LIGHT_5,
         textTertiary: baseColors.COLOR_BLACK_LIGHT_4,
-        
+
         border: baseColors.COLOR_BLACK_LIGHT_3,
         borderLight: baseColors.COLOR_BLACK_LIGHT_2,
-        
+
         primary: customPrimaryColor,
         primaryLight: baseColors.primaryLight_1,
         primaryDark: baseColors.primaryDark,
-        
+
         secondary: baseColors.secondaryColor,
-        
+
         tint: customPrimaryColor,
         icon: baseColors.COLOR_BLACK_LIGHT_5,
         iconActive: customPrimaryColor,
-        
-        success: "#10B981",
-        error: "#EF4444",
-        warning: "#F59E0B",
-        info: "#3B82F6",
-        
+
+        success: '#10B981',
+        error: '#EF4444',
+        warning: '#F59E0B',
+        info: '#3B82F6',
+
         card: baseColors.primaryDark_1,
-        shadow: "rgba(0, 0, 0, 0.3)",
-        overlay: "rgba(0, 0, 0, 0.5)",
+        shadow: 'rgba(0, 0, 0, 0.3)',
+        overlay: 'rgba(0, 0, 0, 0.5)',
 
         // Message bubble colors from selected theme
         messageBubbleSent: themeVariant.bubbleSent,
@@ -143,32 +144,32 @@ export function useTheme(): Theme {
         background: baseColors.COLOR_BLACK_LIGHT_9,
         backgroundSecondary: baseColors.COLOR_BLACK_LIGHT_8,
         backgroundTertiary: baseColors.COLOR_BLACK_LIGHT_7,
-        
+
         text: baseColors.COLOR_BLACK_LIGHT_2,
         textSecondary: baseColors.COLOR_BLACK_LIGHT_4,
         textTertiary: baseColors.COLOR_BLACK_LIGHT_5,
-        
+
         border: baseColors.COLOR_BLACK_LIGHT_6,
         borderLight: baseColors.COLOR_BLACK_LIGHT_7,
-        
+
         primary: customPrimaryColor,
         primaryLight: baseColors.primaryLight_1,
         primaryDark: baseColors.primaryDark,
-        
+
         secondary: baseColors.secondaryColor,
-        
+
         tint: customPrimaryColor,
         icon: baseColors.COLOR_BLACK_LIGHT_4,
         iconActive: customPrimaryColor,
-        
-        success: "#10B981",
-        error: "#EF4444",
-        warning: "#F59E0B",
-        info: "#3B82F6",
-        
+
+        success: '#10B981',
+        error: '#EF4444',
+        warning: '#F59E0B',
+        info: '#3B82F6',
+
         card: baseColors.primaryLight,
-        shadow: "rgba(0, 0, 0, 0.1)",
-        overlay: "rgba(0, 0, 0, 0.5)",
+        shadow: 'rgba(0, 0, 0, 0.1)',
+        overlay: 'rgba(0, 0, 0, 0.5)',
 
         // Message bubble colors from selected theme
         messageBubbleSent: themeVariant.bubbleSent,
@@ -181,7 +182,7 @@ export function useTheme(): Theme {
       };
     }
   }, [isDark, customPrimaryColor, themeVariant]);
-  
+
   return {
     mode: colorScheme,
     colors,

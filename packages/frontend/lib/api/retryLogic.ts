@@ -66,7 +66,7 @@ function isRetryableError(error: any, config: Required<RetryConfig>): boolean {
  * Sleep for specified milliseconds
  */
 function sleep(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**
@@ -80,7 +80,7 @@ function sleep(ms: number): Promise<void> {
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  config: RetryConfig = {}
+  config: RetryConfig = {},
 ): Promise<T> {
   const fullConfig = { ...DEFAULT_CONFIG, ...config };
   let lastError: any;
@@ -114,7 +114,7 @@ export async function retryWithBackoff<T>(
         {
           error: error instanceof Error ? error.message : String(error),
           status: axios.isAxiosError(error) ? error.response?.status : undefined,
-        }
+        },
       );
 
       // Wait before retry
@@ -123,10 +123,7 @@ export async function retryWithBackoff<T>(
   }
 
   // All retries exhausted
-  console.error(
-    `[Retry] All ${fullConfig.maxRetries} retry attempts failed`,
-    lastError
-  );
+  console.error(`[Retry] All ${fullConfig.maxRetries} retry attempts failed`, lastError);
   throw lastError;
 }
 
@@ -141,7 +138,7 @@ export async function retryWithBackoff<T>(
  */
 export function withRetry<TArgs extends any[], TReturn>(
   fn: (...args: TArgs) => Promise<TReturn>,
-  config: RetryConfig = {}
+  config: RetryConfig = {},
 ): (...args: TArgs) => Promise<TReturn> {
   return (...args: TArgs) => retryWithBackoff(() => fn(...args), config);
 }
@@ -159,7 +156,7 @@ export function withRetry<TArgs extends any[], TReturn>(
  */
 export async function batchRetry<T>(
   requests: (() => Promise<T>)[],
-  config: RetryConfig = {}
+  config: RetryConfig = {},
 ): Promise<Array<{ success: true; data: T } | { success: false; error: any }>> {
   return Promise.all(
     requests.map(async (request) => {
@@ -169,7 +166,7 @@ export async function batchRetry<T>(
       } catch (error) {
         return { success: false as const, error };
       }
-    })
+    }),
   );
 }
 
@@ -185,7 +182,7 @@ export class CircuitBreaker {
   constructor(
     private threshold: number = 5,
     private timeout: number = 60000, // 1 minute
-    private resetTimeout: number = 30000 // 30 seconds
+    private resetTimeout: number = 30000, // 30 seconds
   ) {}
 
   async execute<T>(fn: () => Promise<T>): Promise<T> {
@@ -223,9 +220,7 @@ export class CircuitBreaker {
       // Open circuit if threshold exceeded
       if (this.failures >= this.threshold) {
         this.state = 'open';
-        console.error(
-          `[Circuit Breaker] Circuit opened after ${this.failures} failures`
-        );
+        console.error(`[Circuit Breaker] Circuit opened after ${this.failures} failures`);
       }
 
       throw error;

@@ -1,5 +1,11 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  type DimensionValue,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -30,7 +36,7 @@ export function SkeletonBone({
     opacity.value = withRepeat(
       withTiming(1, { duration: 800, easing: Easing.inOut(Easing.ease) }),
       -1,
-      true
+      true,
     );
   }, []);
 
@@ -39,11 +45,7 @@ export function SkeletonBone({
 
   return (
     <Animated.View
-      style={[
-        { width, height, borderRadius, backgroundColor: bone },
-        animStyle,
-        style,
-      ]}
+      style={[{ width, height, borderRadius, backgroundColor: bone }, animStyle, style]}
     />
   );
 }
@@ -70,7 +72,14 @@ export function ConversationSkeletonRow({ index = 0 }: { index?: number }) {
     >
       <SkeletonBone width={44} height={44} borderRadius={22} style={{ marginRight: 12 }} />
       <View style={{ flex: 1, justifyContent: 'center' }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 6,
+          }}
+        >
           <SkeletonBone width={nameWidths[index % nameWidths.length]} height={14} />
           <SkeletonBone width={40} height={10} borderRadius={3} />
         </View>
@@ -101,7 +110,11 @@ export function UserSkeletonRow({ index = 0 }: { index?: number }) {
     >
       <SkeletonBone width={48} height={48} borderRadius={24} />
       <View style={{ flex: 1, marginLeft: 12, justifyContent: 'center' }}>
-        <SkeletonBone width={nameWidths[index % nameWidths.length]} height={14} style={{ marginBottom: 6 }} />
+        <SkeletonBone
+          width={nameWidths[index % nameWidths.length]}
+          height={14}
+          style={{ marginBottom: 6 }}
+        />
         <SkeletonBone width={handleWidths[index % handleWidths.length]} height={12} />
       </View>
     </View>
@@ -124,11 +137,7 @@ export function MessageSkeletonRow({ index = 0 }: { index?: number }) {
         marginVertical: 3,
       }}
     >
-      <SkeletonBone
-        width={widths[index % widths.length]}
-        height={36}
-        borderRadius={18}
-      />
+      <SkeletonBone width={widths[index % widths.length]} height={36} borderRadius={18} />
     </View>
   );
 }
@@ -149,7 +158,11 @@ export function SettingsSkeletonRow({ index = 0 }: { index?: number }) {
       }}
     >
       <SkeletonBone width={20} height={20} borderRadius={4} style={{ marginRight: 12 }} />
-      <SkeletonBone width={labelWidths[index % labelWidths.length]} height={14} style={{ flex: 1 }} />
+      <SkeletonBone
+        width={labelWidths[index % labelWidths.length]}
+        height={14}
+        style={{ flex: 1 }}
+      />
       <SkeletonBone width={16} height={16} borderRadius={3} />
     </View>
   );
@@ -193,8 +206,16 @@ export function GifGridSkeleton({ count = 9 }: { count?: number }) {
       {Array.from({ length: rows }, (_, rowIdx) => (
         <View key={rowIdx} style={{ flexDirection: 'row', width: '100%' }}>
           {Array.from({ length: 3 }, (_, colIdx) => (
-            <View key={colIdx} style={{ flex: 1, aspectRatio: 1, borderWidth: 1, borderColor: 'transparent' }}>
-              <SkeletonBone width={200} height={200} borderRadius={0} style={{ flex: 1, width: '100%', height: '100%' }} />
+            <View
+              key={colIdx}
+              style={{ flex: 1, aspectRatio: 1, borderWidth: 1, borderColor: 'transparent' }}
+            >
+              <SkeletonBone
+                width={200}
+                height={200}
+                borderRadius={0}
+                style={{ flex: 1, width: '100%', height: '100%' }}
+              />
             </View>
           ))}
         </View>
@@ -249,12 +270,24 @@ export function SettingsListSkeleton({ count = 7 }: { count?: number }) {
   const theme = useTheme();
 
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 20, borderRadius: 16, borderWidth: 1, borderColor: theme.colors.border, overflow: 'hidden', backgroundColor: theme.colors.card }}>
+    <View
+      style={{
+        marginHorizontal: 16,
+        marginTop: 20,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.border,
+        overflow: 'hidden',
+        backgroundColor: theme.colors.card,
+      }}
+    >
       {Array.from({ length: count }, (_, i) => (
         <React.Fragment key={i}>
           <SettingsSkeletonRow index={i} />
           {i < count - 1 && (
-            <View style={{ height: 1, marginHorizontal: 16, backgroundColor: theme.colors.border }} />
+            <View
+              style={{ height: 1, marginHorizontal: 16, backgroundColor: theme.colors.border }}
+            />
           )}
         </React.Fragment>
       ))}

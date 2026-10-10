@@ -18,7 +18,3 @@ export interface NavigationItemConfig {
   getIcon: (isActive: boolean) => React.ReactNode;
   onPress?: () => void;
 }
-
-
-
-

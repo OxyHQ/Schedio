@@ -1,6 +1,6 @@
 /**
  * Shared Types for allo
- * 
+ *
  * This package contains TypeScript interfaces and types that are shared
  * between the frontend and backend applications to ensure type consistency.
  */
@@ -30,23 +30,23 @@ export * from './list';
 export * from './analytics';
 
 // Feed types - use specific exports to avoid conflicts
-export { 
-  FeedUser, 
-  FeedEngagement, 
-  Post as UIPost, 
-  Reply, 
-  FeedRepost, 
-  FeedType, 
-  PostAction, 
-  FeedItem, 
-  FeedResponse, 
-  FeedRequest, 
-  FeedFilters, 
-  FeedStats, 
-  CreateReplyRequest, 
-  CreateRepostRequest, 
-  LikeRequest, 
-  UnlikeRequest 
+export {
+  FeedUser,
+  FeedEngagement,
+  Post as UIPost,
+  Reply,
+  FeedRepost,
+  FeedType,
+  PostAction,
+  FeedItem,
+  FeedResponse,
+  FeedRequest,
+  FeedFilters,
+  FeedStats,
+  CreateReplyRequest,
+  CreateRepostRequest,
+  LikeRequest,
+  UnlikeRequest,
 } from './feed';
 
 // Custom feeds (user-created timelines)

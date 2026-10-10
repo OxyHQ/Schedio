@@ -66,9 +66,11 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
   async loadMySettings() {
     try {
       set({ loading: true, error: null });
-      
+
       // Load from cache first for instant theme application
-      const cachedRaw = await Storage.get<UserAppearance | { data: UserAppearance }>(APPEARANCE_CACHE_KEY);
+      const cachedRaw = await Storage.get<UserAppearance | { data: UserAppearance }>(
+        APPEARANCE_CACHE_KEY,
+      );
       const cached = unwrapApiData<UserAppearance>(cachedRaw);
       if (cached) {
         set({ mySettings: cached });
@@ -77,7 +79,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
       // Fetch fresh data from API
       const res = await api.get<UserAppearance>('profile/settings/me');
       const doc = unwrapApiData<UserAppearance>(res.data);
-      
+
       // Cache the settings
       if (doc) {
         await Storage.set(APPEARANCE_CACHE_KEY, doc);
@@ -97,20 +99,20 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
 
   async loadForUser(userId: string, forceRefresh: boolean = false) {
     if (!userId) return null;
-    
+
     try {
       const cached = get().byUserId[userId];
       if (cached && !forceRefresh) return cached;
-      
+
       const res = await api.get<UserAppearance>(`profile/design/${userId}`);
       const doc = unwrapApiData<UserAppearance>(res.data);
-      
+
       if (doc) {
         set((state) => ({
           byUserId: { ...state.byUserId, [userId]: doc },
         }));
       }
-      
+
       return doc ?? null;
     } catch (e) {
       return null;
@@ -124,23 +126,30 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
 
       // Optimistic update — merge partial into current settings immediately
       // Create optimistic update even if previous is null
-      const optimistic: UserAppearance = previous ? {
-        ...previous,
-        ...(partial.appearance && { appearance: { ...previous.appearance, ...partial.appearance } }),
-        ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
-          profileHeaderImage: partial.profileHeaderImage,
-        }),
-        ...(partial.profileCustomization && {
-          profileCustomization: { ...previous.profileCustomization, ...partial.profileCustomization },
-        }),
-      } : {
-        oxyUserId: '',
-        appearance: partial.appearance || { themeMode: 'system' },
-        profileCustomization: partial.profileCustomization,
-        ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
-          profileHeaderImage: partial.profileHeaderImage,
-        }),
-      } as UserAppearance;
+      const optimistic: UserAppearance = previous
+        ? {
+            ...previous,
+            ...(partial.appearance && {
+              appearance: { ...previous.appearance, ...partial.appearance },
+            }),
+            ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
+              profileHeaderImage: partial.profileHeaderImage,
+            }),
+            ...(partial.profileCustomization && {
+              profileCustomization: {
+                ...previous.profileCustomization,
+                ...partial.profileCustomization,
+              },
+            }),
+          }
+        : ({
+            oxyUserId: '',
+            appearance: partial.appearance || { themeMode: 'system' },
+            profileCustomization: partial.profileCustomization,
+            ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
+              profileHeaderImage: partial.profileHeaderImage,
+            }),
+          } as UserAppearance);
 
       set({ mySettings: optimistic });
 
@@ -176,7 +185,11 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
     } catch (e: any) {
       // Revert optimistic update on error
       console.error('[AppearanceStore] Error updating settings:', e);
-      set({ mySettings: previous, loading: false, error: e?.message || 'Failed to update settings' });
+      set({
+        mySettings: previous,
+        loading: false,
+        error: e?.message || 'Failed to update settings',
+      });
       return null;
     }
   },

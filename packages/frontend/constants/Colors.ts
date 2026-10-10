@@ -10,19 +10,19 @@ const tintColorDark = colors.primaryColor;
 
 export const Colors = {
   light: {
-  text: colors.COLOR_BLACK_LIGHT_2,
-  background: colors.COLOR_BLACK_LIGHT_9,
+    text: colors.COLOR_BLACK_LIGHT_2,
+    background: colors.COLOR_BLACK_LIGHT_9,
     tint: tintColorLight,
-  icon: colors.COLOR_BLACK_LIGHT_4,
-  tabIconDefault: colors.COLOR_BLACK_LIGHT_4,
+    icon: colors.COLOR_BLACK_LIGHT_4,
+    tabIconDefault: colors.COLOR_BLACK_LIGHT_4,
     tabIconSelected: tintColorLight,
   },
   dark: {
-  text: colors.COLOR_BLACK_LIGHT_6,
-  background: colors.primaryDark,
+    text: colors.COLOR_BLACK_LIGHT_6,
+    background: colors.primaryDark,
     tint: tintColorDark,
-  icon: colors.COLOR_BLACK_LIGHT_5,
-  tabIconDefault: colors.COLOR_BLACK_LIGHT_5,
+    icon: colors.COLOR_BLACK_LIGHT_5,
+    tabIconDefault: colors.COLOR_BLACK_LIGHT_5,
     tabIconSelected: tintColorDark,
   },
 };

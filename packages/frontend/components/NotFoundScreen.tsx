@@ -9,70 +9,70 @@ import { NoUpdatesIllustration } from '@/assets/illustrations/NoUpdates';
 import { Button } from '@/components/common/Button';
 
 export default function NotFoundScreen() {
-    const router = useRouter();
-    const theme = useTheme();
+  const router = useRouter();
+  const theme = useTheme();
 
-    return (
-        <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-            <ThemedView style={styles.container}>
-                {/* Illustration */}
-                <View style={styles.illustrationWrap}>
-                    <NoUpdatesIllustration width={200} height={200} />
-                </View>
+  return (
+    <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+      <ThemedView style={styles.container}>
+        {/* Illustration */}
+        <View style={styles.illustrationWrap}>
+          <NoUpdatesIllustration width={200} height={200} />
+        </View>
 
-                {/* Title */}
-                <ThemedText style={styles.title}>Page Not Found</ThemedText>
+        {/* Title */}
+        <ThemedText style={styles.title}>Page Not Found</ThemedText>
 
-                {/* Message */}
-                <ThemedText style={[styles.message, { color: theme.colors.textSecondary }]}>
-                    The page you&apos;re looking for doesn&apos;t exist or has been moved.
-                </ThemedText>
+        {/* Message */}
+        <ThemedText style={[styles.message, { color: theme.colors.textSecondary }]}>
+          The page you&apos;re looking for doesn&apos;t exist or has been moved.
+        </ThemedText>
 
-                {/* Buttons */}
-                <View style={styles.buttonsContainer}>
-                    <Button variant="primary" onPress={() => router.back()}>
-                        Go Back
-                    </Button>
+        {/* Buttons */}
+        <View style={styles.buttonsContainer}>
+          <Button variant="primary" onPress={() => router.back()}>
+            Go Back
+          </Button>
 
-                    <Button variant="secondary" onPress={() => router.push('/')}>
-                        Home
-                    </Button>
-                </View>
-            </ThemedView>
-        </SafeAreaView>
-    );
+          <Button variant="secondary" onPress={() => router.push('/')}>
+            Home
+          </Button>
+        </View>
+      </ThemedView>
+    </SafeAreaView>
+  );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        paddingHorizontal: 24,
-    },
-    illustrationWrap: {
-        width: 220,
-        height: 220,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginBottom: 24,
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: '700',
-        textAlign: 'center',
-        marginBottom: 12,
-    },
-    message: {
-        fontSize: 16,
-        textAlign: 'center',
-        lineHeight: 24,
-        marginBottom: 32,
-        maxWidth: 320,
-    },
-    buttonsContainer: {
-        width: '100%',
-        maxWidth: 320,
-        gap: 12,
-    },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  illustrationWrap: {
+    width: 220,
+    height: 220,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  message: {
+    fontSize: 16,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 32,
+    maxWidth: 320,
+  },
+  buttonsContainer: {
+    width: '100%',
+    maxWidth: 320,
+    gap: 12,
+  },
 });

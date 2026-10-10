@@ -15,95 +15,105 @@ import { updatePrivacySettingsCache, type PrivacySettings } from '@/hooks/usePri
 const IconComponent = Ionicons as typeof Ionicons;
 
 export default function OnlineStatusScreen() {
-    const { t } = useTranslation();
-    const theme = useTheme();
+  const { t } = useTranslation();
+  const theme = useTheme();
 
-    const [settings, setSettings] = useState<PrivacySettings>({});
-    const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState<PrivacySettings>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-    useEffect(() => {
-        let mounted = true;
-        const load = async () => {
-            try {
-                const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>('/profile/settings/me');
-                if (!mounted) return;
-                setSettings(response.data?.privacy || {});
-            } catch (error) {
-                console.warn('Error loading online status setting:', error);
-            } finally {
-                if (mounted) setLoading(false);
-            }
-        };
-        load();
-        return () => { mounted = false; };
-    }, []);
-
-    const toggleOnlineStatus = async (value: boolean) => {
-        if (saving) return;
-        const previous = settings;
-        const next = { ...settings, showOnlineStatus: value };
-        setSettings(next);
-        setSaving(true);
-        try {
-            await authenticatedClient.put('/profile/settings', { privacy: next });
-            await updatePrivacySettingsCache(next);
-        } catch (error) {
-            console.warn('Error updating online status setting:', error);
-            setSettings(previous);
-        } finally {
-            setSaving(false);
-        }
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+          '/profile/settings/me',
+        );
+        if (!mounted) return;
+        setSettings(response.data?.privacy || {});
+      } catch (error) {
+        console.warn('Error loading online status setting:', error);
+      } finally {
+        if (mounted) setLoading(false);
+      }
     };
+    load();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-    return (
-        <ThemedView className="flex-1">
-            <Header
-                options={{
-                    title: t('settings.privacy.onlineStatus'),
-                    leftComponents: [
-                        <HeaderIconButton key="back" onPress={() => router.back()}>
-                            <BackArrowIcon size={20} color={theme.colors.text} />
-                        </HeaderIconButton>,
-                    ],
-                }}
-                hideBottomBorder={true}
-                disableSticky={true}
-            />
+  const toggleOnlineStatus = async (value: boolean) => {
+    if (saving) return;
+    const previous = settings;
+    const next = { ...settings, showOnlineStatus: value };
+    setSettings(next);
+    setSaving(true);
+    try {
+      await authenticatedClient.put('/profile/settings', { privacy: next });
+      await updatePrivacySettingsCache(next);
+    } catch (error) {
+      console.warn('Error updating online status setting:', error);
+      setSettings(previous);
+    } finally {
+      setSaving(false);
+    }
+  };
 
-            {loading ? (
-                <View className="flex-1 justify-center items-center">
-                    <ActivityIndicator size="large" color={theme.colors.primary} />
+  return (
+    <ThemedView className="flex-1">
+      <Header
+        options={{
+          title: t('settings.privacy.onlineStatus'),
+          leftComponents: [
+            <HeaderIconButton key="back" onPress={() => router.back()}>
+              <BackArrowIcon size={20} color={theme.colors.text} />
+            </HeaderIconButton>,
+          ],
+        }}
+        hideBottomBorder={true}
+        disableSticky={true}
+      />
+
+      {loading ? (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={theme.colors.primary} />
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="px-4 pt-5 pb-6"
+          showsVerticalScrollIndicator={false}
+        >
+          <View
+            className="rounded-2xl border overflow-hidden"
+            style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
+          >
+            <View className="flex-row items-center justify-between px-4 py-4">
+              <View className="flex-row items-center flex-1 pr-3">
+                <View className="mr-3 items-center justify-center">
+                  <IconComponent name="ellipse" size={20} color={theme.colors.text} />
                 </View>
-            ) : (
-                <ScrollView
-                    className="flex-1"
-                    contentContainerClassName="px-4 pt-5 pb-6"
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View
-                        className="rounded-2xl border overflow-hidden"
-                        style={{ backgroundColor: theme.colors.card, borderColor: theme.colors.border }}
-                    >
-                        <View className="flex-row items-center justify-between px-4 py-4">
-                            <View className="flex-row items-center flex-1 pr-3">
-                                <View className="mr-3 items-center justify-center">
-                                    <IconComponent name="ellipse" size={20} color={theme.colors.text} />
-                                </View>
-                                <View className="flex-1">
-                                    <Text className="text-base font-medium" style={{ color: theme.colors.text }}>
-                                        {t('settings.privacy.showOnlineStatus')}
-                                    </Text>
-                                    <Text className="text-[13px] mt-0.5" style={{ color: theme.colors.textSecondary }}>
-                                        {t('settings.privacy.showOnlineStatusDesc')}
-                                    </Text>
-                                </View>
-                            </View>
-                            <Toggle value={settings.showOnlineStatus ?? true} onValueChange={toggleOnlineStatus} />
-                        </View>
-                    </View>
-                </ScrollView>
-            )}
-        </ThemedView>
-    );
+                <View className="flex-1">
+                  <Text className="text-base font-medium" style={{ color: theme.colors.text }}>
+                    {t('settings.privacy.showOnlineStatus')}
+                  </Text>
+                  <Text
+                    className="text-[13px] mt-0.5"
+                    style={{ color: theme.colors.textSecondary }}
+                  >
+                    {t('settings.privacy.showOnlineStatusDesc')}
+                  </Text>
+                </View>
+              </View>
+              <Toggle
+                value={settings.showOnlineStatus ?? true}
+                onValueChange={toggleOnlineStatus}
+              />
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </ThemedView>
+  );
 }

@@ -22,9 +22,7 @@ export function useRouteDetection(): RouteDetectionResult {
 
   return useMemo(() => {
     const isSettingsRoute = routeMatchers.isSettingsRoute(pathname);
-    const isSettingsIndexRoute =
-      pathname === '/(main)/settings' ||
-      pathname?.endsWith('/settings');
+    const isSettingsIndexRoute = pathname === '/(main)/settings' || pathname?.endsWith('/settings');
     const isNestedSettingsRoute = isSettingsRoute && !isSettingsIndexRoute;
     const isComposeRoute = routeMatchers.isComposeRoute(pathname);
     const isQueueRoute = routeMatchers.isQueueRoute(pathname);
@@ -32,12 +30,12 @@ export function useRouteDetection(): RouteDetectionResult {
     const isAccountsRoute = routeMatchers.isAccountsRoute(pathname);
 
     const lastSegment = segments[segments.length - 1];
-    const isIndexRoute = (
-      pathname === '/(main)' ||
-      pathname === '/(main)/' ||
-      pathname === '/' ||
-      (String(lastSegment) === 'index' && !isSettingsRoute)
-    ) && !isComposeRoute;
+    const isIndexRoute =
+      (pathname === '/(main)' ||
+        pathname === '/(main)/' ||
+        pathname === '/' ||
+        (String(lastSegment) === 'index' && !isSettingsRoute)) &&
+      !isComposeRoute;
 
     const postIdMatch = pathname?.match(ROUTE_PATTERNS.POST);
     const postId = postIdMatch?.[1] || null;

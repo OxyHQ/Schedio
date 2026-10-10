@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 export default function AnalyticsScreen() {
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Analytics" }} />
+      <Header options={{ title: 'Analytics' }} />
       <View style={styles.content}>
         <EmptyState
           title="Analytics"

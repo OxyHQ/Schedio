@@ -23,5 +23,5 @@ export function useColorScheme(): 'light' | 'dark' {
   }
 
   // During SSR/first render, default to light for consistent static HTML
-  return (pref === 'light' || pref === 'dark') ? pref : 'light';
+  return pref === 'light' || pref === 'dark' ? pref : 'light';
 }

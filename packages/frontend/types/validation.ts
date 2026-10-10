@@ -1,17 +1,19 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Actor/profile coming from actorId_populated
-export const ZActor = z.object({
-  _id: z.string().optional(),
-  username: z.string().optional(),
-  name: z.union([z.string(), z.object({ full: z.string() })]).optional(),
-  avatar: z.string().optional(),
-}).partial();
+export const ZActor = z
+  .object({
+    _id: z.string().optional(),
+    username: z.string().optional(),
+    name: z.union([z.string(), z.object({ full: z.string() })]).optional(),
+    avatar: z.string().optional(),
+  })
+  .partial();
 
 // Embedded post user
 export const ZEmbeddedUser = z.object({
   id: z.string().optional(),
-  name: z.string().default("User"),
+  name: z.string().default('User'),
   handle: z.string().optional(),
   avatar: z.string().optional(),
   verified: z.boolean().optional(),
@@ -22,10 +24,7 @@ export const ZEmbeddedPost = z.object({
   id: z.string(),
   user: ZEmbeddedUser,
   content: z
-    .union([
-      z.object({ text: z.string().optional() }).passthrough(),
-      z.string(),
-    ])
+    .union([z.object({ text: z.string().optional() }).passthrough(), z.string()])
     .optional(),
   date: z.any().optional(),
   engagement: z
@@ -70,7 +69,7 @@ export const validateNotifications = (items: any[]): TRawNotification[] => {
     if (parsed.success) {
       valid.push(parsed.data);
     } else {
-      console.warn("Dropping invalid notification", parsed.error?.issues?.[0]);
+      console.warn('Dropping invalid notification', parsed.error?.issues?.[0]);
     }
   }
   return valid;

@@ -10,25 +10,29 @@ import { useTheme } from '@/hooks/useTheme';
  * Mimics WhatsApp/Telegram behavior: appears instantly, disappears on reconnect.
  */
 export const OfflineBanner: React.FC = React.memo(() => {
-  const isConnected = useConnectionStatusStore(state => state.isConnected);
+  const isConnected = useConnectionStatusStore((state) => state.isConnected);
   const theme = useTheme();
 
-  const styles = useMemo(() => StyleSheet.create({
-    banner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      paddingVertical: 6,
-      paddingHorizontal: 16,
-      gap: 6,
-      backgroundColor: theme.isDark ? '#3a3a00' : '#fff3cd',
-    },
-    text: {
-      fontSize: 13,
-      fontWeight: '500',
-      color: theme.isDark ? '#ffd60a' : '#856404',
-    },
-  }), [theme.isDark]);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        banner: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingVertical: 6,
+          paddingHorizontal: 16,
+          gap: 6,
+          backgroundColor: theme.isDark ? '#3a3a00' : '#fff3cd',
+        },
+        text: {
+          fontSize: 13,
+          fontWeight: '500',
+          color: theme.isDark ? '#ffd60a' : '#856404',
+        },
+      }),
+    [theme.isDark],
+  );
 
   if (isConnected) return null;
 

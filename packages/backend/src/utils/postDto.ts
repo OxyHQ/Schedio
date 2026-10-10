@@ -1,4 +1,4 @@
-import { posts } from "../db/schema";
+import { posts } from '../db/schema';
 
 type PostRow = typeof posts.$inferSelect;
 

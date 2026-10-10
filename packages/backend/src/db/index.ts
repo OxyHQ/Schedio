@@ -1,9 +1,9 @@
-import { createDatabase, type OxyDatabase } from "@oxy.so/db";
-import type postgres from "postgres";
-import * as schema from "./schema";
+import { createDatabase, type OxyDatabase } from '@oxy.so/db';
+import type postgres from 'postgres';
+import * as schema from './schema';
 
 export type SchedioDatabase = OxyDatabase<typeof schema>;
-export type SchedioTransaction = Parameters<Parameters<SchedioDatabase["transaction"]>[0]>[0];
+export type SchedioTransaction = Parameters<Parameters<SchedioDatabase['transaction']>[0]>[0];
 export type SchedioDatabaseOrTransaction = SchedioDatabase | SchedioTransaction;
 
 let handle: { db: SchedioDatabase; client: postgres.Sql } | null = null;
@@ -12,14 +12,14 @@ let reachability: Promise<void> | null = null;
 function databaseUrl(): string {
   const value = process.env.DATABASE_URL;
   if (!value) {
-    throw new Error("DATABASE_URL is required");
+    throw new Error('DATABASE_URL is required');
   }
   return value;
 }
 
 export function getDb(): SchedioDatabase {
   if (!handle) {
-    throw new Error("PostgreSQL is not connected — call connectToDatabase() during startup");
+    throw new Error('PostgreSQL is not connected — call connectToDatabase() during startup');
   }
   return handle.db;
 }

@@ -10,7 +10,7 @@ export default function PostDetailScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: "Post Detail" }} />
+      <Header options={{ title: 'Post Detail' }} />
       <View style={styles.content}>
         <ThemedText>Post ID: {id}</ThemedText>
       </View>

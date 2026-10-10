@@ -2,14 +2,14 @@
  * Theme utilities for consistent theming across the app
  */
 
-import { StyleSheet, ViewStyle, TextStyle, ImageStyle, StyleProp } from "react-native";
-import { Theme } from "@/hooks/useTheme";
+import { StyleSheet, ViewStyle, TextStyle, ImageStyle, StyleProp } from 'react-native';
+import { Theme } from '@/hooks/useTheme';
 
 /**
  * Flatten an array of styles into a single style object
  */
 export function flattenStyleArray<T extends ViewStyle | TextStyle | ImageStyle>(
-  styles: (StyleProp<T> | undefined | null | false)[]
+  styles: (StyleProp<T> | undefined | null | false)[],
 ): StyleProp<T> {
   return StyleSheet.flatten(styles) as StyleProp<T>;
 }
@@ -17,7 +17,7 @@ export function flattenStyleArray<T extends ViewStyle | TextStyle | ImageStyle>(
 /**
  * Common theme-aware shadows
  */
-export function getThemedShadow(theme: Theme, elevation: "small" | "medium" | "large" = "medium") {
+export function getThemedShadow(theme: Theme, elevation: 'small' | 'medium' | 'large' = 'medium') {
   const shadows = {
     small: {
       shadowColor: theme.colors.shadow,

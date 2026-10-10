@@ -10,7 +10,7 @@ export enum AnalyticsPeriod {
   WEEK = 'week',
   MONTH = 'month',
   QUARTER = 'quarter',
-  YEAR = 'year'
+  YEAR = 'year',
 }
 
 export enum AnalyticsMetric {
@@ -23,7 +23,7 @@ export enum AnalyticsMetric {
   FOLLOWING = 'following',
   ENGAGEMENT = 'engagement',
   REACH = 'reach',
-  IMPRESSIONS = 'impressions'
+  IMPRESSIONS = 'impressions',
 }
 
 export interface AnalyticsData {
@@ -164,4 +164,4 @@ export interface PlatformAnalytics {
   topInfluencers: string[]; // oxyUserIds
   geographicDistribution: GeographicData[];
   platformGrowth: AnalyticsTrend[];
-} 
+}

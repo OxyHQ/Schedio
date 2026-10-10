@@ -17,7 +17,11 @@ export const queryClient = new QueryClient({
       // Smart retry: retry network errors, don't retry 4xx client errors
       retry: (failureCount, error: any) => {
         // Don't retry on 4xx errors (client errors like 404, 401)
-        if (error?.response?.status && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error?.response?.status &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
         // Retry up to 2 times for network errors and 5xx errors
@@ -39,7 +43,11 @@ export const queryClient = new QueryClient({
     mutations: {
       // Retry mutations once for network errors
       retry: (failureCount, error: any) => {
-        if (error?.response?.status && error.response.status >= 400 && error.response.status < 500) {
+        if (
+          error?.response?.status &&
+          error.response.status >= 400 &&
+          error.response.status < 500
+        ) {
           return false;
         }
         return failureCount < 1;
@@ -58,7 +66,7 @@ export const queryClient = new QueryClient({
 export function invalidateRelatedQueries(queryClient: QueryClient, keyPattern: unknown[]) {
   // Remove the first element (base type), keep other filtering criteria
   const filterKey = keyPattern.slice(1);
-  
+
   // Find and invalidate all queries that match the pattern
   return queryClient.invalidateQueries({
     predicate: (query) => {
@@ -68,10 +76,10 @@ export function invalidateRelatedQueries(queryClient: QueryClient, keyPattern: u
       }
 
       // Match if no additional filters, or if all filter criteria are satisfied
-      return filterKey.length === 0 || 
-        filterKey.every((key, index) => 
-          key === undefined || key === query.queryKey[index + 1]
-        );
+      return (
+        filterKey.length === 0 ||
+        filterKey.every((key, index) => key === undefined || key === query.queryKey[index + 1])
+      );
     },
   });
 }

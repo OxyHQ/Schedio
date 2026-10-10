@@ -24,7 +24,3 @@ export const getScreenSize = (width: number): ScreenSize => {
   if (width >= BREAKPOINTS.TABLET) return 'tablet';
   return 'mobile';
 };
-
-
-
-

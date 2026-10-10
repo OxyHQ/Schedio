@@ -4,12 +4,12 @@ interface StarIconProps {
   style?: React.CSSProperties;
 }
 
-export const StarIcon = ({ size = 24, color = "currentColor", style = {} }: StarIconProps) => {
+export const StarIcon = ({ size = 24, color = 'currentColor', style = {} }: StarIconProps) => {
   return (
-    <svg 
-      className="svgIcon" 
-      viewBox="0 0 24 24" 
-      aria-hidden="true" 
+    <svg
+      className="svgIcon"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
       style={{ ...style, width: size, height: size, fill: color }}
     >
       <g>

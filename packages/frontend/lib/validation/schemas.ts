@@ -158,13 +158,15 @@ export type Conversation = z.infer<typeof ConversationSchema>;
 
 export const ConversationAPIParticipantSchema = z.object({
   userId: z.string(),
-  name: z.union([
-    z.string(),
-    z.object({
-      first: z.string().optional(),
-      last: z.string().optional(),
-    }),
-  ]).optional(),
+  name: z
+    .union([
+      z.string(),
+      z.object({
+        first: z.string().optional(),
+        last: z.string().optional(),
+      }),
+    ])
+    .optional(),
   username: z.string().optional(),
   avatar: z.string().optional(),
 });
@@ -176,10 +178,12 @@ export const ConversationAPISchema = z.object({
   name: z.string().optional(),
   avatar: z.string().optional(),
   participants: z.array(ConversationAPIParticipantSchema).optional(),
-  lastMessage: z.object({
-    text: z.string().optional(),
-    senderId: z.string().optional(),
-  }).optional(),
+  lastMessage: z
+    .object({
+      text: z.string().optional(),
+      senderId: z.string().optional(),
+    })
+    .optional(),
   lastMessageAt: z.string().optional(),
   unreadCounts: z.record(z.number()).optional(),
   createdAt: z.string().optional(),
@@ -221,7 +225,7 @@ export function parseOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, context?:
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const message = `Validation failed${context ? ` for ${context}` : ''}: ${error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+      const message = `Validation failed${context ? ` for ${context}` : ''}: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
       console.error('[Validation Error]', message, { errors: error.errors, data });
       throw new Error(message);
     }
@@ -233,13 +237,12 @@ export function parseOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, context?:
  * Validate array with partial success
  * Returns only valid items, logs invalid ones
  */
-export function parseArray<T>(
-  schema: z.ZodSchema<T>,
-  data: unknown[],
-  context?: string
-): T[] {
+export function parseArray<T>(schema: z.ZodSchema<T>, data: unknown[], context?: string): T[] {
   if (!Array.isArray(data)) {
-    console.error(`[Validation Error]${context ? ` ${context}:` : ''} Expected array, got:`, typeof data);
+    console.error(
+      `[Validation Error]${context ? ` ${context}:` : ''} Expected array, got:`,
+      typeof data,
+    );
     return [];
   }
 
@@ -252,7 +255,7 @@ export function parseArray<T>(
     } else {
       console.warn(
         `[Validation Warning]${context ? ` ${context}:` : ''} Invalid item at index ${index}:`,
-        result.error.errors
+        result.error.errors,
       );
     }
   });

@@ -96,14 +96,14 @@ export class OptimisticUpdateManager<T = any> {
    * Get all pending updates
    */
   getPending(): OptimisticUpdate<T>[] {
-    return Array.from(this.updates.values()).filter(u => u.status === 'pending');
+    return Array.from(this.updates.values()).filter((u) => u.status === 'pending');
   }
 
   /**
    * Get all updates of a specific type
    */
   getByType(type: string): OptimisticUpdate<T>[] {
-    return Array.from(this.updates.values()).filter(u => u.type === type);
+    return Array.from(this.updates.values()).filter((u) => u.type === type);
   }
 
   /**
@@ -137,7 +137,7 @@ export class OptimisticUpdateManager<T = any> {
    * Notify all listeners
    */
   private notifyListeners(): void {
-    this.listeners.forEach(listener => listener(new Map(this.updates)));
+    this.listeners.forEach((listener) => listener(new Map(this.updates)));
   }
 }
 
@@ -160,7 +160,7 @@ export class OptimisticUpdateManager<T = any> {
 export async function withOptimisticUpdate<T, R>(
   manager: OptimisticUpdateManager<T>,
   update: Omit<OptimisticUpdate<T>, 'createdAt' | 'status'>,
-  fn: () => Promise<R>
+  fn: () => Promise<R>,
 ): Promise<R> {
   const updateId = manager.add(update);
 
@@ -195,15 +195,15 @@ export async function batchOptimisticUpdates<T>(
   operations: Array<{
     update: Omit<OptimisticUpdate<T>, 'createdAt' | 'status'>;
     fn: () => Promise<any>;
-  }>
+  }>,
 ): Promise<void> {
-  const updateIds = operations.map(op => manager.add(op.update));
+  const updateIds = operations.map((op) => manager.add(op.update));
 
   try {
-    await Promise.all(operations.map(op => op.fn()));
-    updateIds.forEach(id => manager.confirm(id));
+    await Promise.all(operations.map((op) => op.fn()));
+    updateIds.forEach((id) => manager.confirm(id));
   } catch (error) {
-    updateIds.forEach(id => manager.fail(id, true));
+    updateIds.forEach((id) => manager.fail(id, true));
     throw error;
   }
 }

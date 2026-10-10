@@ -29,10 +29,7 @@ export interface ProfileData {
 /**
  * Computes profile design values from Oxy profile + backend customization settings
  */
-function computeDesign(
-  oxyProfile: any,
-  appearance: any
-): ProfileDesign {
+function computeDesign(oxyProfile: any, appearance: any): ProfileDesign {
   if (!oxyProfile) {
     return {
       displayName: '',
@@ -42,9 +39,7 @@ function computeDesign(
   }
 
   const customization = appearance?.profileCustomization;
-  const nameValue = typeof oxyProfile?.name === 'string' 
-    ? oxyProfile.name 
-    : oxyProfile?.name?.full;
+  const nameValue = typeof oxyProfile?.name === 'string' ? oxyProfile.name : oxyProfile?.name?.full;
 
   return {
     displayName: customization?.displayName || nameValue || oxyProfile?.username || '',
@@ -61,7 +56,7 @@ function computeDesign(
  * - Oxy profile data (from usersStore)
  * - Appearance/customization settings (from appearanceStore)
  * - Privacy settings
- * 
+ *
  * Uses proper Zustand selectors to avoid unnecessary re-renders
  */
 export function useProfileData(username?: string): {
@@ -69,20 +64,20 @@ export function useProfileData(username?: string): {
   loading: boolean;
 } {
   const { oxyServices } = useOxy();
-  
+
   // Use existing hooks for store access
   const ensureByUsername = useUsersStore((state) => state.ensureByUsername);
   const loadForUser = useAppearanceStore((state) => state.loadForUser);
-  
+
   // Get user from store using existing hook
   const oxyProfile = useUserByUsername(username);
-  
+
   // Subscribe to appearance settings for this user
   const appearance = useAppearanceStore((state) => {
     const id = oxyProfile?.id;
     return id ? state.byUserId[id] : undefined;
   });
-  
+
   // Load privacy settings
   const privacySettings = usePrivacySettings(oxyProfile?.id);
 
@@ -95,13 +90,10 @@ export function useProfileData(username?: string): {
     const fetchProfile = async () => {
       try {
         // Fetch fresh data - this will update the store
-        const data = await ensureByUsername(
-          username,
-          async (u): Promise<UserEntity> => {
-            const profile = await oxyServices.users.byUsername(u);
-            return { ...profile, avatar: profile.avatar ?? undefined };
-          }
-        );
+        const data = await ensureByUsername(username, async (u): Promise<UserEntity> => {
+          const profile = await oxyServices.users.byUsername(u);
+          return { ...profile, avatar: profile.avatar ?? undefined };
+        });
 
         if (!cancelled && data?.id) {
           // Load appearance settings for this user

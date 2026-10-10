@@ -17,80 +17,80 @@
 
 @theme {
   /* Primary brand colors */
-  --color-primary: #21C063;
-  --color-primary-light: #DDF3F5;
-  --color-primary-light-1: #DDF3F5;
-  --color-primary-light-2: #E5F0FF;
+  --color-primary: #21c063;
+  --color-primary-light: #ddf3f5;
+  --color-primary-light-1: #ddf3f5;
+  --color-primary-light-2: #e5f0ff;
   --color-primary-dark: #000000;
-  --color-primary-dark-1: #0A0A0A;
-  --color-primary-dark-2: #1A1A1A;
+  --color-primary-dark-1: #0a0a0a;
+  --color-primary-dark-2: #1a1a1a;
 
   --color-secondary: #d169e5;
   --color-secondary-light: #f3e8ff;
 
   /* Semantic theme colors (light mode defaults) */
-  --color-theme-bg: #FDFDFD;
-  --color-theme-bg-secondary: #FAFAFA;
-  --color-theme-bg-tertiary: #F5F5F5;
-  --color-theme-text: #1A1A1A;
+  --color-theme-bg: #fdfdfd;
+  --color-theme-bg-secondary: #fafafa;
+  --color-theme-bg-tertiary: #f5f5f5;
+  --color-theme-text: #1a1a1a;
   --color-theme-text-secondary: #707070;
-  --color-theme-text-tertiary: #A0A0A0;
-  --color-theme-border: #E8E8E8;
-  --color-theme-border-light: #F5F5F5;
-  --color-theme-card: #FFFFFF;
+  --color-theme-text-tertiary: #a0a0a0;
+  --color-theme-border: #e8e8e8;
+  --color-theme-border-light: #f5f5f5;
+  --color-theme-card: #ffffff;
 
   /* Grayscale palette */
-  --color-black-light-1: #0F0F0F;
-  --color-black-light-2: #1A1A1A;
-  --color-black-light-3: #2A2A2A;
+  --color-black-light-1: #0f0f0f;
+  --color-black-light-2: #1a1a1a;
+  --color-black-light-3: #2a2a2a;
   --color-black-light-4: #707070;
-  --color-black-light-5: #A0A0A0;
-  --color-black-light-6: #E8E8E8;
-  --color-black-light-7: #F5F5F5;
-  --color-black-light-8: #FAFAFA;
-  --color-black-light-9: #FDFDFD;
+  --color-black-light-5: #a0a0a0;
+  --color-black-light-6: #e8e8e8;
+  --color-black-light-7: #f5f5f5;
+  --color-black-light-8: #fafafa;
+  --color-black-light-9: #fdfdfd;
 
   /* Message colors (light mode) */
-  --color-message-sent: #21C063;
-  --color-message-received: #EDF2F7;
-  --color-message-text-sent: #FFFFFF;
-  --color-message-text-received: #1A202C;
-  --color-message-timestamp: #A0AEC0;
-  --color-message-separator: #CBD5E0;
+  --color-message-sent: #21c063;
+  --color-message-received: #edf2f7;
+  --color-message-text-sent: #ffffff;
+  --color-message-text-received: #1a202c;
+  --color-message-timestamp: #a0aec0;
+  --color-message-separator: #cbd5e0;
 
   /* Dark mode message colors */
-  --color-message-received-dark: #1A1A1A;
-  --color-message-text-received-dark: #E8E8E8;
+  --color-message-received-dark: #1a1a1a;
+  --color-message-text-received-dark: #e8e8e8;
   --color-message-timestamp-dark: #707070;
-  --color-message-separator-dark: #2A2A2A;
+  --color-message-separator-dark: #2a2a2a;
 
   /* Interactive elements */
-  --color-button-primary: #21C063;
+  --color-button-primary: #21c063;
   --color-button-secondary: #718096;
-  --color-button-disabled: #CBD5E0;
-  --color-link: #21C063;
+  --color-button-disabled: #cbd5e0;
+  --color-link: #21c063;
 
   /* Status colors */
-  --color-online: #00C853;
+  --color-online: #00c853;
   --color-offline: #718096;
-  --color-busy: #FF3B30;
-  --color-away: #FFCC00;
+  --color-busy: #ff3b30;
+  --color-away: #ffcc00;
 
   /* Chat UI colors */
-  --color-chat-input-bg: #F7FAFC;
-  --color-chat-input-border: #E2E8F0;
-  --color-chat-input-text: #2D3748;
-  --color-chat-input-placeholder: #A0AEC0;
-  --color-chat-header-border: #E2E8F0;
-  --color-chat-unread-badge: #FF3B30;
-  --color-chat-typing: #00C853;
+  --color-chat-input-bg: #f7fafc;
+  --color-chat-input-border: #e2e8f0;
+  --color-chat-input-text: #2d3748;
+  --color-chat-input-placeholder: #a0aec0;
+  --color-chat-header-border: #e2e8f0;
+  --color-chat-unread-badge: #ff3b30;
+  --color-chat-typing: #00c853;
 
   /* Dark mode chat UI */
-  --color-chat-input-bg-dark: #0A0A0A;
-  --color-chat-input-border-dark: #2A2A2A;
-  --color-chat-input-text-dark: #E8E8E8;
+  --color-chat-input-bg-dark: #0a0a0a;
+  --color-chat-input-border-dark: #2a2a2a;
+  --color-chat-input-text-dark: #e8e8e8;
   --color-chat-input-placeholder-dark: #707070;
-  --color-chat-header-border-dark: #1A1A1A;
+  --color-chat-header-border-dark: #1a1a1a;
 
   /* Utility colors */
   --color-overlay: rgba(0, 0, 0, 0.7);

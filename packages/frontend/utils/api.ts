@@ -15,8 +15,9 @@ const API_CONFIG = {
 // the backend's own base URL (not the Oxy API that oxyServices itself targets).
 // Explicit annotation keeps the emitted type portable under composite builds
 // (the HttpService type isn't exported from the @oxy.so/core barrel).
-const backendClient: typeof oxyServices.http =
-  oxyServices.createLinkedClient({ baseURL: API_CONFIG.baseURL }).client;
+const backendClient: typeof oxyServices.http = oxyServices.createLinkedClient({
+  baseURL: API_CONFIG.baseURL,
+}).client;
 
 // Same linked client, exported for callers that talk to the backend directly.
 const authenticatedClient: typeof oxyServices.http = backendClient;
@@ -33,10 +34,7 @@ function createRequestKey(method: string, endpoint: string, params?: unknown): s
   return `${method}:${endpoint}:${JSON.stringify(params || {})}`;
 }
 
-async function deduplicateRequest<T>(
-  key: string,
-  requestFn: () => Promise<T>
-): Promise<T> {
+async function deduplicateRequest<T>(key: string, requestFn: () => Promise<T>): Promise<T> {
   // Check if this exact request is already in flight
   const pending = pendingRequests.get(key);
   if (pending) {
@@ -71,48 +69,42 @@ export const api = {
   async get<T = unknown>(endpoint: string, params?: Record<string, unknown>): Promise<{ data: T }> {
     const key = createRequestKey('GET', endpoint, params);
     const data = await deduplicateRequest(key, () =>
-      apiCircuitBreaker.execute(() =>
-        backendClient.get<T>(endpoint, { params })
-      )
+      apiCircuitBreaker.execute(() => backendClient.get<T>(endpoint, { params })),
     );
     return { data };
   },
 
   async post<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate POST requests as they may have side effects
-    const data = await apiCircuitBreaker.execute(() =>
-      backendClient.post<T>(endpoint, body)
-    );
+    const data = await apiCircuitBreaker.execute(() => backendClient.post<T>(endpoint, body));
     return { data };
   },
 
   async put<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate PUT requests as they may have side effects
-    const data = await apiCircuitBreaker.execute(() =>
-      backendClient.put<T>(endpoint, body)
-    );
+    const data = await apiCircuitBreaker.execute(() => backendClient.put<T>(endpoint, body));
     return { data };
   },
 
   async delete<T = unknown>(endpoint: string): Promise<{ data: T }> {
     // Don't deduplicate DELETE requests as they may have side effects
-    const data = await apiCircuitBreaker.execute(() =>
-      backendClient.delete<T>(endpoint)
-    );
+    const data = await apiCircuitBreaker.execute(() => backendClient.delete<T>(endpoint));
     return { data };
   },
 
   async patch<T = unknown>(endpoint: string, body?: unknown): Promise<{ data: T }> {
     // Don't deduplicate PATCH requests as they may have side effects
-    const data = await apiCircuitBreaker.execute(() =>
-      backendClient.patch<T>(endpoint, body)
-    );
+    const data = await apiCircuitBreaker.execute(() => backendClient.patch<T>(endpoint, body));
     return { data };
   },
 };
 
 export class ApiError extends Error {
-  constructor(message: string, public status?: number, public response?: unknown) {
+  constructor(
+    message: string,
+    public status?: number,
+    public response?: unknown,
+  ) {
     super(message);
     this.name = 'ApiError';
   }
@@ -121,16 +113,20 @@ export class ApiError extends Error {
 export function webAlert(
   title: string,
   message: string,
-  buttons?: Array<{ text: string; style?: 'default' | 'cancel' | 'destructive'; onPress?: () => void }>
+  buttons?: Array<{
+    text: string;
+    style?: 'default' | 'cancel' | 'destructive';
+    onPress?: () => void;
+  }>,
 ) {
   if (Platform.OS === 'web') {
     if (buttons && buttons.length > 1) {
       const result = window.confirm(`${title}\n\n${message}`);
       if (result) {
-        const confirmButton = buttons.find(btn => btn.style !== 'cancel');
+        const confirmButton = buttons.find((btn) => btn.style !== 'cancel');
         confirmButton?.onPress?.();
       } else {
-        const cancelButton = buttons.find(btn => btn.style === 'cancel');
+        const cancelButton = buttons.find((btn) => btn.style === 'cancel');
         cancelButton?.onPress?.();
       }
     } else {
