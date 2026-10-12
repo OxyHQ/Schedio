@@ -2,7 +2,7 @@ import { spawn } from 'node:child_process';
 import { join } from 'node:path';
 import { createTestDatabase, dropTestDatabase } from '@oxy.so/db/testing';
 import { eq, sql } from 'drizzle-orm';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { closeDatabase, connectToDatabase, getDb } from '../db';
 import { postAnalytics, posts, socialAccounts, userSettings } from '../db/schema';
 
@@ -44,7 +44,7 @@ describe('real PostgreSQL schema', () => {
   });
 });
 
-describe.runIf(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
+describe.if(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
   beforeAll(async () => {
     if (!ADMIN_URL) throw new Error('TEST_DATABASE_URL is required');
     testDatabaseUrl = await createTestDatabase({ adminUrl: ADMIN_URL, migrate });
@@ -77,17 +77,23 @@ describe.runIf(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
 
   it('enforces closed values and encrypted token envelopes', async () => {
     const db = getDb();
+    // Drizzle queries are thenables, not Promises, and bun:test's `rejects`
+    // only accepts a real Promise.
     await expect(
-      db.execute(
-        sql`insert into posts (id, user_id, content, status) values ('bad', 'u', 'x', 'other')`,
+      Promise.resolve(
+        db.execute(
+          sql`insert into posts (id, user_id, content, status) values ('bad', 'u', 'x', 'other')`,
+        ),
       ),
     ).rejects.toThrow();
     await expect(
-      db.execute(sql`
+      Promise.resolve(
+        db.execute(sql`
         insert into social_accounts (
           id, user_id, platform, platform_user_id, platform_username, access_token_ciphertext
         ) values ('account', 'u', 'mastodon', 'remote', 'name', 'plaintext')
       `),
+      ),
     ).rejects.toThrow();
   });
 
@@ -95,7 +101,7 @@ describe.runIf(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
     const db = getDb();
     await db.insert(userSettings).values({ id: 'settings-1', oxyUserId: 'oxy-user' });
     await expect(
-      db.insert(userSettings).values({ id: 'settings-2', oxyUserId: 'oxy-user' }),
+      Promise.resolve(db.insert(userSettings).values({ id: 'settings-2', oxyUserId: 'oxy-user' })),
     ).rejects.toThrow();
   });
 });

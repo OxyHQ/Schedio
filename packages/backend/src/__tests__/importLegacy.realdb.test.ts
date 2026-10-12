@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createTestDatabase, dropTestDatabase } from '@oxy.so/db/testing';
 import postgres from 'postgres';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { decryptSocialToken } from '../utils/tokenCipher';
 
 const PACKAGE_ROOT = join(__dirname, '..', '..');
@@ -55,7 +55,7 @@ function fixture(id: string, fields: Record<string, unknown>): string {
   })}\n`;
 }
 
-describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
+describe.if(Boolean(ADMIN_URL))('legacy import transaction', () => {
   beforeAll(async () => {
     if (!ADMIN_URL) throw new Error('TEST_DATABASE_URL is required');
     testDatabaseUrl = await createTestDatabase({
@@ -147,7 +147,7 @@ describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
         refresh_token_ciphertext as "refreshTokenCiphertext"
       from social_accounts
     `;
-    expect(postRows).toEqual([{ id: '507f1f77bcf86cd799439011' }]);
+    expect([...postRows]).toEqual([{ id: '507f1f77bcf86cd799439011' }]);
     expect(accountRows[0]?.accessTokenCiphertext.startsWith('v1:')).toBe(true);
     expect(accountRows[0]?.accessTokenCiphertext).not.toContain('source-access-token');
     const importedAccount = accountRows[0];

@@ -10,17 +10,16 @@
     "dev": "bun --watch server.ts",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --maxWorkers=1 --exclude 'dist/**'",
+    "test": "bun test --no-env-file --isolate ./src",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "ts-node --transpile-only src/db/migrate.ts",
-    "db:build-import-manifest": "ts-node --transpile-only src/db/buildLegacyManifest.ts",
-    "db:import-legacy": "ts-node --transpile-only src/db/importLegacyJsonl.ts",
+    "db:migrate": "bun src/db/migrate.ts",
+    "db:build-import-manifest": "bun src/db/buildLegacyManifest.ts",
+    "db:import-legacy": "bun src/db/importLegacyJsonl.ts",
     "clean": "rm -rf dist"
   },
   "dependencies": {
     "@oxy.so/core": "^3.0.0",
     "@oxy.so/db": "1.0.0",
-    "dotenv": "^16.6.1",
     "drizzle-orm": "0.45.2",
     "express": "^4.21.2",
     "express-rate-limit": "^8.1.1",
@@ -28,10 +27,9 @@
     "postgres": "3.4.9"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@types/node": "^20.0.0",
     "drizzle-kit": "0.31.10",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3",
-    "vitest": "^4.1.10"
+    "typescript": "^5.8.3"
   }
 }
