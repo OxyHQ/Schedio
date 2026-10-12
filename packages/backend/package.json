@@ -9,7 +9,7 @@
     "start": "bun server.ts",
     "dev": "bun --watch server.ts",
     "build": "tsc -p tsconfig.build.json",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "bun check",
     "test": "bun test --no-env-file --isolate ./src",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun src/db/migrate.ts",
