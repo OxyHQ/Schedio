@@ -20,6 +20,7 @@
     "lint": "biome check . && bun run --filter '@schedio/frontend' lint:expo",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
+    "check:bun-pin": "bun scripts/check-bun-pin.mjs",
     "typecheck": "bun run --filter '*' typecheck",
     "clean": "bun run --filter '*' clean && rm -rf node_modules",
     "install:all": "bun install",
