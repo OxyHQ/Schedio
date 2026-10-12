@@ -27,7 +27,7 @@ This is the **backend package** of the **Schedio** monorepo. Schedio is a Buffer
 
 ### Prerequisites
 
-- Bun 1.3.14
+- Bun 1.4.3
 - PostgreSQL 17
 - Git
 
