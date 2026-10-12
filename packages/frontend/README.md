@@ -70,7 +70,7 @@ This is the **frontend package** of the **Schedio** monorepo. Schedio is a Buffe
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ and npm 8+
+- Bun 1.4.3 (Node.js 22+ for the Expo toolchain)
 - Expo CLI (optional, but recommended)
 - For iOS: macOS with Xcode
 - For Android: Android Studio
@@ -89,7 +89,7 @@ bun run dev:frontend
 ```bash
 cd packages/frontend
 bun install
-npm start
+bun run start
 ```
 
 ### Running the App
@@ -113,7 +113,7 @@ EXPO_PUBLIC_POSTHOG_KEY=your_posthog_key
 
 ## Development Scripts
 
-- `npm start` — Start Expo development server
+- `bun run start` — Start Expo development server
 - `bun run android` — Run on Android device/emulator
 - `bun run ios` — Run on iOS simulator
 - `bun run web` — Run in web browser

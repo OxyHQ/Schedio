@@ -70,7 +70,7 @@ All user-related data is linked to Oxy users via `oxyUserId` fields:
 ### Installation
 
 ```bash
-npm install @schedio/shared-types
+bun add @schedio/shared-types
 ```
 
 ### Import Types
@@ -89,12 +89,12 @@ import {
 
 ### Building
 ```bash
-npm run build
+bun run build
 ```
 
 ### Development Mode
 ```bash
-npm run dev
+bun run dev
 ```
 
 ## Contributing
