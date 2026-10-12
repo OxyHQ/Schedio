@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { api } from '@/utils/api';
 import { Storage } from '@/utils/storage';
+import { errorMessage } from '@/utils/errors';
 
 const APPEARANCE_CACHE_KEY = 'oxy_appearance_settings';
 
@@ -10,7 +11,7 @@ function unwrapApiData<T>(value: T | { data: T } | null | undefined): T | null {
   }
 
   if (typeof value === 'object' && value !== null) {
-    const recordValue = value as Record<string, any>;
+    const recordValue = value as Record<string, unknown>;
     if ('data' in recordValue) {
       const inner = recordValue.data as T | null | undefined;
       return inner ?? null;
@@ -92,8 +93,8 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
       } else {
         set({ loading: false });
       }
-    } catch (e: any) {
-      set({ loading: false, error: e?.message || 'Failed to load settings' });
+    } catch (e) {
+      set({ loading: false, error: errorMessage(e) || 'Failed to load settings' });
     }
   },
 
@@ -114,7 +115,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
       }
 
       return doc ?? null;
-    } catch (e) {
+    } catch {
       return null;
     }
   },
@@ -132,7 +133,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
             ...(partial.appearance && {
               appearance: { ...previous.appearance, ...partial.appearance },
             }),
-            ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
+            ...(Object.hasOwn(partial, 'profileHeaderImage') && {
               profileHeaderImage: partial.profileHeaderImage,
             }),
             ...(partial.profileCustomization && {
@@ -146,7 +147,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
             oxyUserId: '',
             appearance: partial.appearance || { themeMode: 'system' },
             profileCustomization: partial.profileCustomization,
-            ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
+            ...(Object.hasOwn(partial, 'profileHeaderImage') && {
               profileHeaderImage: partial.profileHeaderImage,
             }),
           } as UserAppearance);
@@ -156,7 +157,7 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
       // Build payload with only allowed fields
       const payload: Partial<UserAppearance> = {
         ...(partial.appearance && { appearance: partial.appearance }),
-        ...(Object.prototype.hasOwnProperty.call(partial, 'profileHeaderImage') && {
+        ...(Object.hasOwn(partial, 'profileHeaderImage') && {
           profileHeaderImage: partial.profileHeaderImage,
         }),
         ...(partial.profileCustomization && {
@@ -182,13 +183,13 @@ export const useAppearanceStore = create<AppearanceStore>((set, get) => ({
 
       set({ loading: false });
       return null;
-    } catch (e: any) {
+    } catch (e) {
       // Revert optimistic update on error
       console.error('[AppearanceStore] Error updating settings:', e);
       set({
         mySettings: previous,
         loading: false,
-        error: e?.message || 'Failed to update settings',
+        error: errorMessage(e) || 'Failed to update settings',
       });
       return null;
     }

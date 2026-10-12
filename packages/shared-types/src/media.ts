@@ -2,8 +2,6 @@
  * Media-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum MediaType {
   IMAGE = 'image',
   VIDEO = 'video',

@@ -1,6 +1,5 @@
-import React from 'react';
-import Svg, { Path, Rect, Circle } from 'react-native-svg';
-import { ViewStyle } from 'react-native';
+import Svg, { Path } from 'react-native-svg';
+import type { ViewStyle } from 'react-native';
 import { colors } from '@/styles/colors';
 
 export const SourcesIcon = ({

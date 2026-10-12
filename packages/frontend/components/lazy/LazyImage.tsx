@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import type React from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Image as ExpoImage } from 'expo-image';
 import { View, StyleSheet, Animated } from 'react-native';
-import type { ImageProps } from 'expo-image';
+import type { ImageErrorEventData, ImageProps } from 'expo-image';
 
 /**
  * LazyImage - High-performance lazy-loaded image component
@@ -31,7 +32,7 @@ interface LazyImageProps extends Omit<ImageProps, 'onLoad' | 'onError'> {
   /** Callback when image loads successfully */
   onLoadSuccess?: () => void;
   /** Callback when image fails to load */
-  onLoadError?: (error: any) => void;
+  onLoadError?: (error: ImageErrorEventData) => void;
 }
 
 export const LazyImage: React.FC<LazyImageProps> = ({
@@ -100,7 +101,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
     setHasError(false);
   };
 
-  const handleError = (error: any) => {
+  const handleError = (error: ImageErrorEventData) => {
     console.warn('[LazyImage] Load error:', error);
 
     if (retryCount < maxRetries) {

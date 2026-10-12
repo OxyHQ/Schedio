@@ -2,8 +2,6 @@
  * Interaction-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum InteractionType {
   LIKE = 'like',
   REPOST = 'repost',
@@ -30,7 +28,7 @@ export interface Interaction {
   targetType: 'post' | 'user' | 'comment';
   type: InteractionType;
   status: InteractionStatus;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }

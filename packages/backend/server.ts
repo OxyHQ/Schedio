@@ -36,7 +36,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Database connection middleware
-app.use(async (req, res, next) => {
+app.use(async (_req, res, next) => {
   try {
     await connectToDatabase();
     next();
@@ -82,7 +82,7 @@ app.use((req, res, next) => {
 const publicApiRouter = express.Router();
 
 // Health check
-publicApiRouter.get('/health', (req, res) => {
+publicApiRouter.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'schedio-backend' });
 });
 
@@ -103,7 +103,7 @@ app.use(bruteForceProtection);
 app.use('/api', createOxyAuthMiddleware(oxy), authenticatedApiRouter);
 
 // --- Root API Welcome Route ---
-app.get('/', async (req, res) => {
+app.get('/', async (_req, res) => {
   res.json({ message: 'Welcome to Schedio API', version: '1.0.0' });
 });
 

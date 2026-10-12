@@ -12,6 +12,7 @@ export function useOptimizedMediaQuery(query: {
   maxHeight?: number;
 }) {
   // Memoize the query object to prevent unnecessary rerenders
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the four primitive fields on purpose, so a new object literal with equal values keeps the first object
   const stableQuery = useMemo(
     () => query,
     [query.minWidth, query.maxWidth, query.minHeight, query.maxHeight],

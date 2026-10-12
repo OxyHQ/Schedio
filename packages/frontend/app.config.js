@@ -1,9 +1,9 @@
 const pkg = require('./package.json');
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 const { oxySplashScreenPlugin } = require('@oxy.so/expo-splash/config');
 
-module.exports = function (_config) {
+module.exports = (_config) => {
   /**
    * App version number. Should be incremented as part of a release cycle.
    */

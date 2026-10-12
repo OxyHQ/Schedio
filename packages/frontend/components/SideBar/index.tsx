@@ -1,5 +1,5 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { Dimensions, Platform, View, ViewStyle, StyleSheet, Pressable } from 'react-native';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Dimensions, Platform, View, type ViewStyle, StyleSheet, Pressable } from 'react-native';
 import { usePathname, useRouter } from 'expo-router';
 import { useMediaQuery } from 'react-responsive';
 import { useTranslation } from 'react-i18next';
@@ -8,7 +8,6 @@ import { Ionicons } from '@expo/vector-icons';
 // Components
 import { SideBarItem } from './SideBarItem';
 import { Logo } from '@/components/Logo';
-import Avatar from '@/components/Avatar';
 
 // Icons
 import { Home, HomeActive } from '@/assets/icons/home-icon';
@@ -20,7 +19,6 @@ import { AnalyticsIcon, AnalyticsIconActive } from '@/assets/icons/analytics-ico
 // Hooks
 import { useTheme } from '@/hooks/useTheme';
 import { useOxy, useAuth } from '@oxy.so/services';
-import { useMyAvatarShape } from '@/hooks/useAvatarShape';
 
 // Utils
 import { confirmDialog } from '@/utils/alerts';
@@ -28,6 +26,7 @@ import { ROUTES, routeMatchers, isRouteActive } from '@/utils/routeUtils';
 
 // Types
 import type { NavigationItem } from '@/types/navigation';
+import { errorMessage } from '@/utils/errors';
 
 const IconComponent = Ionicons;
 const WindowHeight = Dimensions.get('window').height;
@@ -35,14 +34,9 @@ const WindowHeight = Dimensions.get('window').height;
 export function SideBar() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { isAuthenticated: _isAuthenticated, user, logout, oxyServices } = useOxy();
+  const { isAuthenticated: _isAuthenticated, user, logout } = useOxy();
   const { signIn } = useAuth();
   const theme = useTheme();
-
-  const avatarUri = user?.avatar
-    ? oxyServices.assets.publicUrl(user.avatar as string, 'thumb')
-    : undefined;
-  const myAvatarShape = useMyAvatarShape();
 
   const handleSignOut = async () => {
     const confirmed = await confirmDialog({
@@ -195,7 +189,7 @@ export function SideBar() {
           </View>
 
           <View style={styles.footer}>
-            {user && user.id ? (
+            {user?.id ? (
               <SideBarItem
                 isActive={false}
                 icon={<IconComponent name="log-out-outline" size={20} color={theme.colors.text} />}
@@ -214,11 +208,9 @@ export function SideBar() {
                 onPress={async () => {
                   try {
                     await signIn();
-                  } catch (error: any) {
-                    if (
-                      !error?.message?.includes('cancelled') &&
-                      !error?.message?.includes('closed')
-                    ) {
+                  } catch (error) {
+                    const message = errorMessage(error) ?? '';
+                    if (!message.includes('cancelled') && !message.includes('closed')) {
                       console.error('Authentication error:', error);
                     }
                   }

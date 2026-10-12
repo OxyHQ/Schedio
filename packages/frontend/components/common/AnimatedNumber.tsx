@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, TextProps } from 'react-native';
+import { Text, type TextProps } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -45,7 +45,6 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
 
   React.useEffect(() => {
     if (previousValue.current !== value) {
-      const oldValue = previousValue.current;
       previousValue.current = value;
 
       // Start animation
@@ -55,7 +54,7 @@ const AnimatedNumber: React.FC<AnimatedNumberProps> = ({
       // Animate counter value smoothly
       counterValue.value = withTiming(value, { duration });
     }
-  }, [value, duration, progress, counterValue]);
+  }, [value, duration]);
 
   const animStyle = useAnimatedStyle(() => {
     return {

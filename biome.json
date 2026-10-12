@@ -42,17 +42,26 @@
     "rules": {
       "preset": "recommended",
       "a11y": {
-        "noSvgWithoutTitle": "warn"
+        "noSvgWithoutTitle": "error"
       },
       "correctness": {
-        "useExhaustiveDependencies": "warn",
-        "useHookAtTopLevel": "error"
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            "hooks": [
+              { "name": "useSharedValue", "stableResult": true },
+              { "name": "useAnimatedRef", "stableResult": true }
+            ]
+          }
+        },
+        "useHookAtTopLevel": "error",
+        "noUnresolvedImports": "error"
       },
       "suspicious": {
-        "noArrayIndexKey": "warn",
-        "noAssignInExpressions": "warn",
+        "noArrayIndexKey": "error",
+        "noAssignInExpressions": "error",
         "noVar": "error",
-        "useIterableCallbackReturn": "warn"
+        "useIterableCallbackReturn": "error"
       }
     }
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/layout/Header';
@@ -6,7 +6,6 @@ import { HeaderIconButton } from '@/components/layout/HeaderIconButton';
 import { BackArrowIcon } from '@/assets/icons/back-arrow-icon';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useOxy } from '@oxy.so/services';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { authenticatedClient } from '@/utils/api';
@@ -28,41 +27,28 @@ interface PrivacySettings {
 export default function PrivacySettingsScreen() {
   const { t } = useTranslation();
   const theme = useTheme();
-  const { user } = useOxy();
 
   const [privacySettings, setPrivacySettings] = useState<PrivacySettings>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadPrivacySettings = async () => {
+      try {
+        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+          '/profile/settings/me',
+        );
+        const settings = response.data;
+        setPrivacySettings(settings?.privacy || { profileVisibility: 'public' });
+        setLoading(false);
+      } catch (error) {
+        console.error('Error loading privacy settings:', error);
+        setPrivacySettings({ profileVisibility: 'public' });
+        setLoading(false);
+      }
+    };
+
     loadPrivacySettings();
   }, []);
-
-  const loadPrivacySettings = async () => {
-    try {
-      const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
-        '/profile/settings/me',
-      );
-      const settings = response.data;
-      setPrivacySettings(settings?.privacy || { profileVisibility: 'public' });
-      setLoading(false);
-    } catch (error) {
-      console.error('Error loading privacy settings:', error);
-      setPrivacySettings({ profileVisibility: 'public' });
-      setLoading(false);
-    }
-  };
-
-  const updatePrivacySettings = async (updates: Partial<PrivacySettings>) => {
-    try {
-      const newSettings = { ...privacySettings, ...updates };
-      await authenticatedClient.put('/profile/settings', {
-        privacy: newSettings,
-      });
-      setPrivacySettings(newSettings);
-    } catch (error) {
-      console.error('Error updating privacy settings:', error);
-    }
-  };
 
   const handlePrivateProfilePress = () => {
     router.push('/settings/privacy/profile-visibility');

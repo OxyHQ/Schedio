@@ -1,6 +1,5 @@
-import React from 'react';
 import Svg, { Path, G } from 'react-native-svg';
-import { ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { colors } from '@/styles/colors';
 
 export const CloseIcon = ({

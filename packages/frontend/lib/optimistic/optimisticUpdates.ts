@@ -18,7 +18,7 @@ export interface OptimisticUpdate<T> {
  * Optimistic Update Manager
  * Tracks pending optimistic updates and handles rollback
  */
-export class OptimisticUpdateManager<T = any> {
+export class OptimisticUpdateManager<T = unknown> {
   private updates = new Map<string, OptimisticUpdate<T>>();
   private listeners = new Set<(updates: Map<string, OptimisticUpdate<T>>) => void>();
 
@@ -137,7 +137,9 @@ export class OptimisticUpdateManager<T = any> {
    * Notify all listeners
    */
   private notifyListeners(): void {
-    this.listeners.forEach((listener) => listener(new Map(this.updates)));
+    for (const listener of this.listeners) {
+      listener(new Map(this.updates));
+    }
   }
 }
 
@@ -194,16 +196,20 @@ export async function batchOptimisticUpdates<T>(
   manager: OptimisticUpdateManager<T>,
   operations: Array<{
     update: Omit<OptimisticUpdate<T>, 'createdAt' | 'status'>;
-    fn: () => Promise<any>;
+    fn: () => Promise<unknown>;
   }>,
 ): Promise<void> {
   const updateIds = operations.map((op) => manager.add(op.update));
 
   try {
     await Promise.all(operations.map((op) => op.fn()));
-    updateIds.forEach((id) => manager.confirm(id));
+    for (const id of updateIds) {
+      manager.confirm(id);
+    }
   } catch (error) {
-    updateIds.forEach((id) => manager.fail(id, true));
+    for (const id of updateIds) {
+      manager.fail(id, true);
+    }
     throw error;
   }
 }

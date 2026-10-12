@@ -1,5 +1,5 @@
-import React, { useMemo, useCallback } from 'react';
-import { StyleSheet, View, Text, ViewStyle, Platform, Vibration, Pressable } from 'react-native';
+import { useMemo, useCallback } from 'react';
+import { StyleSheet, View, Text, type ViewStyle, Platform, Pressable } from 'react-native';
 import { Link, usePathname, type Href } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,7 @@ import { ROUTES, routeMatchers, isRouteActive } from '@/utils/routeUtils';
 
 // Types
 import type { NavigationItem } from '@/types/navigation';
+import { errorMessage } from '@/utils/errors';
 
 export const BottomBar = () => {
   const { t } = useTranslation();
@@ -175,7 +176,7 @@ export const BottomBar = () => {
           <Link key={`${route}-${title}`} href={route as Href} style={styles.tab} asChild>
             <Pressable
               onPress={onPress}
-              style={({ pressed }: any) => [
+              style={({ pressed }) => [
                 styles.tab,
                 pressed && {
                   backgroundColor: `${theme.colors.primary}10`,
@@ -200,14 +201,15 @@ export const BottomBar = () => {
             if (!isAuthenticated || !user?.username) {
               try {
                 await signIn();
-              } catch (error: any) {
-                if (!error?.message?.includes('cancelled') && !error?.message?.includes('closed')) {
+              } catch (error) {
+                const message = errorMessage(error) ?? '';
+                if (!message.includes('cancelled') && !message.includes('closed')) {
                   console.error('Authentication error:', error);
                 }
               }
             }
           }}
-          style={({ pressed }: any) => [
+          style={({ pressed }) => [
             styles.tab,
             pressed && {
               backgroundColor: `${theme.colors.primary}10`,

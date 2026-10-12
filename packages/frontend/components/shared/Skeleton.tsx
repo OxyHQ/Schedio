@@ -204,9 +204,11 @@ export function GifGridSkeleton({ count = 9 }: { count?: number }) {
   return (
     <View style={{ flex: 1 }}>
       {Array.from({ length: rows }, (_, rowIdx) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <View key={rowIdx} style={{ flexDirection: 'row', width: '100%' }}>
           {Array.from({ length: 3 }, (_, colIdx) => (
             <View
+              // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
               key={colIdx}
               style={{ flex: 1, aspectRatio: 1, borderWidth: 1, borderColor: 'transparent' }}
             >
@@ -231,6 +233,7 @@ export function ConversationListSkeleton({ count = 10 }: { count?: number }) {
   return (
     <View style={{ flex: 1 }}>
       {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <ConversationSkeletonRow key={i} index={i} />
       ))}
     </View>
@@ -244,6 +247,7 @@ export function UserListSkeleton({ count = 6 }: { count?: number }) {
   return (
     <View style={{ flex: 1 }}>
       {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <UserSkeletonRow key={i} index={i} />
       ))}
     </View>
@@ -257,6 +261,7 @@ export function MessageListSkeleton({ count = 8 }: { count?: number }) {
   return (
     <View style={{ flex: 1, justifyContent: 'flex-end', paddingVertical: 12 }}>
       {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <MessageSkeletonRow key={i} index={i} />
       ))}
     </View>
@@ -282,6 +287,7 @@ export function SettingsListSkeleton({ count = 7 }: { count?: number }) {
       }}
     >
       {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <React.Fragment key={i}>
           <SettingsSkeletonRow index={i} />
           {i < count - 1 && (
@@ -302,6 +308,7 @@ export function DraftsListSkeleton({ count = 5 }: { count?: number }) {
   return (
     <View style={{ flex: 1 }}>
       {Array.from({ length: count }, (_, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: fixed-length placeholder list with no data; position is the identity
         <DraftSkeletonRow key={i} index={i} />
       ))}
     </View>

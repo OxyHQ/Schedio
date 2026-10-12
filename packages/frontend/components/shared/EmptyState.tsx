@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, StyleSheet, Image, ImageSourcePropType } from 'react-native';
+import type React from 'react';
+import { useMemo } from 'react';
+import { View, StyleSheet, Image, type ImageSourcePropType } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { ThemedView } from '@/components/ThemedView';
 import { ThemedText } from '@/components/ThemedText';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -9,7 +9,7 @@ export interface EmptyStateProps {
   title: string;
   subtitle?: string;
   icon?: React.ReactNode;
-  lottieSource?: any;
+  lottieSource?: React.ComponentProps<typeof LottieView>['source'];
   imageSource?: ImageSourcePropType;
   lottieSize?: number;
   imageSize?: number;

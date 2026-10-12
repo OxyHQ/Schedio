@@ -1,5 +1,5 @@
-import React from 'react';
-import Svg, { Path, Rect } from 'react-native-svg';
+import type React from 'react';
+import Svg, { Rect } from 'react-native-svg';
 import { colors } from '@/styles/colors';
 
 interface PollIconProps {

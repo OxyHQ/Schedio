@@ -1,6 +1,5 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet, StyleProp, ViewStyle } from 'react-native';
-import { useTheme } from '@/hooks/useTheme';
+import type React from 'react';
+import { TouchableOpacity, StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
 
 interface HeaderIconButtonProps {
   onPress?: () => void;
@@ -15,8 +14,6 @@ export const HeaderIconButton: React.FC<HeaderIconButtonProps> = ({
   style,
   disabled = false,
 }) => {
-  const theme = useTheme();
-
   return (
     <TouchableOpacity
       style={[styles.button, disabled && { opacity: 0.5 }, style]}

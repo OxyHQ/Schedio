@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, View, Text, ViewStyle, Platform } from 'react-native';
+import { StyleSheet, View, Text, type ViewStyle, Platform } from 'react-native';
 import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { useTheme } from '@/hooks/useTheme';
 
 interface Props {
@@ -65,6 +65,7 @@ export const Header: React.FC<Props> = ({
           </Pressable>
         )}
         {options?.leftComponents?.map((component, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: caller-supplied nodes carry no stable id; the index is the key React would use anyway
           <React.Fragment key={index}>{component}</React.Fragment>
         ))}
         {titlePosition === 'left' && (
@@ -106,6 +107,7 @@ export const Header: React.FC<Props> = ({
       )}
       <View style={styles.rightContainer}>
         {options?.rightComponents?.map((component, index) => (
+          // biome-ignore lint/suspicious/noArrayIndexKey: caller-supplied nodes carry no stable id; the index is the key React would use anyway
           <React.Fragment key={index}>{component}</React.Fragment>
         ))}
       </View>

@@ -47,7 +47,7 @@ router.get('/', async (req: Request, res: Response) => {
       .from(socialAccounts)
       .where(and(eq(socialAccounts.userId, userId), eq(socialAccounts.isActive, true)));
     res.json({ accounts });
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Failed to fetch social accounts' });
   }
 });
@@ -89,7 +89,7 @@ router.post('/', async (req: Request, res: Response) => {
     const account = rows[0];
     if (!account) throw new Error('Social account insert returned no row');
     return res.status(201).json({ message: 'Account connected', account });
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Failed to connect account' });
   }
 });
@@ -107,7 +107,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
     const account = rows[0];
     if (!account) return res.status(404).json({ message: 'Account not found' });
     return res.json({ message: 'Account disconnected' });
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Failed to disconnect account' });
   }
 });

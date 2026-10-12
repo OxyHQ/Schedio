@@ -2,8 +2,6 @@
  * Analytics-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum AnalyticsPeriod {
   HOUR = 'hour',
   DAY = 'day',
@@ -34,7 +32,7 @@ export interface AnalyticsData {
   period: AnalyticsPeriod;
   value: number;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UserAnalytics {

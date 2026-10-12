@@ -2,8 +2,6 @@
  * Notification-related types for allo social network
  */
 
-import { Timestamps } from './common';
-
 export enum NotificationType {
   LIKE = 'like',
   REPOST = 'repost',
@@ -56,7 +54,7 @@ export interface NotificationData {
   targetType?: 'post' | 'comment' | 'user' | 'hashtag';
   actionUrl?: string; // deep link to the relevant content
   imageUrl?: string; // avatar or preview image
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface LikeNotification extends Notification {

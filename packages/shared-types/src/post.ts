@@ -2,7 +2,7 @@
  * Post-related types for allo social network
  */
 
-import { Timestamps, Coordinates, GeoJSONPoint } from './common';
+import type { GeoJSONPoint } from './common';
 
 export enum PostType {
   TEXT = 'text',

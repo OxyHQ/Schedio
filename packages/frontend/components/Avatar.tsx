@@ -3,11 +3,11 @@ import {
   View,
   Animated,
   StyleSheet,
-  ImageSourcePropType,
+  type ImageSourcePropType,
   Text,
-  StyleProp,
-  ViewStyle,
-  ImageStyle,
+  type StyleProp,
+  type ViewStyle,
+  type ImageStyle,
   TouchableOpacity,
 } from 'react-native';
 import { Image } from 'expo-image';
@@ -48,8 +48,6 @@ const Avatar: React.FC<AvatarProps> = ({
 
   const imageSource =
     source && !errored ? (typeof source === 'string' ? { uri: source } : source) : DefaultAvatar;
-
-  const Container: any = onPress ? TouchableOpacity : View;
 
   const inner =
     source && !errored ? (
@@ -110,7 +108,10 @@ const Avatar: React.FC<AvatarProps> = ({
     </View>
   );
 
-  return <Container onPress={onPress}>{content}</Container>;
+  if (onPress) {
+    return <TouchableOpacity onPress={onPress}>{content}</TouchableOpacity>;
+  }
+  return <View>{content}</View>;
 };
 
 const styles = StyleSheet.create({

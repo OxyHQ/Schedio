@@ -16,7 +16,7 @@ router.get('/', async (req: Request, res: Response) => {
       .where(and(eq(posts.userId, userId), eq(posts.status, 'scheduled')))
       .orderBy(asc(posts.scheduledAt), asc(posts.id));
     res.json({ queue: queue.map(toPostDto) });
-  } catch (error) {
+  } catch {
     res.status(500).json({ message: 'Failed to fetch queue' });
   }
 });
@@ -28,7 +28,7 @@ router.put('/', async (req: Request, res: Response) => {
       return res.status(400).json({ message: 'orderedPostIds must be an array of strings' });
     }
     return res.json({ message: 'Queue reordered', orderedPostIds });
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Failed to reorder queue' });
   }
 });

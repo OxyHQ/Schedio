@@ -7,14 +7,14 @@ import {
   type ProfileVisibility,
   type SocialPlatform,
   type ThemeMode,
-  blocks,
-  postAnalytics,
-  posts,
-  publishingSchedules,
-  restricts,
-  socialAccounts,
-  userBehaviors,
-  userSettings,
+  type blocks,
+  type postAnalytics,
+  type posts,
+  type publishingSchedules,
+  type restricts,
+  type socialAccounts,
+  type userBehaviors,
+  type userSettings,
 } from './schema';
 import { encryptSocialToken } from '../utils/tokenCipher';
 

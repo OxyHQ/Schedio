@@ -1,4 +1,6 @@
-import React, { Suspense, lazy } from 'react';
+import type React from 'react';
+// biome-ignore lint/correctness/noUnresolvedImports: @types/react declares Suspense on its namespace export, which Biome does not follow; tsc resolves it
+import { Suspense, lazy } from 'react';
 import type LottieView from 'lottie-react-native';
 import { View, ActivityIndicator } from 'react-native';
 

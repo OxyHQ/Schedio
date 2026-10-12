@@ -57,6 +57,8 @@ jobs:
   # Biome checks formatting and lint across the whole repo; the frontend's
   # minimal ESLint config then runs the eslint-plugin-expo rules Biome has no
   # equivalent for. Cheap enough to run on every pull request and push.
+  # --error-on-warnings keeps the warning count at zero: the recommended rules
+  # that default to warn (unused imports, explicit any, ...) fail CI too.
   lint:
     name: Lint
     runs-on: ubuntu-latest
@@ -74,7 +76,7 @@ jobs:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - name: Biome
-        run: bunx biome ci .
+        run: bunx biome ci --error-on-warnings .
       - name: Expo ESLint rules
         run: bun run --filter @schedio/frontend lint:expo
       # The backend image runs the bun its Dockerfile names, and that literal

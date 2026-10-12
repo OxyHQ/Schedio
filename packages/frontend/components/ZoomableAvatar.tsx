@@ -2,11 +2,14 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  ImageSourcePropType,
+  type ImageSourcePropType,
   Pressable,
   Modal,
   Platform,
   useWindowDimensions,
+  type StyleProp,
+  type ViewStyle,
+  type ImageStyle,
 } from 'react-native';
 import { Image } from 'expo-image';
 import { Image as RNImage } from 'react-native';
@@ -17,7 +20,6 @@ import Animated, {
   withSpring,
   withTiming,
   runOnJS,
-  runOnUI,
   Easing,
 } from 'react-native-reanimated';
 import { GestureHandlerRootView, Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -30,8 +32,8 @@ const AnimatedImage = Animated.createAnimatedComponent(Image);
 interface ZoomableAvatarProps {
   source?: ImageSourcePropType | string | undefined | null;
   size?: number;
-  style?: any;
-  imageStyle?: any;
+  style?: StyleProp<ViewStyle>;
+  imageStyle?: StyleProp<ImageStyle>;
 }
 
 export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
@@ -93,11 +95,12 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
           imageUri = source.uri;
         }
 
-        if (imageUri && (imageUri.startsWith('http') || imageUri.startsWith('https'))) {
+        const remoteUri = imageUri;
+        if (remoteUri && (remoteUri.startsWith('http') || remoteUri.startsWith('https'))) {
           // Remote image - use React Native's Image.getSize
           const { width, height } = await new Promise<{ width: number; height: number }>(
             (resolve, reject) => {
-              RNImage.getSize(imageUri!, (width, height) => resolve({ width, height }), reject);
+              RNImage.getSize(remoteUri, (width, height) => resolve({ width, height }), reject);
             },
           );
 
@@ -107,7 +110,7 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
           }
         }
         // For local images, dimensions will be captured via onLoad
-      } catch (error) {
+      } catch {
         // If getSize fails, dimensions will be captured via onLoad if available
         // Silently fail - onLoad will handle it
       }
@@ -182,7 +185,7 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
         }, 10);
       }
     }
-  }, [isZoomed, size]);
+  }, [isZoomed, size, SCREEN_WIDTH, SCREEN_HEIGHT, MAX_ZOOM_SIZE]);
 
   const handleDismiss = useCallback(() => {
     // Animate back to original position with smooth, coordinated animations

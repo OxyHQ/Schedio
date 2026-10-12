@@ -1,5 +1,13 @@
-import React, { useRef, useEffect, useLayoutEffect, useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import type React from 'react';
+import { useRef, useLayoutEffect, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -18,7 +26,7 @@ interface AnimatedTabBarProps {
   activeTabId: string;
   onTabPress: (tabId: string) => void;
   scrollEnabled?: boolean;
-  style?: any;
+  style?: StyleProp<ViewStyle>;
   instanceId?: string; // Unique identifier to persist state across remounts
 }
 
@@ -46,8 +54,6 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   const scrollRef = useRef<Animated.ScrollView>(null);
   const [layoutReady, setLayoutReady] = useState(false);
 
-  const activeIndex = tabs.findIndex((tab) => tab.id === activeTabId);
-
   // Track scroll offset when scrolling horizontally
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -56,10 +62,11 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
   });
 
   // Update indicator position when active tab changes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: layoutReady is a trigger, not a read: it re-runs the effect once onLayout has filled the tabLayouts ref
   useLayoutEffect(() => {
     const layout = tabLayouts.current[activeTabId];
 
-    if (!layout || !layout.textWidth || layout.width === 0 || layout.x < 0) {
+    if (!layout?.textWidth || layout.width === 0 || layout.x < 0) {
       // Wait for layout to be measured - will be updated by onLayout callbacks
       return;
     }
@@ -95,7 +102,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       position: basePosition,
       width: indicatorWidthValue,
     });
-  }, [activeTabId, indicatorPosition, indicatorWidth, layoutReady, instanceId]);
+  }, [activeTabId, layoutReady, instanceId]);
 
   const animatedIndicatorStyle = useAnimatedStyle(() => {
     // Adjust indicator position by subtracting scroll offset when scrollEnabled
@@ -134,7 +141,7 @@ const AnimatedTabBar: React.FC<AnimatedTabBarProps> = ({
       ]}
     >
       <Container style={styles.tabsContainer} {...containerProps}>
-        {tabs.map((tab, index) => (
+        {tabs.map((tab) => (
           <TouchableOpacity
             key={tab.id}
             style={styles.tab}

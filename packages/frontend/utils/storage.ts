@@ -3,11 +3,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 /**
  * Generic storage utility for caching data
  */
-export class Storage {
+export const Storage = {
   /**
    * Get item from storage
    */
-  static async get<T>(key: string): Promise<T | null> {
+  async get<T>(key: string): Promise<T | null> {
     try {
       const item = await AsyncStorage.getItem(key);
       return item ? JSON.parse(item) : null;
@@ -15,12 +15,12 @@ export class Storage {
       console.warn(`[Storage] Failed to get item: ${key}`, error);
       return null;
     }
-  }
+  },
 
   /**
    * Set item in storage
    */
-  static async set<T>(key: string, value: T): Promise<boolean> {
+  async set<T>(key: string, value: T): Promise<boolean> {
     try {
       await AsyncStorage.setItem(key, JSON.stringify(value));
       return true;
@@ -28,12 +28,12 @@ export class Storage {
       console.warn(`[Storage] Failed to set item: ${key}`, error);
       return false;
     }
-  }
+  },
 
   /**
    * Remove item from storage
    */
-  static async remove(key: string): Promise<boolean> {
+  async remove(key: string): Promise<boolean> {
     try {
       await AsyncStorage.removeItem(key);
       return true;
@@ -41,8 +41,8 @@ export class Storage {
       console.warn(`[Storage] Failed to remove item: ${key}`, error);
       return false;
     }
-  }
-}
+  },
+};
 
 /**
  * Get item from storage (wrapper function for backward compatibility)

@@ -6,7 +6,7 @@ import { postAnalytics, posts } from '../db/schema';
 
 const router = Router();
 
-router.get('/overview', async (req: Request, res: Response) => {
+router.get('/overview', async (_req: Request, res: Response) => {
   const overview = {
     totalPosts: 0,
     totalImpressions: 0,
@@ -50,7 +50,7 @@ router.get('/posts/:id', async (req: Request, res: Response) => {
       updatedAt: row.updatedAt,
     }));
     return res.json({ analytics });
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Failed to fetch post analytics' });
   }
 });

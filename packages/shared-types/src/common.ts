@@ -23,7 +23,7 @@ export interface Pagination {
   pages: number;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   message?: string;
   error?: string;

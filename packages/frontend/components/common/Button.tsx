@@ -1,5 +1,12 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ViewStyle, TextStyle, Platform } from 'react-native';
+import type React from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  type ViewStyle,
+  type TextStyle,
+  Platform,
+} from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
 interface ButtonProps {

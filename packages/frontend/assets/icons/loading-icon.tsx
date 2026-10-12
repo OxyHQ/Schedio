@@ -1,6 +1,6 @@
 import React from 'react';
 import Svg, { Rect } from 'react-native-svg';
-import { ViewStyle } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { colors } from '@/styles/colors';
 import Animated, {
   Easing,
@@ -21,7 +21,6 @@ export const Loading = ({
 }) => {
   const rotation = useSharedValue(0);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: start the spinner once on mount; `rotation` is a stable Reanimated shared value
   React.useEffect(() => {
     rotation.value = withRepeat(
       withTiming(360, { duration: 400, easing: Easing.linear }),

@@ -7,8 +7,9 @@ import NetInfo from '@react-native-community/netinfo';
 import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxy.so/expo-splash';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Stack, usePathname } from 'expo-router';
-import React, { useCallback, useEffect, useMemo, useState, memo } from 'react';
+import { Stack } from 'expo-router';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState, memo } from 'react';
 import { AppState, Platform, StyleSheet, View, type AppStateStatus } from 'react-native';
 
 // Components
@@ -70,7 +71,6 @@ interface MainLayoutProps {
  */
 const MainLayout: React.FC<MainLayoutProps> = memo(({ isScreenNotMobile }) => {
   const theme = useTheme();
-  const pathname = usePathname();
   const { user: currentUser } = useOxy();
 
   const needsAuth = !currentUser;

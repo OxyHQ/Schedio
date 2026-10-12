@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -28,10 +28,10 @@ const MiniChart: React.FC<MiniChartProps> = ({
   const theme = useTheme();
 
   // Use provided colors or theme defaults
-  const defaultBarColor = barColor || theme.colors.primary + '40';
+  const defaultBarColor = barColor || `${theme.colors.primary}40`;
   const defaultTodayColor = todayColor || theme.colors.primary;
-  const defaultEmptyColor = emptyColor || theme.colors.primary + '20';
-  const defaultLabelColor = labelColor || theme.colors.primary + '60';
+  const defaultEmptyColor = emptyColor || `${theme.colors.primary}20`;
+  const defaultLabelColor = labelColor || `${theme.colors.primary}60`;
   const defaultTodayLabelColor = todayLabelColor || theme.colors.primary;
 
   // Ensure we always have 7 values
@@ -76,6 +76,7 @@ const MiniChart: React.FC<MiniChartProps> = ({
           const isEmpty = !hasData || value === 0;
 
           return (
+            // biome-ignore lint/suspicious/noArrayIndexKey: one bar or label per chart slot; the slot position is its identity
             <View key={i} style={styles.chartBarContainer}>
               <View
                 style={[
@@ -100,6 +101,7 @@ const MiniChart: React.FC<MiniChartProps> = ({
             const isToday = i === todayIndex;
             return (
               <Text
+                // biome-ignore lint/suspicious/noArrayIndexKey: one bar or label per chart slot; the slot position is its identity
                 key={i}
                 style={[
                   styles.chartLabel,
