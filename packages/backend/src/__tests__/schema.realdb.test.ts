@@ -47,16 +47,22 @@ describe('real PostgreSQL schema', () => {
 describe.if(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
   beforeAll(async () => {
     if (!ADMIN_URL) throw new Error('TEST_DATABASE_URL is required');
-    testDatabaseUrl = await createTestDatabase({ adminUrl: ADMIN_URL, migrate });
+    testDatabaseUrl = await createTestDatabase({ adminUrl: ADMIN_URL, driver: 'bun-sql', migrate });
     process.env.DATABASE_URL = testDatabaseUrl;
     await connectToDatabase();
   }, 30_000);
 
   afterAll(async () => {
     await closeDatabase();
-    if (testDatabaseUrl) await dropTestDatabase(testDatabaseUrl);
+    if (testDatabaseUrl) await dropTestDatabase(testDatabaseUrl, { driver: 'bun-sql' });
     delete process.env.DATABASE_URL;
   }, 30_000);
+
+  it('runs on Bun.SQL, not postgres.js', () => {
+    // A Bun.SQL instance is a plain function, so `instanceof SQL` cannot tell;
+    // `beginDistributed` exists on Bun.SQL and not on a postgres.js `Sql`.
+    expect(typeof Reflect.get(getDb().$client, 'beginDistributed')).toBe('function');
+  });
 
   it('preserves source ids and cascades analytics with their post', async () => {
     const db = getDb();
