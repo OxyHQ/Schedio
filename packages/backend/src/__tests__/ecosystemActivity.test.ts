@@ -1,40 +1,59 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, type Mock, mock, spyOn } from 'bun:test';
 
-const publisher = vi.hoisted(() => ({
-  observeHttp: vi.fn((_req: unknown, _res: unknown, next: () => void) => next()),
-  installFetch: vi.fn(),
-  observeSocket: vi.fn(),
-  stop: vi.fn(async () => {}),
-}));
-const create = vi.hoisted(() => vi.fn((_options: unknown) => publisher));
-vi.mock('@oxy.so/core/server', () => ({ createEcosystemTraffic: create }));
-import {
+const publisher = {
+  observeHttp: mock((_req: unknown, _res: unknown, next: () => void) => next()),
+  installFetch: mock(),
+  observeSocket: mock(),
+  stop: mock(async () => {}),
+};
+const create = mock((_options: unknown) => publisher);
+mock.module('@oxy.so/core/server', () => ({ createEcosystemTraffic: create }));
+
+// mock.module is not hoisted, so the module under test is loaded only after the
+// mock above is registered. `require` rather than `import()`: this package is
+// CommonJS, and under node16 resolution tsc demands an explicit extension on a
+// dynamic import.
+const {
   ecosystemActivityMiddleware,
   observeEcosystemSocket,
   startEcosystemActivity,
   stopEcosystemActivity,
-} from '../ecosystemActivity';
+} = require('../ecosystemActivity') as typeof import('../ecosystemActivity');
+
+const STUBBED_ENV = [
+  'OXY_ECOSYSTEM_ACTIVITY_ENABLED',
+  'OXY_SERVICE_API_KEY',
+  'OXY_SERVICE_API_SECRET',
+] as const;
+let originalEnv: Record<string, string | undefined> = {};
+
+function stubEnv(name: (typeof STUBBED_ENV)[number], value: string | undefined): void {
+  if (value === undefined) delete process.env[name];
+  else process.env[name] = value;
+}
 
 describe('ecosystem activity lifecycle', () => {
+  let warn: Mock<typeof console.warn>;
   beforeEach(() => {
-    vi.stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'true');
-    vi.stubEnv('OXY_SERVICE_API_KEY', 'test-key');
-    vi.stubEnv('OXY_SERVICE_API_SECRET', 'test-secret');
-    vi.spyOn(console, 'warn').mockImplementation(() => {});
-    vi.clearAllMocks();
+    originalEnv = Object.fromEntries(STUBBED_ENV.map((name) => [name, process.env[name]]));
+    stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'true');
+    stubEnv('OXY_SERVICE_API_KEY', 'test-key');
+    stubEnv('OXY_SERVICE_API_SECRET', 'test-secret');
+    warn = spyOn(console, 'warn').mockImplementation(() => {});
+    mock.clearAllMocks();
   });
   afterEach(async () => {
     await stopEcosystemActivity();
-    vi.unstubAllEnvs();
-    vi.restoreAllMocks();
+    for (const name of STUBBED_ENV) stubEnv(name, originalEnv[name]);
+    warn.mockRestore();
   });
 
   it('does not start or publish when explicitly disabled', () => {
-    vi.stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'false');
+    stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'false');
     startEcosystemActivity(() => true);
     expect(create).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalled();
-    const next = vi.fn();
+    const next = mock();
     ecosystemActivityMiddleware({} as never, {} as never, next);
     observeEcosystemSocket({} as never);
     expect(next).toHaveBeenCalledTimes(1);
@@ -42,14 +61,14 @@ describe('ecosystem activity lifecycle', () => {
   });
 
   it('makes missing activation visible without starting a publisher', () => {
-    vi.stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', undefined);
+    stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', undefined);
     startEcosystemActivity(() => true);
     expect(create).not.toHaveBeenCalled();
     expect(console.warn).toHaveBeenCalled();
   });
 
   it('rejects a misspelled activation instead of silently losing coverage', () => {
-    vi.stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'tru');
+    stubEnv('OXY_ECOSYSTEM_ACTIVITY_ENABLED', 'tru');
     expect(() => startEcosystemActivity(() => true)).toThrow('must be true or false');
   });
 
@@ -75,7 +94,7 @@ describe('ecosystem activity lifecycle', () => {
     expect(options.ready()).toBe(false);
     ready = true;
     expect(options.ready()).toBe(true);
-    const next = vi.fn();
+    const next = mock();
     ecosystemActivityMiddleware({} as never, {} as never, next);
     expect(publisher.observeHttp).toHaveBeenCalled();
     expect(next).toHaveBeenCalledTimes(1);

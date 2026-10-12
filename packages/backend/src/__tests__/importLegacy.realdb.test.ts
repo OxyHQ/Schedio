@@ -3,8 +3,8 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createTestDatabase, dropTestDatabase } from '@oxy.so/db/testing';
-import postgres from 'postgres';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { SQL } from 'bun';
+import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { decryptSocialToken } from '../utils/tokenCipher';
 
 const PACKAGE_ROOT = join(__dirname, '..', '..');
@@ -55,11 +55,12 @@ function fixture(id: string, fields: Record<string, unknown>): string {
   })}\n`;
 }
 
-describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
+describe.if(Boolean(ADMIN_URL))('legacy import transaction', () => {
   beforeAll(async () => {
     if (!ADMIN_URL) throw new Error('TEST_DATABASE_URL is required');
     testDatabaseUrl = await createTestDatabase({
       adminUrl: ADMIN_URL,
+      driver: 'bun-sql',
       migrate: async (databaseUrl) => {
         await command(
           ['run', 'db:migrate', `--target-database=${databaseName(databaseUrl)}`, '--phase=all'],
@@ -118,7 +119,7 @@ describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
   }, 30_000);
 
   afterAll(async () => {
-    if (testDatabaseUrl) await dropTestDatabase(testDatabaseUrl);
+    if (testDatabaseUrl) await dropTestDatabase(testDatabaseUrl, { driver: 'bun-sql' });
     if (sourceDirectory) await rm(sourceDirectory, { recursive: true, force: true });
   }, 30_000);
 
@@ -136,18 +137,20 @@ describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
     ];
     await expect(command(args, environment)).resolves.toContain('schedio-test-source');
 
-    const client = postgres(testDatabaseUrl);
-    const postRows = await client<{ id: string }[]>`select id from posts`;
-    const accountRows = await client<
-      { id: string; accessTokenCiphertext: string; refreshTokenCiphertext: string | null }[]
-    >`
+    const client = new SQL(testDatabaseUrl);
+    const postRows: { id: string }[] = await client`select id from posts`;
+    const accountRows: {
+      id: string;
+      accessTokenCiphertext: string;
+      refreshTokenCiphertext: string | null;
+    }[] = await client`
       select
         id,
         access_token_ciphertext as "accessTokenCiphertext",
         refresh_token_ciphertext as "refreshTokenCiphertext"
       from social_accounts
     `;
-    expect(postRows).toEqual([{ id: '507f1f77bcf86cd799439011' }]);
+    expect([...postRows]).toEqual([{ id: '507f1f77bcf86cd799439011' }]);
     expect(accountRows[0]?.accessTokenCiphertext.startsWith('v1:')).toBe(true);
     expect(accountRows[0]?.accessTokenCiphertext).not.toContain('source-access-token');
     const importedAccount = accountRows[0];
@@ -167,7 +170,7 @@ describe.runIf(Boolean(ADMIN_URL))('legacy import transaction', () => {
       }),
     ).toBe('source-refresh-token');
     delete process.env.SOCIAL_TOKEN_ENCRYPTION_KEY;
-    await client.end();
+    await client.close();
 
     await expect(command(args, environment)).rejects.toThrow('Target is not empty');
   }, 30_000);

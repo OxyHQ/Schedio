@@ -27,7 +27,7 @@ This is the **backend package** of the **Schedio** monorepo. Schedio is a Buffer
 
 ### Prerequisites
 
-- Bun 1.3.14
+- Bun 1.4.3
 - PostgreSQL 17
 - Git
 
@@ -50,7 +50,7 @@ bun run dev
 
 ### Environment Configuration
 
-Create a `.env` file in this package directory:
+Create a `.env` file in this package directory (Bun loads it automatically when the server starts; `bun run test` deliberately does not):
 
 ```env
 # Database
@@ -301,7 +301,7 @@ All authenticated endpoints require a Bearer token from Oxy. The backend uses `@
 - `bun run dev` — Start development server with hot reload
 - `bun run build` — Build the project
 - `bun run start` — Start production server
-- `bun run test` — Run static, transform, encryption and PostgreSQL schema tests
+- `bun run test` — Run static, transform, encryption and PostgreSQL schema tests with `bun test` (the PostgreSQL tests need `TEST_DATABASE_URL`)
 - `bun run db:generate` — Generate Drizzle migrations
 - `bun run db:migrate -- --target-database=<name> --phase=<pre|post|all>` — Apply migrations with an explicit target guard
 - `bun run clean` — Clean build artifacts

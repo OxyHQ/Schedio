@@ -6,7 +6,6 @@ import {
 // --- Imports ---
 import express from 'express';
 import { closeDatabase, connectToDatabase } from './src/db';
-import * as dotenv from 'dotenv';
 import { OXY_API_URL } from '@oxy.so/core';
 import { OxyServer, createOxyAuthMiddleware } from '@oxy.so/core/server';
 
@@ -21,9 +20,6 @@ import queueRoutes from './src/routes/queue';
 import { rateLimiter, bruteForceProtection } from './src/middleware/security';
 import { logger } from './src/utils/logger';
 import { validateTokenCipherConfiguration } from './src/utils/tokenCipher';
-
-// --- Config ---
-dotenv.config();
 
 const app = express();
 app.use(ecosystemActivityMiddleware);

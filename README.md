@@ -71,7 +71,7 @@ bun run dev:backend    # Express with Bun watch mode
 bun run web            # Expo straight to the browser
 ```
 
-You will need Bun 1.3.14 and PostgreSQL 17. Environment variables are documented in the [backend](packages/backend/README.md) and [frontend](packages/frontend/README.md) package READMEs.
+You will need Bun 1.4.3 and PostgreSQL 17. Environment variables are documented in the [backend](packages/backend/README.md) and [frontend](packages/frontend/README.md) package READMEs.
 
 > [!NOTE]
 > Schedio is a Bun workspace. Use `bun`, not `npm` or `yarn`: the root scripts are all `bun run --filter`, and the lockfile is `bun.lock`.

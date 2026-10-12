@@ -31,6 +31,7 @@ async function main(): Promise<void> {
 
   await runMigrations({
     databaseUrl,
+    driver: 'bun-sql',
     migrationsFolder: join(PACKAGE_ROOT, 'drizzle'),
     extensions: [],
     run,
