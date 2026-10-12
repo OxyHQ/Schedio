@@ -68,12 +68,19 @@ jobs:
           node-version: 20.19.5
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.3
+          # NOT a literal version: `packageManager` in package.json is the one
+          # pin, and `check:bun-pin` holds the Dockerfile's literal
+          # `FROM oven/bun:<ver>` to it.
+          bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - name: Biome
         run: bunx biome ci .
       - name: Expo ESLint rules
         run: bun run --filter @schedio/frontend lint:expo
+      # The backend image runs the bun its Dockerfile names, and that literal
+      # cannot read package.json; this fails when the two disagree.
+      - name: Bun pin matches the image
+        run: bun run check:bun-pin
 
   backend:
     name: Backend build and tests
@@ -104,7 +111,10 @@ jobs:
           node-version: 20.19.5
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.3
+          # NOT a literal version: `packageManager` in package.json is the one
+          # pin, and `check:bun-pin` holds the Dockerfile's literal
+          # `FROM oven/bun:<ver>` to it.
+          bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - name: Lockfile matches manifests
         run: |
@@ -131,7 +141,10 @@ jobs:
           node-version: 20.19.5
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.4.3
+          # NOT a literal version: `packageManager` in package.json is the one
+          # pin, and `check:bun-pin` holds the Dockerfile's literal
+          # `FROM oven/bun:<ver>` to it.
+          bun-version-file: package.json
       - run: bun install --frozen-lockfile
       - run: bun run build:frontend
         env:
