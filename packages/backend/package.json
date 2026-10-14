@@ -18,7 +18,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@oxy.so/core": "^3.0.0",
+    "@oxy.so/core": "^4.4.0",
     "@oxy.so/db": "1.1.0",
     "drizzle-orm": "0.45.2",
     "express": "^4.21.2",

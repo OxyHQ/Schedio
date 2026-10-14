@@ -38,9 +38,9 @@
     "node": "20.19.5"
   },
   "dependencies": {
-    "@oxy.so/bloom": "4.28.0",
-    "@oxy.so/core": "^3.0.0",
-    "@oxy.so/services": "8.0.0",
+    "@oxy.so/bloom": "7.31.1",
+    "@oxy.so/core": "^4.4.0",
+    "@oxy.so/services": "11.1.17",
     "@react-native/js-polyfills": "^0.85.3",
     "react-native-worklets": "0.8.3",
     "react-native-worklets-core": "^1.6.3"
