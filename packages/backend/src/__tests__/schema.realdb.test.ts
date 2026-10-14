@@ -4,7 +4,13 @@ import { createTestDatabase, dropTestDatabase } from '@oxy.so/db/testing';
 import { eq, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'bun:test';
 import { closeDatabase, connectToDatabase, getDb } from '../db';
-import { postAnalytics, posts, userSettings } from '../db/schema';
+import {
+  postAnalytics,
+  posts,
+  publishingSchedules,
+  userBehaviors,
+  userSettings,
+} from '../db/schema';
 
 const PACKAGE_ROOT = join(__dirname, '..', '..');
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
@@ -101,6 +107,51 @@ describe.if(Boolean(ADMIN_URL))('real PostgreSQL schema constraints', () => {
       `),
       ),
     ).rejects.toThrow();
+  });
+
+  it('stores jsonb columns as the JSON they are, asked of the server', async () => {
+    // A prepared Bun.SQL statement JSON-encodes the text drizzle's jsonb()
+    // already stringified, so the row lands as a jsonb STRING; drizzle's reader
+    // parses it back, so only the server can tell (see CLIENT_OPTIONS in db/index.ts).
+    const db = getDb();
+    const slots = [
+      { dayOfWeek: 1, time: '09:00' },
+      { dayOfWeek: 5, time: '17:30' },
+    ];
+    const preferences = { topics: ['bun', 'postgres'], digest: { weekly: true } };
+    await db
+      .insert(publishingSchedules)
+      .values({ id: 'schedule-jsonb', userId: 'user-jsonb', name: 'weekdays', slots });
+    await db
+      .insert(userBehaviors)
+      .values({ id: 'behavior-jsonb', oxyUserId: 'oxy-jsonb', preferences });
+
+    const [stored] = await db.$client<
+      { slots_type: string; first_time: string; preferences_type: string; weekly: boolean }[]
+    >`
+      select
+        jsonb_typeof(s.slots) as slots_type,
+        s.slots->0->>'time' as first_time,
+        jsonb_typeof(b.preferences) as preferences_type,
+        b.preferences @> '{"digest":{"weekly":true}}'::jsonb as weekly
+      from publishing_schedules s, user_behaviors b
+      where s.id = 'schedule-jsonb' and b.id = 'behavior-jsonb'
+    `;
+    expect(stored).toEqual({
+      slots_type: 'array',
+      first_time: '09:00',
+      preferences_type: 'object',
+      weekly: true,
+    });
+
+    await db
+      .update(userBehaviors)
+      .set({ preferences: { reset: true } })
+      .where(eq(userBehaviors.id, 'behavior-jsonb'));
+    const [updated] = await db.$client<{ type: string }[]>`
+      select jsonb_typeof(preferences) as type from user_behaviors where id = 'behavior-jsonb'
+    `;
+    expect(updated?.type).toBe('object');
   });
 
   it('keeps one settings row per Oxy account', async () => {

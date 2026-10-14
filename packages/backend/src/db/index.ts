@@ -20,14 +20,27 @@ let handle: { db: SchedioDatabase; client: BunSqlClient } | null = null;
  * load needs them, and Bun 1.4.3 opens all `max` of them on the first query and
  * keeps them with `idleTimeout: 0`. A task holds 10 connections from its first
  * request, which is the ceiling it could already reach.
+ *
+ * **`prepare: false` is load-bearing, not tuning.** drizzle's `jsonb()`
+ * stringifies the value before binding it, and on a PREPARED statement Bun
+ * 1.4.3 learns the parameter is `jsonb` and JSON-encodes that string again, so
+ * every `slots` / `preferences` write lands as a jsonb STRING holding the JSON
+ * text. `slots` then fails `publishing_schedules_slots_array_check`;
+ * `preferences` has no check and is silently stored as a string, which
+ * drizzle's reader parses back, so only the server (`jsonb_typeof`, `->`,
+ * `@>`) sees it. Unprepared, Bun sends the text untyped and the server parses
+ * it as JSON. `@oxy.so/db` 1.1.1 forces this and refuses `prepare: true`
+ * (OxyHQ/oxy `packages/db` CHANGELOG); it is set here so the fix does not wait
+ * on that release. `schema.realdb.test.ts` asks the server what was stored and
+ * fails if this is flipped back.
  */
 const CLIENT_OPTIONS = {
   max: 10,
   idleTimeout: 0,
   maxLifetime: 60 * (30 + Math.random() * 30),
   connectionTimeout: 30,
-  prepare: true,
-};
+  prepare: false,
+} as const;
 let reachability: Promise<void> | null = null;
 
 function databaseUrl(): string {
