@@ -1,13 +1,30 @@
 # Dependabot configuration for Schedio.
 #
-# IMPORTANT: Schedio is a bun monorepo and tracks bun.lock — it does NOT
-# track package-lock.json. Dependabot's npm/npm_and_yarn updater is not
-# bun-aware: it would edit a stray, untracked package-lock.json and leave
-# bun.lock out of sync. JS dependency bumps are therefore applied manually
-# via `bun install`. Only the github-actions ecosystem is delegated to
-# Dependabot here.
+# Schedio is a bun monorepo and tracks bun.lock. Dependabot's `bun` ecosystem
+# updates bun.lock; the legacy npm ecosystem would edit a stray package-lock.json.
+#
+# Only first-party Oxy SDKs are delegated to Dependabot, and the `oxy` group's
+# PR auto-merges (.github/workflows/automerge-first-party.yml). `allow` keeps
+# every third-party dependency a manual `bun install`, as before.
 version: 2
 updates:
+  - package-ecosystem: "bun"
+    directories:
+      - "/"
+      - "/packages/*"
+    schedule:
+      interval: "daily"
+      time: "06:00"
+      timezone: "Europe/Bucharest"
+    open-pull-requests-limit: 5
+    versioning-strategy: increase
+    allow:
+      - dependency-name: "@oxy.so/*"
+    groups:
+      oxy:
+        patterns:
+          - "@oxy.so/*"
+
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
