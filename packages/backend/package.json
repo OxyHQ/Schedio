@@ -24,7 +24,11 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.1.1",
     "express-slow-down": "^2.1.0",
-    "postgres": "3.4.9"
+    "postgres": "3.4.9",
+    "@schedio/contracts": "workspace:*",
+    "@mention/sdk": "file:../../vendor/mention-sdk-0.1.2.tgz",
+    "@mention/contracts": "file:../../vendor/mention-contracts-0.1.2.tgz",
+    "zod": "^4.0.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.2",
