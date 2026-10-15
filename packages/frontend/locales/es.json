@@ -534,5 +534,10 @@
       "title": "Página No Encontrada - allo",
       "description": "La página que buscas no existe."
     }
-  }
+  },
+  "alia.ask": "Preguntar a Alia",
+  "alia.clientContext": "La persona usa Schedio, una aplicación para programar y gestionar publicaciones en redes sociales de distintas plataformas. Está en el panel, desde donde puede abrir el editor, la cola de publicación, sus analíticas y sus cuentas conectadas.",
+  "alia.suggestion.plan": "Ayúdame a planificar una semana de publicaciones",
+  "alia.suggestion.write": "Escribe un pie de foto para mi próxima publicación",
+  "alia.suggestion.times": "¿Cuál es la mejor hora para publicar?"
 }

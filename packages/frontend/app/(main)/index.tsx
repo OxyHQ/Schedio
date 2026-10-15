@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { AskAlia } from '@/components/alia/AskAlia';
 import { ThemedView } from '@/components/ThemedView';
 import { Header } from '@/components/layout/Header';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -6,7 +7,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 export default function DashboardScreen() {
   return (
     <ThemedView style={styles.container}>
-      <Header options={{ title: 'Dashboard' }} />
+      <Header options={{ title: 'Dashboard', rightComponents: [<AskAlia key="ask-alia" />] }} />
       <View style={styles.content}>
         <EmptyState
           title="Welcome to Schedio"

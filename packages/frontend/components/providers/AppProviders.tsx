@@ -14,6 +14,7 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { MenuProvider } from 'react-native-popup-menu';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+import { OverlayInertBoundary, PortalOutlet, PortalProvider } from '@oxy.so/bloom/portal';
 import { OxyProvider } from '@oxy.so/services';
 
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -62,7 +63,14 @@ export const AppProviders = memo(function AppProviders({
                   <MenuProvider>
                     <ErrorBoundary>
                       <HomeRefreshProvider>
-                        {children}
+                        {/* Bloom's native Portal appends into this provider/outlet pair
+                            (AliaChatSheet's BottomSheet renders through it). One outlet,
+                            after the content it paints over and never inside the inert
+                            boundary. No-ops on web. */}
+                        <PortalProvider>
+                          <OverlayInertBoundary>{children}</OverlayInertBoundary>
+                          <PortalOutlet />
+                        </PortalProvider>
                         <StatusBar style="auto" />
                       </HomeRefreshProvider>
                     </ErrorBoundary>
