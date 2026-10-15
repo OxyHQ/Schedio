@@ -10,7 +10,6 @@ mock.module('../capabilities/schedio.handlers', () => ({ executeSchedioCatalogTo
 mock.module('../capabilities/oxy-service-client.js', () => ({
   requiredOxyServiceToken: async () => 'test-service',
 }));
-const { default: router } = await import('../routes/capabilities');
 const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'EdDSA' };
 const originalFetch = globalThis.fetch;
@@ -66,6 +65,7 @@ async function call(
   });
 }
 beforeAll(async () => {
+  const { router } = await import('../routes/capabilities.js');
   const app = express();
   app.use(express.json());
   app.use('/_oxy/capabilities', router);

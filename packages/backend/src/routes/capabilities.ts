@@ -28,7 +28,7 @@ const log = {
   general: { error: (details: unknown, message: string) => logger.error(message, details) },
 };
 
-const router = Router();
+export const router = Router();
 
 router.use((_request, response, next) => {
   response.set('cache-control', 'no-store');
