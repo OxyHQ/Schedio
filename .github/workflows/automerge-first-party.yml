@@ -1,7 +1,7 @@
 name: Auto-merge first-party bumps
 
 # The Oxy SDKs (@oxy.so/*) should always be on their latest release. Dependabot
-# opens the `oxy` group PR daily; this turns on auto-merge for it, and GitHub
+# opens the `oxy` group PR weekly; this turns on auto-merge for it, and GitHub
 # merges once the repository ruleset's required checks (Changed areas, Lint, Backend build and tests, Frontend web export) are green. A red
 # check leaves the PR open for a person. Third-party updates are never touched here.
 
@@ -13,12 +13,19 @@ permissions:
   contents: write
   pull-requests: write
 
+# One run per pull request: a newer push supersedes the older run, which only
+# ever turns auto-merge on.
+concurrency:
+  group: ${{ github.workflow }}-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
 jobs:
   automerge:
     # Dependabot names a group branch dependabot/bun/<group>-<hash>, or
     # dependabot/bun/<directory>/<group>-<hash> when the PR covers one directory.
     if: github.actor == 'dependabot[bot]' && startsWith(github.head_ref, 'dependabot/bun/') && contains(github.head_ref, '/oxy-')
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - run: gh pr merge --auto --merge "$PR_URL"
         env:
