@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto';
-import { and, asc, desc, eq, gt, lt, or, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, lt, or, inArray, isNull, sql, getTableColumns } from 'drizzle-orm';
 import { getDb, type SchedioTransaction } from '../db';
 import { posts, deliveries, socialAccounts, organizationPolicies } from '../db/schema';
 import { Post, DraftInput, EditInput } from '@schedio/contracts';
@@ -52,12 +52,15 @@ export async function listPosts(scope: Scope, queue = false, page: PageQuery = {
           and(eq(posts.queuePosition, cursor.position ?? 0), gt(posts.id, cursor.id)),
         )
       : or(
-          lt(posts.createdAt, new Date(cursor.createdAt ?? '')),
-          and(eq(posts.createdAt, new Date(cursor.createdAt ?? '')), lt(posts.id, cursor.id)),
+          sql`${posts.createdAt} < ${cursor.createdAt}::timestamptz`,
+          and(sql`${posts.createdAt} = ${cursor.createdAt}::timestamptz`, lt(posts.id, cursor.id)),
         )
     : undefined;
   const rows = await getDb()
-    .select()
+    .select({
+      ...getTableColumns(posts),
+      cursorCreatedAt: sql<string>`to_char(${posts.createdAt} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`,
+    })
     .from(posts)
     .where(and(owns(scope), queue ? eq(posts.status, 'scheduled') : undefined, after))
     .orderBy(
@@ -73,7 +76,7 @@ export async function listPosts(scope: Scope, queue = false, page: PageQuery = {
       rows.length > limit && last
         ? encodeCursor(kind, scope, {
             id: last.id,
-            createdAt: last.createdAt.toISOString(),
+            createdAt: last.cursorCreatedAt,
             position: queue ? last.queuePosition : undefined,
           })
         : null,
