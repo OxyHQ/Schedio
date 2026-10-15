@@ -528,5 +528,10 @@
       "title": "Pagina Non Trovata - allo",
       "description": "La pagina che stai cercando non esiste."
     }
-  }
+  },
+  "alia.ask": "Chiedi ad Alia",
+  "alia.clientContext": "La persona usa Schedio, un'app per pianificare e gestire i post sui social media di più piattaforme. Si trova nella dashboard, da cui può aprire l'editor, la coda di pubblicazione, le statistiche e gli account collegati.",
+  "alia.suggestion.plan": "Aiutami a pianificare una settimana di post",
+  "alia.suggestion.write": "Scrivi una didascalia per il mio prossimo post",
+  "alia.suggestion.times": "Qual è il momento migliore per pubblicare?"
 }

@@ -186,6 +186,16 @@ module.exports = (_config) => {
             },
           ],
           'expo-web-browser',
+          // Dictation and voice calls with Alia (`@alia.onl/sdk`) recognise speech
+          // on the device; the plugin writes the two iOS purpose strings and the
+          // Android RECORD_AUDIO permission.
+          [
+            'expo-speech-recognition',
+            {
+              microphonePermission: 'Allow Schedio to hear what you dictate and say to Alia.',
+              speechRecognitionPermission: 'Allow Schedio to turn your speech into text.',
+            },
+          ],
         ];
 
         // Only include expo-notifications for native builds (android/ios).
