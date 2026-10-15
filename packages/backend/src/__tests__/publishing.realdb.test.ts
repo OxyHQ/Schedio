@@ -406,6 +406,10 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
     const first = await draft(),
       second = await draft();
     expect(first.id).not.toBe(second.id);
+    const instant = new Date().toISOString().replace(/\.\d{3}Z$/, '.123456Z');
+    await getDb().execute(
+      sql`update posts set created_at=${instant}::timestamptz where id in (${first.id},${second.id})`,
+    );
     const page = await listPosts(scope, false, { limit: 1 });
     expect(page.items).toHaveLength(1);
     expect(page.nextCursor).not.toBeNull();
