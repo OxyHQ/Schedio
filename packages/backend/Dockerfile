@@ -8,7 +8,6 @@ COPY packages/frontend/package.json ./packages/frontend/package.json
 COPY packages/shared-types/package.json ./packages/shared-types/package.json
 COPY packages/contracts/package.json ./packages/contracts/package.json
 COPY packages/sdk/package.json ./packages/sdk/package.json
-COPY vendor ./vendor
 RUN bun install --frozen-lockfile --ignore-scripts
 
 COPY packages/backend ./packages/backend

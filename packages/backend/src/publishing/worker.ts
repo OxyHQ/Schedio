@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, lte, sql } from 'drizzle-orm';
-import { MentionPublishingClient, MentionPublishingError } from '@mention/sdk';
+import { MentionPublishingClient, MentionPublishingError } from '@oxy.so/mention-sdk';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { posts, deliveries, organizationPolicies } from '../db/schema';

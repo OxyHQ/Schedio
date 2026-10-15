@@ -1,16 +1,13 @@
-import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
+import { MentionPublishingClient } from '@oxy.so/mention-sdk';
+
 const manifest = JSON.parse(
-  await readFile(new URL('../vendor/manifest.json', import.meta.url), 'utf8'),
-) as { artifacts: { file: string; sha256: string }[] };
+  await readFile(new URL('../docs/publishing-sdk-provenance.json', import.meta.url), 'utf8'),
+) as { packages: Record<string, { version: string; integrity: string }> };
 const lock = await readFile(new URL('../bun.lock', import.meta.url), 'utf8');
-for (const artifact of manifest.artifacts) {
-  const data = await readFile(new URL(`../vendor/${artifact.file}`, import.meta.url));
-  if (createHash('sha256').update(data).digest('hex') !== artifact.sha256)
-    throw new Error(`Artifact changed: ${artifact.file}`);
-  if (!lock.includes(`sha512-${createHash('sha512').update(data).digest('base64')}`))
-    throw new Error(`Lockfile integrity mismatch: ${artifact.file}`);
+for (const [name, pkg] of Object.entries(manifest.packages)) {
+  if (!lock.includes(`${name}@${pkg.version}`) || !lock.includes(pkg.integrity))
+    throw new Error(`Published package or registry integrity mismatch: ${name}`);
 }
-console.log(
-  `Verified ${manifest.artifacts.length} Mention publishing artifacts and lockfile digests`,
-);
+if (typeof MentionPublishingClient !== 'function') throw new Error('Mention SDK export missing');
+console.log('Verified published Mention packages, SDK export and registry lockfile digests');

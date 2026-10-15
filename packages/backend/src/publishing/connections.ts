@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
-import { MentionPublishingClient } from '@mention/sdk';
+import { MentionPublishingClient } from '@oxy.so/mention-sdk';
 import { Account, ConnectionInput, ConnectionFinish } from '@schedio/contracts';
 import { getDb, type SchedioTransaction } from '../db';
 import { oauthStates, socialAccounts } from '../db/schema';
