@@ -9,6 +9,11 @@ describe('PostgreSQL API wire contract', () => {
     const dto = toPostDto({
       id: '507f1f77bcf86cd799439011',
       userId: 'oxy-user',
+      organizationId: null,
+      revision: 1,
+      approvedRevision: null,
+      approvedBy: null,
+      queuePosition: 0,
       content: 'hello',
       media: [],
       platformIds: ['507f191e810c19729de860ea'],

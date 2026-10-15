@@ -14,6 +14,7 @@
       "!**/drizzle/meta",
       "!**/*.generated.*",
       "!packages/backend/drizzle",
+      "!packages/contracts/openapi.json",
       "!packages/frontend/assets/lottie"
     ]
   },

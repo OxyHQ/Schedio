@@ -1,0 +1,14 @@
+{
+  "sourceRepository": "https://github.com/OxyHQ/Mention",
+  "sourceCommit": "506febbca",
+  "artifacts": [
+    {
+      "file": "mention-contracts-0.1.2.tgz",
+      "sha256": "845dd926014227d5f55a44cbf18332b4f30fdf18c64045aa85609b3000883855"
+    },
+    {
+      "file": "mention-sdk-0.1.2.tgz",
+      "sha256": "216a6e64c3e47dc4d6f776c267774583fd16b9eb7f98573da6820b93a0848842"
+    }
+  ]
+}
