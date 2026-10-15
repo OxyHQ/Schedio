@@ -15,7 +15,8 @@
     "db:migrate": "bun src/db/migrate.ts",
     "db:build-import-manifest": "bun src/db/buildLegacyManifest.ts",
     "db:import-legacy": "bun src/db/importLegacyJsonl.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "capabilities:register": "bun src/register-capability-catalog.ts"
   },
   "dependencies": {
     "@oxy.so/core": "^4.4.0",
@@ -28,7 +29,9 @@
     "@schedio/contracts": "workspace:*",
     "@mention/sdk": "file:../../vendor/mention-sdk-0.1.2.tgz",
     "@mention/contracts": "file:../../vendor/mention-contracts-0.1.2.tgz",
-    "zod": "^4.0.0"
+    "zod": "^4.0.0",
+    "@oxy.so/contracts": "4.12.0",
+    "@oxy.so/mcp": "1.1.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.2",

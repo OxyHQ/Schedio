@@ -123,9 +123,42 @@ async function createDeliveries(
     })),
   );
 }
-export async function createDraft(scope: Scope, raw: unknown) {
+export async function createDraft(
+  scope: Scope,
+  raw: unknown,
+  operation?: { key: string; actorAccountId: string },
+) {
   const input = DraftInput.parse(raw);
+  const operationId = operation
+    ? `draft:${createHash('sha256')
+        .update(
+          JSON.stringify([
+            scope.organizationId ?? scope.userId,
+            operation.actorAccountId,
+            operation.key,
+          ]),
+        )
+        .digest('hex')}`
+    : undefined;
   const row = await getDb().transaction(async (tx) => {
+    if (operationId) {
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${operationId},0))`);
+      const previous = await tx.query.posts.findFirst({
+        where: and(eq(posts.id, operationId), owns(scope)),
+      });
+      if (previous) {
+        if (
+          previous.content !== input.content ||
+          JSON.stringify(previous.platformIds) !== JSON.stringify(input.platforms)
+        )
+          throw new PublishingError(
+            409,
+            'conflict',
+            'This draft operation already has different content',
+          );
+        return previous;
+      }
+    }
     if (scope.organizationId)
       await tx
         .insert(organizationPolicies)
@@ -135,7 +168,7 @@ export async function createDraft(scope: Scope, raw: unknown) {
     const [p] = await tx
       .insert(posts)
       .values({
-        id: randomUUID(),
+        id: operationId ?? randomUUID(),
         userId: scope.userId,
         organizationId: scope.organizationId,
         content: input.content,

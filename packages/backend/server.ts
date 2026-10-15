@@ -10,6 +10,7 @@ import { OXY_API_URL } from '@oxy.so/core';
 import { OxyServer, createOxyAuthMiddleware } from '@oxy.so/core/server';
 
 // Routers
+import capabilityRoutes from './src/routes/capabilities';
 import profileSettingsRoutes from './src/routes/profileSettings';
 import publishingRoutes from './src/publishing/routes';
 import { publishingErrors } from './src/publishing/errors';
@@ -101,6 +102,7 @@ authenticatedApiRouter.use('/analytics', analyticsRoutes);
 app.use('/api', publicApiRouter);
 app.use(rateLimiter);
 app.use(bruteForceProtection);
+app.use('/_oxy/capabilities', capabilityRoutes);
 app.use('/api', createOxyAuthMiddleware(oxy), authenticatedApiRouter);
 app.use('/api', (_req, res) =>
   res.status(404).json({ error: { code: 'unknown_route', message: 'Unknown API route' } }),

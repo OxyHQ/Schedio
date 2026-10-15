@@ -106,6 +106,24 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
     if (databaseUrl) await dropTestDatabase(databaseUrl, { driver: 'bun-sql' });
     delete process.env.DATABASE_URL;
   }, 30000);
+  it('deduplicates concurrent capability drafts and a lost reply without approving or publishing', async () => {
+    const operation = { key: 'same-draft', actorAccountId: 'agent' };
+    const input = { content: 'Review this', platforms: ['a'] };
+    const [first, retry] = await Promise.all([
+      createDraft(scope, input, operation),
+      createDraft(scope, input, operation),
+    ]);
+    expect(first.id).toBe(retry.id);
+    expect((await createDraft(scope, input, operation)).id).toBe(first.id);
+    expect((await listPosts(scope)).items).toHaveLength(1);
+    expect(first.status).toBe('draft');
+    expect(first.approvedRevision).toBeNull();
+    expect(first.scheduledAt).toBeNull();
+    expect(first.deliveries[0].attempts).toBe(0);
+    await expect(createDraft(scope, { ...input, content: 'different' }, operation)).rejects.toThrow(
+      'different content',
+    );
+  });
   it('rejects fabricated client status/approval and destinations owned by others', async () => {
     expect(
       DraftInput.safeParse({ content: 'text', platforms: ['a'], status: 'published' }).success,
