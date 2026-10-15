@@ -12,8 +12,12 @@ updates:
     directories:
       - "/"
       - "/packages/*"
+    # Weekly, and on a day of its own: the org shares 20 concurrent Actions
+    # jobs, and every version-update PR runs the full CI. Security updates do
+    # not wait for this schedule.
     schedule:
-      interval: "daily"
+      interval: "weekly"
+      day: "wednesday"
       time: "06:00"
       timezone: "Europe/Bucharest"
     open-pull-requests-limit: 5
@@ -21,11 +25,31 @@ updates:
     allow:
       - dependency-name: "@oxy.so/*"
     groups:
+      # Listed FIRST: a dependency joins the first group it matches.
       oxy:
         patterns:
           - "@oxy.so/*"
+      # Minor and patch updates as ONE pull request; majors arrive one per
+      # dependency. While `allow` names only @oxy.so/*, everything it admits
+      # lands in `oxy` above, so this group is empty until `allow` widens.
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+      day: "wednesday"
+      time: "06:00"
+      timezone: "Europe/Bucharest"
+    groups:
+      minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

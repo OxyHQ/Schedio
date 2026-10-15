@@ -89,6 +89,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
+    # About a minute on a good run.
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:17-alpine
@@ -136,6 +138,8 @@ jobs:
     needs: changes
     if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
+    # Two to three minutes on a good run; the Expo web export is most of it.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
