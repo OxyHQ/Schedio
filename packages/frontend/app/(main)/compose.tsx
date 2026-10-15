@@ -7,7 +7,7 @@ import { Header } from '@/components/layout/Header';
 import { Workspace } from '@/components/publishing/Workspace';
 import { publishingError, schedio, usePublishingWorkspace } from '@/lib/publishing';
 export default function ComposeScreen() {
-  const { organizationId } = usePublishingWorkspace();
+  const { organizationId, select } = usePublishingWorkspace();
   const params = useLocalSearchParams<{ id?: string }>();
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [content, setContent] = useState('');
@@ -17,6 +17,7 @@ export default function ComposeScreen() {
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
+    if (params.id) return;
     let active = true;
     setPost(null);
     setPlatforms([]);
@@ -30,25 +31,36 @@ export default function ComposeScreen() {
     return () => {
       active = false;
     };
-  }, [organizationId]);
+  }, [organizationId, params.id]);
   useEffect(() => {
     if (!params.id) return;
     let active = true;
+    setPost(null);
+    setContent('');
+    setPlatforms([]);
+    setAccounts([]);
+    setMessage('');
     void schedio
       .getPost(params.id)
-      .then((p) => {
+      .then(async (p) => {
+        const destinations = await schedio.listAccounts(p.organizationId ?? undefined);
         if (active) {
+          select(p.organizationId ?? undefined);
+          setAccounts(destinations.items);
           setPost(p);
           setContent(p.content);
           setPlatforms(p.platforms);
         }
       })
-      .catch((e) => setMessage(publishingError(e)));
+      .catch((e) => {
+        if (active) setMessage(publishingError(e));
+      });
     return () => {
       active = false;
     };
-  }, [params.id]);
+  }, [params.id, select]);
   async function save(action: 'draft' | 'publish' | 'schedule') {
+    if (params.id && !post) return;
     setBusy(true);
     setMessage('');
     try {
@@ -87,7 +99,14 @@ export default function ComposeScreen() {
           alignSelf: 'center',
         }}
       >
-        <Workspace />
+        {params.id ? (
+          <Text>
+            Reviewing {post?.organizationId ? `organization ${post.organizationId}` : 'personal'}{' '}
+            draft
+          </Text>
+        ) : (
+          <Workspace />
+        )}
         <TextInput
           accessibilityLabel="Post content"
           multiline
@@ -112,10 +131,14 @@ export default function ComposeScreen() {
         <View style={{ gap: 10 }}>
           <Button
             title="Save draft for review"
-            disabled={busy}
+            disabled={busy || (!!params.id && !post)}
             onPress={() => void save('draft')}
           />
-          <Button title="Publish now" disabled={busy} onPress={() => void save('publish')} />
+          <Button
+            title="Publish now"
+            disabled={busy || (!!params.id && !post)}
+            onPress={() => void save('publish')}
+          />
           <TextInput
             accessibilityLabel="Scheduled date and time"
             value={scheduledAt}
@@ -124,7 +147,11 @@ export default function ComposeScreen() {
             style={{ borderWidth: 1, padding: 12 }}
           />
           <Text>Include a timezone. The queue shows your local time.</Text>
-          <Button title="Schedule" disabled={busy} onPress={() => void save('schedule')} />
+          <Button
+            title="Schedule"
+            disabled={busy || (!!params.id && !post)}
+            onPress={() => void save('schedule')}
+          />
         </View>
         {message ? <Text accessibilityLiveRegion="polite">{message}</Text> : null}
       </ScrollView>
