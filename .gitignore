@@ -110,5 +110,3 @@ temp/
 # Local development
 .local/
 .local-pg/
-!vendor/mention-contracts-0.1.2.tgz
-!vendor/mention-sdk-0.1.2.tgz
