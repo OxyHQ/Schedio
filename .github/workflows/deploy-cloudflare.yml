@@ -1,0 +1,88 @@
+# Deploys the Schedio web app (Expo static export) to the `schedio` Cloudflare
+# Worker at schedio.app, after CI has passed on main for the exact commit.
+name: Deploy Frontend
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# Cloudflare is reached with its own API token; the GitHub token only reads.
+permissions:
+  contents: read
+
+jobs:
+  deploy-app:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    # The web export is two to three minutes; wrangler is under one.
+    timeout-minutes: 25
+    # One at a time, never cancelled. A newer pending run may replace an older
+    # pending one, which is safe because main's newer head contains it.
+    concurrency:
+      group: deploy-schedio-cloudflare
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20.19.5
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version-file: package.json
+      - run: bun install --frozen-lockfile
+      - name: Build app (Expo web export)
+        run: bun run build:frontend
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
+          NODE_ENV: production
+
+      # Both lines this checks are silent one-line regressions: without
+      # `workers_dev = false` a second copy of Schedio appears on a workers.dev
+      # hostname no CORS list or Oxy redirect knows, and a `_worker.js` in the
+      # export would be Pages Advanced Mode — never loaded, uploaded as a public
+      # asset.
+      - name: The Worker declines its default hostname and keeps its entrypoint
+        run: |
+          set -euo pipefail
+          c=packages/frontend/wrangler.toml
+          grep -qE '^workers_dev[[:space:]]*=[[:space:]]*false' "$c" \
+            || { echo "::error::$c does not set workers_dev = false"; exit 1; }
+          grep -qE '^pattern[[:space:]]*=[[:space:]]*"schedio\.app"' "$c" \
+            || { echo "::error::$c no longer claims schedio.app"; exit 1; }
+          test -f packages/frontend/worker/index.js \
+            || { echo "::error::packages/frontend/worker/index.js is missing; wrangler.toml names it as main"; exit 1; }
+          test -f packages/frontend/dist/index.html \
+            || { echo "::error::the web export produced no index.html"; exit 1; }
+          if [ -e packages/frontend/dist/_worker.js ]; then
+            echo "::error::dist/_worker.js exists; the entrypoint is worker/index.js"
+            exit 1
+          fi
+
+      # `bunx wrangler` directly, pinned, never `cloudflare/wrangler-action`: the
+      # action picks npm in a monorepo and npm cannot resolve `workspace:*`.
+      # The Worker and its custom domain are created by this deploy.
+      - name: Deploy the Worker
+        run: cd packages/frontend && bunx wrangler@4 deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+
+      - name: Smoke the deployed app
+        run: |
+          set -euo pipefail
+          body=$(curl --fail --silent --show-error --max-time 20 https://schedio.app/)
+          grep -q '_expo/static' <<<"$body" \
+            || { echo "::error::https://schedio.app/ did not serve the Expo export"; exit 1; }
+          echo "schedio.app serves the export"

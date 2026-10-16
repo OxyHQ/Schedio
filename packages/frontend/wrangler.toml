@@ -1,0 +1,27 @@
+# The Schedio web app is a Worker, not a Pages project: a Pages project ALWAYS
+# also serves `<project>.pages.dev`, a second copy of the app on a hostname in
+# no CORS allowlist and no registered Oxy redirect. `workers_dev = false` leaves
+# `schedio.app` as the only name that reaches this deployment.
+name = "schedio"
+main = "worker/index.js"
+compatibility_date = "2026-09-09"
+
+workers_dev = false
+
+# `app.config.js` sets `web.output: "static"`: every route is pre-rendered to
+# its own HTML file, and the SPA fallback below serves index.html for the
+# dynamic routes the export cannot enumerate. `worker/index.js` is what stops
+# that fallback answering a stale hashed `.js` request with `text/html`.
+[assets]
+run_worker_first = true
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+# The only way in. Cloudflare writes the DNS record for a custom domain itself,
+# and refuses a hostname that already has externally managed records (code
+# 100117), so the apex must have none before the first deploy. The schedio.app
+# zone must be in the same Cloudflare account as this Worker.
+[[routes]]
+pattern = "schedio.app"
+custom_domain = true
