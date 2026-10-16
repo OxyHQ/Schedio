@@ -28,6 +28,7 @@
     "@expo/vector-icons": "^15.1.1",
     "@gorhom/bottom-sheet": "^5.2.6",
     "@lottiefiles/dotlottie-react": "^0.13.5",
+    "@oxy.so/app-preset": "^3.2.1",
     "@oxy.so/bloom": "^10.7.0",
     "@oxy.so/core": "4.10.0",
     "@oxy.so/expo-splash": "1.0.0",
