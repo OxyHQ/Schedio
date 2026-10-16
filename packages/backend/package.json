@@ -15,7 +15,8 @@
     "db:migrate": "bun src/db/migrate.ts",
     "db:build-import-manifest": "bun src/db/buildLegacyManifest.ts",
     "db:import-legacy": "bun src/db/importLegacyJsonl.ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "capabilities:register": "bun src/register-capability-catalog.ts"
   },
   "dependencies": {
     "@oxy.so/core": "4.10.0",
@@ -24,7 +25,13 @@
     "express": "^4.21.2",
     "express-rate-limit": "^8.1.1",
     "express-slow-down": "^2.1.0",
-    "postgres": "3.4.9"
+    "postgres": "3.4.9",
+    "@schedio/contracts": "workspace:*",
+    "@oxy.so/mention-sdk": "0.1.2",
+    "@oxy.so/mention-contracts": "0.1.2",
+    "zod": "^4.0.0",
+    "@oxy.so/contracts": "4.16.0",
+    "@oxy.so/mcp": "1.1.0"
   },
   "devDependencies": {
     "@types/bun": "^1.4.2",

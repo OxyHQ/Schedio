@@ -108,4 +108,5 @@ temp/
 .vercel
 
 # Local development
-.local/ 
+.local/
+.local-pg/

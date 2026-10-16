@@ -1,0 +1,16 @@
+{
+  "sourceRepository": "https://github.com/OxyHQ/Mention",
+  "sourceCommit": "a8082f6b60e0af24653b46ca46008335001ce31a",
+  "packages": {
+    "@oxy.so/mention-contracts": {
+      "version": "0.1.2",
+      "sha256": "6f0bd3e4956672a680ae068edc96c5fd80ffa4a6ed7e558d63101165c33eddeb",
+      "integrity": "sha512-8AO3gweojeTguqs2uqkqzPZbxQgFi9lXN0ojrTZQmfFF76IJpo/g8X5eV30fK04jGUeJASIo8CfrqLpq1FK3ng=="
+    },
+    "@oxy.so/mention-sdk": {
+      "version": "0.1.2",
+      "sha256": "c903797f72e0230052b5626eee4b6cb28d12e023ffee3e1cdb80fd7b2350339c",
+      "integrity": "sha512-Ze+O84pQaD6o8xeDA+CejHmCUlHXlz1Ns5X/w++21gzKldo4qBdxPeqWFJUAP2neILoRre5iRmPhCmw4veBnKA=="
+    }
+  }
+}

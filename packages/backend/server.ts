@@ -10,11 +10,13 @@ import { OXY_API_URL } from '@oxy.so/core';
 import { OxyServer, createOxyAuthMiddleware } from '@oxy.so/core/server';
 
 // Routers
+import capabilityRoutes from './src/routes/capabilities';
 import profileSettingsRoutes from './src/routes/profileSettings';
-import postsRoutes from './src/routes/posts';
-import socialAccountsRoutes from './src/routes/socialAccounts';
+import publishingRoutes from './src/publishing/routes';
+import { publishingErrors } from './src/publishing/errors';
+import { openapi } from '@schedio/contracts';
+import { startPublishingWorker } from './src/publishing/worker';
 import analyticsRoutes from './src/routes/analytics';
-import queueRoutes from './src/routes/queue';
 
 // Middleware
 import { rateLimiter, bruteForceProtection } from './src/middleware/security';
@@ -82,6 +84,8 @@ app.use((req, res, next) => {
 const publicApiRouter = express.Router();
 
 // Health check
+publicApiRouter.get('/openapi.json', (_req, res) => res.json(openapi()));
+
 publicApiRouter.get('/health', (_req, res) => {
   res.json({ status: 'ok', service: 'schedio-backend' });
 });
@@ -89,10 +93,8 @@ publicApiRouter.get('/health', (_req, res) => {
 // Authenticated API routes (require authentication)
 const authenticatedApiRouter = express.Router();
 authenticatedApiRouter.use('/profile', profileSettingsRoutes);
-authenticatedApiRouter.use('/posts', postsRoutes);
-authenticatedApiRouter.use('/accounts', socialAccountsRoutes);
+authenticatedApiRouter.use(publishingRoutes);
 authenticatedApiRouter.use('/analytics', analyticsRoutes);
-authenticatedApiRouter.use('/queue', queueRoutes);
 
 // Mount public and authenticated API routers.
 // Health/public routes are mounted before the limiters so health checks are not
@@ -100,7 +102,12 @@ authenticatedApiRouter.use('/queue', queueRoutes);
 app.use('/api', publicApiRouter);
 app.use(rateLimiter);
 app.use(bruteForceProtection);
+app.use('/_oxy/capabilities', capabilityRoutes);
 app.use('/api', createOxyAuthMiddleware(oxy), authenticatedApiRouter);
+app.use('/api', (_req, res) =>
+  res.status(404).json({ error: { code: 'unknown_route', message: 'Unknown API route' } }),
+);
+app.use(publishingErrors);
 
 // --- Root API Welcome Route ---
 app.get('/', async (_req, res) => {
@@ -110,6 +117,7 @@ app.get('/', async (_req, res) => {
 // --- Server Listen ---
 const PORT = process.env.PORT || 3000;
 let server: ReturnType<typeof app.listen> | undefined;
+let stopWorker: (() => Promise<void>) | undefined;
 
 function installGracefulShutdown(): void {
   let shuttingDown = false;
@@ -125,7 +133,8 @@ function installGracefulShutdown(): void {
     forceExit.unref();
 
     const finish = (exitCode: number) => {
-      void stopEcosystemActivity()
+      void Promise.resolve(stopWorker?.())
+        .then(() => stopEcosystemActivity())
         .then(() => closeDatabase())
         .then(
           () => process.exit(exitCode),
@@ -152,6 +161,7 @@ const bootServer = async () => {
     validateTokenCipherConfiguration();
     startEcosystemActivity(() => server?.listening === true);
     await connectToDatabase();
+    stopWorker = startPublishingWorker();
     server = app.listen(PORT, () => {
       logger.info(`Schedio backend server running on port ${PORT}`);
     });

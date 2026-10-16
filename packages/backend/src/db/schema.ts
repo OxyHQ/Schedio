@@ -22,6 +22,7 @@ export const SOCIAL_PLATFORMS = [
   'facebook',
   'linkedin',
   'mastodon',
+  'mention',
 ] as const;
 export type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
 
@@ -48,6 +49,10 @@ export const socialAccounts = pgTable(
     userId: text().notNull(),
     platform: text({ enum: SOCIAL_PLATFORMS }).notNull(),
     platformUserId: text().notNull(),
+    organizationId: text(),
+    instance: text().notNull().default('https://mastodon.social'),
+    oauthClientId: text(),
+    oauthClientSecretCiphertext: text(),
     platformUsername: text().notNull(),
     accessTokenCiphertext: text().notNull(),
     refreshTokenCiphertext: text(),
@@ -83,6 +88,11 @@ export const posts = pgTable(
     id: text().primaryKey(),
     userId: text().notNull(),
     content: text().notNull(),
+    organizationId: text(),
+    revision: integer().notNull().default(1),
+    approvedRevision: integer(),
+    approvedBy: text(),
+    queuePosition: integer().notNull().default(0),
     media: text().array().notNull().default([]),
     platformIds: text().array().notNull().default([]),
     status: text({ enum: POST_STATUSES }).notNull().default('draft'),
@@ -219,3 +229,48 @@ export const userSettings = pgTable(
     ),
   ],
 );
+
+export const organizationPolicies = pgTable('organization_policies', {
+  organizationId: text().primaryKey(),
+  required: boolean().notNull().default(false),
+});
+export const deliveries = pgTable(
+  'deliveries',
+  {
+    id: text().primaryKey(),
+    postId: text()
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    accountId: text()
+      .notNull()
+      .references(() => socialAccounts.id),
+    platform: text({ enum: ['mention', 'mastodon'] }).notNull(),
+    status: text({ enum: ['pending', 'sending', 'succeeded', 'failed', 'unknown'] })
+      .notNull()
+      .default('pending'),
+    effectKey: text().notNull().unique(),
+    attempts: integer().notNull().default(0),
+    firstAttemptAt: timestamp({ withTimezone: true, mode: 'date' }),
+    leaseUntil: timestamp({ withTimezone: true, mode: 'date' }),
+    leaseToken: text(),
+    url: text(),
+    error: text(),
+  },
+  (t) => [
+    uniqueIndex('deliveries_post_account_key').on(t.postId, t.accountId),
+    check('deliveries_platform_check', oneOf(t.platform, ['mention', 'mastodon'])),
+    check(
+      'deliveries_status_check',
+      oneOf(t.status, ['pending', 'sending', 'succeeded', 'failed', 'unknown']),
+    ),
+  ],
+);
+export const oauthStates = pgTable('oauth_states', {
+  stateHash: text().primaryKey(),
+  userId: text().notNull(),
+  organizationId: text(),
+  platform: text({ enum: ['mention', 'mastodon'] }).notNull(),
+  instance: text().notNull(),
+  secretsCiphertext: text().notNull(),
+  expiresAt: timestamp({ withTimezone: true, mode: 'date' }).notNull(),
+});

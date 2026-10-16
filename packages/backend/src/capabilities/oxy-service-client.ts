@@ -1,0 +1,47 @@
+import { canAttestWorkloadIdentity, OxyServer } from '@oxy.so/core/server';
+
+const OXY_API_URL = (process.env.OXY_API_URL ?? 'https://api.oxy.so').replace(/\/$/, '');
+
+let client: OxyServer | null | undefined;
+
+/**
+ * Schedio's Oxy service principal, or null where it has none.
+ *
+ * On ECS the task role is the identity (oxy ADR 0026), once the operator has
+ * bound it to the Schedio application. `serviceToken()` attests it whenever
+ * no key pair is configured. A pair, where one is set (a laptop, a CI box),
+ * still wins. A partial pair is no identity at all, never half of one.
+ */
+export function oxyServiceClient(): OxyServer | null {
+  if (client !== undefined) return client;
+  const key = process.env.OXY_APPLICATION_KEY?.trim();
+  const secret = process.env.OXY_APPLICATION_SECRET?.trim();
+  if (key && secret) {
+    client = new OxyServer({
+      baseURL: OXY_API_URL,
+      serviceAuth: { apiKey: key, apiSecret: secret },
+    });
+  } else if (!key && !secret && canAttestWorkloadIdentity()) {
+    client = new OxyServer({ baseURL: OXY_API_URL });
+  } else {
+    client = null;
+  }
+  return client;
+}
+
+export async function requiredOxyServiceToken(): Promise<string> {
+  const configured = oxyServiceClient();
+  if (!configured)
+    throw new Error(
+      'Schedio has no Oxy identity: no task role to attest and no application key pair',
+    );
+  return configured.serviceToken();
+}
+
+export function invalidateOxyServiceToken(): void {
+  oxyServiceClient()?.invalidateServiceToken();
+}
+
+export function resetOxyServiceClientForTests(): void {
+  client = undefined;
+}

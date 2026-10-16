@@ -6,7 +6,21 @@ import type { Request, RequestHandler } from 'express';
 const rateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 50000, // limit each IP to 100 requests per window
-  message: 'Too many requests from this IP, please try again later.',
+  handler: (req, res) => {
+    const reset = (req as Request & { rateLimit?: { resetTime?: Date } }).rateLimit?.resetTime;
+    const retryAfterSeconds = Math.max(
+      1,
+      Math.ceil(((reset?.getTime() ?? Date.now() + 900000) - Date.now()) / 1000),
+    );
+    res.setHeader('Retry-After', retryAfterSeconds);
+    res.status(429).json({
+      error: {
+        code: 'rate_limited',
+        message: 'Too many requests; try again later',
+        details: { retryAfterSeconds },
+      },
+    });
+  },
   skip: (req: Request) => req.path.startsWith('/files/upload'),
 });
 

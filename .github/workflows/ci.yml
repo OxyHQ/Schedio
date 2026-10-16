@@ -125,6 +125,8 @@ jobs:
           bun install
           git diff --exit-code -- bun.lock
       - run: bun run --filter @schedio/backend typecheck
+      - run: bun run check:publishing-artifacts
+      - run: bun run check:openapi
       - run: bun run build:backend
       - run: bun run --filter @schedio/backend test
       - name: Migrations match the schema
