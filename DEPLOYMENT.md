@@ -1,18 +1,35 @@
 # Deploying Schedio
 
-Schedio's runtime uses PostgreSQL. Production provisioning belongs in `oxy-infra`;
-this repository does not carry a provider-specific deployment template.
+Production runs on Oxy's AWS account, declared in `oxy-infra`
+(`terraform-uswest2/app-schedio.tf` and `iam-schedio-deploy.tf`):
+
+- API: ECS service `schedio` on `oxy-cluster` behind the shared ALB at
+  `https://api.schedio.app`, task role `oxy-schedio-task`.
+- Database: `schedio` on the shared `oxy-postgres`, owned by role `schedio`.
+- Web: the `schedio` Cloudflare Worker at `https://schedio.app`.
+
+`.github/workflows/deploy-aws.yml` releases the API after CI passes on `main`:
+it builds the arm64 image, derives a task definition from the running one with
+only the image changed, applies the `pre` migrations as a one-shot, rolls the
+service, registers the capability catalog with Oxy, smokes `/api/health` and
+rolls back on failure. `.github/workflows/deploy-cloudflare.yml` exports and
+deploys the web app the same way.
 
 ## Required configuration
 
-The backend refuses to start without both values:
+Environment and secrets are owned by `oxy-infra`, never by this repository or
+GitHub. The backend refuses to start without:
 
-- `DATABASE_URL`: PostgreSQL connection URL supplied by the managed database.
+- `DATABASE_URL`: SSM `/oxy/schedio/DATABASE_URL`.
 - `SOCIAL_TOKEN_ENCRYPTION_KEY`: 64 hexadecimal characters representing a
-  32-byte AES-256-GCM key, stored as a platform secret.
+  32-byte AES-256-GCM key, SSM `/oxy/schedio/SOCIAL_TOKEN_ENCRYPTION_KEY`.
+  Rotating it orphans every stored provider connection.
 
-Also configure `NODE_ENV=production`, `PORT=8080`, `FRONTEND_URL` and the Oxy
-authentication settings required by `@oxy.so/core`. Do not commit values.
+The task also sets `NODE_ENV=production`, `PORT=8080`,
+`OXY_API_URL=https://api.oxy.so`, `FRONTEND_URL=https://schedio.app` and
+`SOCIAL_OAUTH_REDIRECT_URI=https://schedio.app/accounts`. Schedio holds no Oxy
+key pair: it attests `oxy-schedio-task`, which Oxy binds to the Schedio
+application (oxy ADR 0026).
 
 ## Build and start
 

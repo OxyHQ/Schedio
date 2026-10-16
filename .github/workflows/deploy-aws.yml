@@ -1,0 +1,361 @@
+# AWS deploy workflow for the Schedio API (api.schedio.app).
+#
+# Builds the linux/arm64 backend image, pushes it to ECR, registers a task
+# definition derived from the RUNNING one with only the image changed, applies
+# the `pre` migrations as a one-shot on that image, rolls the service, registers
+# the `schedio` capability catalog with Oxy, and rolls back a failed release.
+# AWS access is the repository-exclusive OIDC role `oxy-schedio-github-deploy`
+# (oxy-infra terraform-uswest2/iam-schedio-deploy.tf). No stored keys, and no
+# runtime secret passes through GitHub: DATABASE_URL and
+# SOCIAL_TOKEN_ENCRYPTION_KEY live in SSM only and the task definition reads
+# them at task start.
+#
+# It runs only AFTER CI has passed on main for the exact commit it releases
+# (`workflow_run`), never beside CI on push.
+name: Deploy to AWS
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: us-west-2
+  ECR_REGISTRY: 237343248947.dkr.ecr.us-west-2.amazonaws.com
+  APP: schedio
+  CLUSTER: oxy-cluster
+  # The commit under release: the head CI tested on `workflow_run`, main's head
+  # on a dispatch. Never `github.sha` alone, which on `workflow_run` is whatever
+  # main points at when the event is created.
+  DEPLOY_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+jobs:
+  # Decides, OUTSIDE the release concurrency group, whether this run releases
+  # anything: GitHub cancels a PENDING run when another queues behind it in the
+  # same group. An older commit is held only when a newer main commit has a CI
+  # run of its own (queued, running or green); a newer commit with no CI run (a
+  # bot merge starts none) holds nothing, so the newest CI-tested commit is
+  # never stranded.
+  gate:
+    if: >-
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main') || (
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository &&
+      github.event.workflow_run.head_branch == 'main')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      release: ${{ steps.newer.outputs.release }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require a successful CI run on push for this commit (dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          passed=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$DEPLOY_SHA&event=push&branch=main&status=success&per_page=1" --jq '.total_count')
+          if [ "$passed" -lt 1 ]; then
+            echo "::error::CI has not succeeded on push to main for $DEPLOY_SHA; refusing to deploy it"
+            exit 1
+          fi
+          echo "CI succeeded on push for $DEPLOY_SHA"
+
+      - name: Hold only for a newer main commit that CI is testing or passed
+        id: newer
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release() { echo "release=$1" >>"$GITHUB_OUTPUT"; echo "$2"; exit 0; }
+          main=$(git rev-parse origin/main)
+          if [ "$main" = "$DEPLOY_SHA" ]; then
+            release true "$DEPLOY_SHA is main's head"
+          fi
+          if ! git merge-base --is-ancestor "$DEPLOY_SHA" "$main"; then
+            release false "::notice::$DEPLOY_SHA is no longer on main ($main); not releasing it"
+          fi
+          for sha in $(git rev-list --first-parent "$DEPLOY_SHA..$main"); do
+            live=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$sha&event=push&per_page=20" \
+              --jq '[.workflow_runs[] | select(.status != "completed" or .conclusion == "success")] | length')
+            if [ "$live" -gt 0 ]; then
+              release false "::notice::newer main commit $sha has its own CI run; its release carries $DEPLOY_SHA"
+            fi
+            echo "newer main commit $sha has no live or successful CI run; it does not hold $DEPLOY_SHA"
+          done
+          release true "no newer main commit is being released; releasing $DEPLOY_SHA"
+
+  deploy:
+    needs: gate
+    if: needs.gate.outputs.release == 'true'
+    runs-on: ubuntu-24.04-arm
+    # Build, migration and catalog one-shots, rollout wait, smoke and a full
+    # rollback window if any of them fails.
+    timeout-minutes: 60
+    permissions:
+      id-token: write
+      contents: read
+    # One at a time, never cancelled: a rollout interrupted half-way is worse
+    # than a late one. On the JOB, so only a run `gate` released enters it.
+    concurrency:
+      group: deploy-schedio-aws
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.DEPLOY_SHA }}
+          # The scope step diffs from the commit that is live.
+          fetch-depth: 0
+
+      - name: Configure AWS credentials (OIDC, no stored keys)
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::237343248947:role/oxy-schedio-github-deploy
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Measured from what production RUNS: the live image's 40-hex ECR tags name
+      # the commit(s) it was built from. Skip when live already contains this
+      # commit, or when everything since it is Markdown, docs/ or the frontend
+      # (which deploys on its own); deploy on anything else or when unsure. A
+      # dispatch always deploys.
+      - name: Decide whether this commit changes what production runs
+        id: scope
+        run: |
+          set -uo pipefail
+          decide() { echo "deploy=$1" >>"$GITHUB_OUTPUT"; echo "$2"; exit 0; }
+          if [ "$GITHUB_EVENT_NAME" = workflow_dispatch ]; then
+            decide true "manual dispatch: deploying $DEPLOY_SHA"
+          fi
+
+          td=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
+            --query 'services[0].taskDefinition' --output text 2>/dev/null) || td=
+          case "$td" in arn:aws:ecs:*) ;; *) decide true "no live task definition found; deploying" ;; esac
+          image=$(aws ecs describe-task-definition --task-definition "$td" \
+            --query "taskDefinition.containerDefinitions[?name=='$APP'].image | [0]" --output text 2>/dev/null) || image=
+          digest=${image#*@}
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]] || decide true "live image '$image' is not digest-pinned; deploying"
+          live_shas=$(aws ecr describe-images --repository-name "oxy/$APP" --image-ids "imageDigest=$digest" \
+            --query 'imageDetails[0].imageTags' --output json 2>/dev/null | jq -r '.[]? | select(test("^[0-9a-f]{40}$"))') || live_shas=
+          [ -n "$live_shas" ] || decide true "live image $digest carries no commit tag; deploying"
+
+          bases=()
+          for live in $live_shas; do
+            if ! git cat-file -e "$live^{commit}" 2>/dev/null; then
+              continue
+            fi
+            if git merge-base --is-ancestor "$DEPLOY_SHA" "$live"; then
+              decide false "live image (commit $live) already contains $DEPLOY_SHA; nothing to release"
+            fi
+            if git merge-base --is-ancestor "$live" "$DEPLOY_SHA"; then
+              bases+=("$live")
+            fi
+          done
+          [ "${#bases[@]}" -gt 0 ] || decide true "no live commit is an ancestor of $DEPLOY_SHA; deploying"
+
+          changed=$(for base in "${bases[@]}"; do git diff --name-only "$base" "$DEPLOY_SHA" || echo '<diff failed>'; done | sort -u)
+          relevant=$(grep -vE '\.md$|^docs/|^packages/frontend/|^\.github/workflows/deploy-cloudflare\.yml$' <<<"$changed" || true)
+          if [ -z "$relevant" ]; then
+            decide false "only docs or frontend changed since live ${bases[*]}; not deploying"
+          fi
+          echo "changed since live ${bases[*]}:"
+          sed 's/^/  /' <<<"$relevant" | head -50
+          decide true "deploying $DEPLOY_SHA"
+
+      - name: Login to ECR
+        if: steps.scope.outputs.deploy == 'true'
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        if: steps.scope.outputs.deploy == 'true'
+        uses: docker/setup-buildx-action@v4
+
+      # `type=gha` needs the Actions runtime token, which GitHub gives only to
+      # JavaScript actions; without this step buildx skips the cache silently.
+      - name: Expose the Actions cache to buildx
+        if: steps.scope.outputs.deploy == 'true'
+        uses: crazy-max/ghaction-github-runtime@v4
+
+      - name: Build and push (linux/arm64)
+        if: steps.scope.outputs.deploy == 'true'
+        id: build
+        run: |
+          set -euo pipefail
+          IMG=$ECR_REGISTRY/oxy/$APP
+          docker buildx build \
+            --platform linux/arm64 \
+            --cache-from type=gha,scope=$APP-backend \
+            --cache-to type=gha,scope=$APP-backend,mode=max \
+            -f packages/backend/Dockerfile \
+            --label "org.opencontainers.image.revision=$DEPLOY_SHA" \
+            --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
+            -t "$IMG:$DEPLOY_SHA" \
+            -t "$IMG:latest" \
+            --metadata-file "$RUNNER_TEMP/build-metadata.json" \
+            --push \
+            .
+
+          DIGEST=$(jq -r '.["containerimage.digest"] // empty' "$RUNNER_TEMP/build-metadata.json")
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::buildx produced no usable image digest"
+            exit 1
+          fi
+          echo "image_uri=$IMG@$DIGEST" >>"$GITHUB_OUTPUT"
+
+      # The ECS service is created by oxy-infra (app-schedio.tf) from this
+      # image, so the very first run pushes and stops here. That is the designed
+      # path: everything below needs a service to derive the revision from.
+      - name: Find the running service
+        if: steps.scope.outputs.deploy == 'true'
+        id: service
+        run: |
+          set -euo pipefail
+          status=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
+            --query 'services[0].status' --output text 2>/dev/null || echo NONE)
+          if [ "$status" != "ACTIVE" ]; then
+            echo "::notice::ECS service $APP does not exist yet; pushed the image, nothing to roll"
+            echo "active=false" >>"$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "active=true" >>"$GITHUB_OUTPUT"
+
+      - name: Register immutable task definition
+        if: steps.service.outputs.active == 'true'
+        id: task_definition
+        env:
+          IMAGE_URI: ${{ steps.build.outputs.image_uri }}
+        run: |
+          set -euo pipefail
+          current_task_definition=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
+            --query 'services[0].taskDefinition' --output text)
+          echo "previous_task_definition=$current_task_definition" >>"$GITHUB_OUTPUT"
+          source_file=$(mktemp)
+          rendered_file=$(mktemp)
+          trap 'rm -f "$source_file" "$rendered_file"' EXIT
+          aws ecs describe-task-definition --task-definition "$current_task_definition" \
+            --query taskDefinition --output json >"$source_file"
+
+          # Only the image changes. Environment and secrets are owned by
+          # oxy-infra and carried forward from the running revision.
+          jq --arg app "$APP" --arg image "$IMAGE_URI" '
+              .containerDefinitions |= map(if .name == $app then .image = $image else . end)
+              | del(
+                  .taskDefinitionArn,
+                  .revision,
+                  .status,
+                  .requiresAttributes,
+                  .compatibilities,
+                  .registeredAt,
+                  .registeredBy,
+                  .deregisteredAt
+                )
+            ' "$source_file" >"$rendered_file"
+
+          task_definition_arn=$(aws ecs register-task-definition \
+            --cli-input-json "file://$rendered_file" \
+            --query 'taskDefinition.taskDefinitionArn' --output text)
+          echo "task_definition_arn=$task_definition_arn" >>"$GITHUB_OUTPUT"
+
+      # A one-shot on the image about to serve, with the service's own network
+      # configuration, so the new tasks start against the schema they expect.
+      # `pre` only: additive migrations, correct for the image still serving and
+      # the one arriving. Anything marked `post` is run deliberately after.
+      - name: Apply pre-deploy migrations
+        if: steps.service.outputs.active == 'true'
+        env:
+          TASK_DEFINITION: ${{ steps.task_definition.outputs.task_definition_arn }}
+        run: |
+          set -euo pipefail
+          bash scripts/run-ecs-one-shot.sh "$CLUSTER" "$APP" "$TASK_DEFINITION" \
+            '["bun","packages/backend/src/db/migrate.ts","--target-database=schedio","--phase=pre"]'
+
+      - name: Deploy immutable task definition to ECS
+        if: steps.service.outputs.active == 'true'
+        id: ecs_deploy
+        env:
+          TASK_DEFINITION: ${{ steps.task_definition.outputs.task_definition_arn }}
+          IMAGE_URI: ${{ steps.build.outputs.image_uri }}
+        run: |
+          set -euo pipefail
+          update_json=$(aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$APP" \
+            --task-definition "$TASK_DEFINITION")
+          echo "deployment_started=true" >>"$GITHUB_OUTPUT"
+          deployment_id=$(jq -r '.service.deployments[] | select(.status == "PRIMARY") | .id' <<<"$update_json" | head -1)
+          if [ -z "$deployment_id" ]; then
+            echo "::error::ECS returned no primary deployment id"
+            exit 1
+          fi
+
+          bash scripts/wait-for-ecs-deployment.sh "$CLUSTER" "$APP" "$deployment_id"
+          live_task_definition=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
+            --query 'services[0].taskDefinition' --output text)
+          live_image=$(aws ecs describe-task-definition --task-definition "$live_task_definition" \
+            --query "taskDefinition.containerDefinitions[?name=='$APP'].image | [0]" --output text)
+          if [ "$live_image" != "$IMAGE_URI" ]; then
+            echo "::error::live image $live_image does not match built image $IMAGE_URI"
+            exit 1
+          fi
+          echo "deployed $APP as $live_task_definition ($live_image)"
+
+      # Re-registering an unchanged catalog is idempotent (same version and
+      # digest). It runs as the task role, which Oxy binds to the Schedio
+      # application; a 403 here means that binding or the application's
+      # `catalog:schedio` capability is missing.
+      - name: Register the Schedio capability catalog
+        if: steps.service.outputs.active == 'true'
+        env:
+          TASK_DEFINITION: ${{ steps.task_definition.outputs.task_definition_arn }}
+        run: |
+          set -euo pipefail
+          bash scripts/run-ecs-one-shot.sh "$CLUSTER" "$APP" "$TASK_DEFINITION" \
+            '["bun","packages/backend/src/register-capability-catalog.ts"]'
+
+      - name: Smoke the public API
+        if: steps.service.outputs.active == 'true'
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --max-time 15 "https://api.schedio.app/api/health"
+          echo
+
+      - name: Roll back a failed release
+        if: >-
+          ${{
+            failure() &&
+            steps.ecs_deploy.outputs.deployment_started == 'true'
+          }}
+        env:
+          PREVIOUS_TASK_DEFINITION: ${{ steps.task_definition.outputs.previous_task_definition }}
+        run: |
+          set -euo pipefail
+          if [ -z "$PREVIOUS_TASK_DEFINITION" ]; then
+            echo "::error::No previous task definition was recorded for rollback"
+            exit 1
+          fi
+          rollback_json=$(aws ecs update-service \
+            --cluster "$CLUSTER" \
+            --service "$APP" \
+            --task-definition "$PREVIOUS_TASK_DEFINITION")
+          rollback_deployment_id=$(jq -r '.service.deployments[] | select(.status == "PRIMARY") | .id' <<<"$rollback_json" | head -1)
+          if [ -z "$rollback_deployment_id" ]; then
+            echo "::error::ECS returned no primary rollback deployment id"
+            exit 1
+          fi
+          bash scripts/wait-for-ecs-deployment.sh "$CLUSTER" "$APP" "$rollback_deployment_id"
+          echo "Rolled back to $PREVIOUS_TASK_DEFINITION"
