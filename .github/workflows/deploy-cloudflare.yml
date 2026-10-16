@@ -73,6 +73,10 @@ jobs:
       # `bunx wrangler` directly, pinned, never `cloudflare/wrangler-action`: the
       # action picks npm in a monorepo and npm cannot resolve `workspace:*`.
       # The Worker and its custom domain are created by this deploy.
+      # Wrangler 4 refuses Node 20, which the export above is pinned to.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.20.0
       - name: Deploy the Worker
         run: cd packages/frontend && bunx wrangler@4 deploy
         env:
