@@ -35,9 +35,11 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.sha }}
           persist-credentials: false
+      # Expo SDK 58's CLI needs Node 22.13+ / 24.3+, and Wrangler 4 refuses
+      # Node 20: one Node 24 serves the export and the deploy.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.19.5
+          node-version: 24.20.0
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version-file: package.json
@@ -73,10 +75,6 @@ jobs:
       # `bunx wrangler` directly, pinned, never `cloudflare/wrangler-action`: the
       # action picks npm in a monorepo and npm cannot resolve `workspace:*`.
       # The Worker and its custom domain are created by this deploy.
-      # Wrangler 4 refuses Node 20, which the export above is pinned to.
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 24.20.0
       - name: Deploy the Worker
         run: cd packages/frontend && bunx wrangler@4 deploy
         env:
