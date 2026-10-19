@@ -114,14 +114,16 @@ export const BottomBar = () => {
       paddingBottom: insets.bottom,
       paddingTop: 8,
       zIndex: 1000,
-      ...Platform.select({
+      // `position: 'fixed'` is a web-only CSS value the React Native ViewStyle
+      // enum can't express; RN-Web accepts it at runtime.
+      ...(Platform.select({
         web: {
           position: 'fixed',
           height: 60,
           paddingBottom: 8,
         },
-      }),
-    } as ViewStyle,
+      }) as unknown as ViewStyle),
+    },
     tab: {
       flex: 1,
       justifyContent: 'center',

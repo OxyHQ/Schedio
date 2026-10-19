@@ -15,7 +15,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { Search } from '@/assets/icons/search-icon';
 
 const debounce = <Args extends unknown[]>(func: (...args: Args) => void, wait: number) => {
-  let timeout: NodeJS.Timeout;
+  let timeout: ReturnType<typeof setTimeout> | undefined;
   return function executedFunction(...args: Args) {
     const later = () => {
       clearTimeout(timeout);
@@ -54,23 +54,23 @@ export const SearchBar = () => {
 
   return (
     <View
-      style={
-        {
-          backgroundColor: theme.colors.background,
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          ...Platform.select({
-            web: { position: 'sticky' },
-          }),
-          marginTop: 20,
-          top: 0,
-          zIndex: 1000,
-          paddingVertical: 4,
-          width: '100%',
-          gap: 10,
-        } as ViewStyle
-      }
+      style={{
+        backgroundColor: theme.colors.background,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        // `position: 'sticky'` is a web-only CSS value the React Native
+        // ViewStyle enum can't express; RN-Web accepts it at runtime.
+        ...(Platform.select({
+          web: { position: 'sticky' },
+        }) as unknown as ViewStyle),
+        marginTop: 20,
+        top: 0,
+        zIndex: 1000,
+        paddingVertical: 4,
+        width: '100%',
+        gap: 10,
+      }}
     >
       <View
         style={{

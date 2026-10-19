@@ -30,7 +30,7 @@ export function debounce<This, Args extends unknown[], R>(
   cancel: () => void;
   flush: () => R | undefined;
 } {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   // A pending call is marked by its arguments. `this` is undefined for a plain
   // (non-method) call in strict mode, so it cannot mark one.
   let lastArgs: Args | null = null;
@@ -113,7 +113,7 @@ export function throttle<This, Args extends unknown[]>(
   func: (this: This, ...args: Args) => unknown,
   wait: number,
 ): ((this: This, ...args: Args) => void) & { cancel: () => void } {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
   let lastRan: number = 0;
   let lastArgs: Args | null = null;
   let lastThis: This | undefined;

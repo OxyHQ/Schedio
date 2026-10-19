@@ -6,7 +6,20 @@ let notificationsModule: typeof import('expo-notifications') | null = null;
 async function getNotifications(): Promise<typeof import('expo-notifications') | null> {
   if (Platform.OS === 'web') return null;
   if (!notificationsModule) {
-    notificationsModule = await import('expo-notifications');
+    const Notifications = await import('expo-notifications');
+    // Installed the moment the module first loads, so it is in place before any
+    // permission request, channel setup or incoming notification. Since SDK 58 a
+    // foreground notification is shown by default when no handler is installed;
+    // this keeps the explicit choice in one place.
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+    notificationsModule = Notifications;
   }
   return notificationsModule;
 }
@@ -65,15 +78,6 @@ export async function setupNotifications() {
       console.warn('Failed to set Android notification channel:', e);
     }
   }
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-  });
 }
 
 export type DevicePushToken = { token: string; type: 'fcm' | 'apns' | 'unknown' } | null;

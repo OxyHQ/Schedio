@@ -42,21 +42,21 @@
 //
 // To enable expo-blob after rebuilding:
 // 1. Rebuild: npx expo prebuild && npx expo run:ios (or run:android)
-// 2. Then uncomment the expo-blob code below and comment out the global.Blob line
+// 2. Then uncomment the expo-blob code below and comment out the globalThis.Blob line
 
 // Default: Use global Blob (works immediately, no rebuild needed)
-export const Blob = global.Blob as typeof global.Blob;
+export const Blob = globalThis.Blob as typeof globalThis.Blob;
 
 // Uncomment after rebuilding to use expo-blob:
-// let BlobExport: typeof global.Blob;
+// let BlobExport: typeof globalThis.Blob;
 // if (Platform.OS === 'web') {
-//   BlobExport = global.Blob as typeof global.Blob;
+//   BlobExport = globalThis.Blob as typeof globalThis.Blob;
 // } else {
 //   try {
 //     const expoBlob = require('expo-blob');
-//     BlobExport = expoBlob?.Blob || global.Blob;
+//     BlobExport = expoBlob?.Blob || globalThis.Blob;
 //   } catch (e) {
-//     BlobExport = global.Blob as typeof global.Blob;
+//     BlobExport = globalThis.Blob as typeof globalThis.Blob;
 //   }
 // }
 // export { BlobExport as Blob };
