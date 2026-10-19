@@ -2,7 +2,6 @@ import React, { useState, useCallback, useMemo, useRef } from 'react';
 import {
   View,
   StyleSheet,
-  type ImageSourcePropType,
   Pressable,
   Modal,
   Platform,
@@ -10,8 +9,9 @@ import {
   type StyleProp,
   type ViewStyle,
   type ImageStyle,
+  type ViewInstance,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { Image as RNImage } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, {
@@ -30,7 +30,7 @@ const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface ZoomableAvatarProps {
-  source?: ImageSourcePropType | string | undefined | null;
+  source?: ImageSource | number | string | undefined | null;
   size?: number;
   style?: StyleProp<ViewStyle>;
   imageStyle?: StyleProp<ImageStyle>;
@@ -47,7 +47,7 @@ export const ZoomableAvatar: React.FC<ZoomableAvatarProps> = ({
   const [isZoomed, setIsZoomed] = useState(false);
   const [errored, setErrored] = useState(false);
   const [originalImageSize, setOriginalImageSize] = useState<number | null>(null);
-  const avatarWrapperRef = useRef<View>(null);
+  const avatarWrapperRef = useRef<ViewInstance>(null);
 
   // Calculate max zoom size based on current screen dimensions (responsive)
   // Also respect max width of 25rem (400px assuming 16px base font size)

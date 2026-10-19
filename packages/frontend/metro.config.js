@@ -36,8 +36,6 @@ config.resolver = {
     path.join(projectRoot, 'node_modules'),
     path.join(monorepoRoot, 'node_modules'),
   ],
-  // Enable symlinks for npm workspace resolution
-  unstable_enableSymlinks: true,
   // Enable package.json "exports" field resolution (required by @oxy.so/bloom subpath exports)
   unstable_enablePackageExports: true,
   // Bloom imports `.woff2`/`.woff` font files directly from JS on web

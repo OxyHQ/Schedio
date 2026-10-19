@@ -130,15 +130,17 @@ const styles = StyleSheet.create({
     // borderBottomColor and backgroundColor applied inline with theme
     paddingVertical: 8,
     position: 'relative',
-    ...Platform.select({
+    // `position: 'sticky'` is a web-only CSS value the React Native ViewStyle
+    // enum can't express; RN-Web accepts it at runtime.
+    ...(Platform.select({
       web: {
         position: 'sticky',
       },
-    }),
+    }) as unknown as ViewStyle),
     top: 0,
     // backgroundColor applied inline with theme
     zIndex: 100,
-  } as ViewStyle,
+  },
   topRowText: {
     fontSize: 18,
     // color applied inline with theme

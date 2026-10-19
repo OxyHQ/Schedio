@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState, useEffect, useRef } from 'react';
 import { Image as ExpoImage } from 'expo-image';
-import { View, StyleSheet, Animated } from 'react-native';
+import { View, StyleSheet, Animated, type ViewInstance } from 'react-native';
 import type { ImageErrorEventData, ImageProps } from 'expo-image';
 
 /**
@@ -50,7 +50,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
-  const containerRef = useRef<View>(null);
+  const containerRef = useRef<ViewInstance>(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   // Intersection Observer for lazy loading (web only)

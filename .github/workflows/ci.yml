@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.19.5
+          node-version: 24.20.0
       - uses: oven-sh/setup-bun@v2
         with:
           # NOT a literal version: `packageManager` in package.json is the one
@@ -112,7 +112,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.19.5
+          node-version: 24.20.0
       - uses: oven-sh/setup-bun@v2
         with:
           # NOT a literal version: `packageManager` in package.json is the one
@@ -152,7 +152,7 @@ jobs:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
-          node-version: 20.19.5
+          node-version: 24.20.0
       - uses: oven-sh/setup-bun@v2
         with:
           # NOT a literal version: `packageManager` in package.json is the one

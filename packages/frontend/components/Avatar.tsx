@@ -3,14 +3,13 @@ import {
   View,
   Animated,
   StyleSheet,
-  type ImageSourcePropType,
   Text,
   type StyleProp,
   type ViewStyle,
   type ImageStyle,
   TouchableOpacity,
 } from 'react-native';
-import { Image } from 'expo-image';
+import { Image, type ImageSource } from 'expo-image';
 import { VerifiedIcon } from '@/assets/icons/verified-icon';
 import { colors } from '../styles/colors';
 import DefaultAvatar from '@/assets/images/default-avatar.jpg';
@@ -21,7 +20,7 @@ import type { AvatarShapeKey } from './avatar/avatarShapes';
 const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 interface AvatarProps {
-  source?: ImageSourcePropType | string | undefined | null;
+  source?: ImageSource | number | string | undefined | null;
   size?: number;
   verified?: boolean;
   style?: StyleProp<ViewStyle>;

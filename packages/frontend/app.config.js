@@ -87,7 +87,6 @@ module.exports = (_config) => {
           },
         ],
         softwareKeyboardLayoutMode: 'pan',
-        edgeToEdgeEnabled: true,
       },
       web: {
         bundler: 'metro',
@@ -124,7 +123,10 @@ module.exports = (_config) => {
       // native-only plugins (like expo-notifications) from web builds.
       plugins: (() => {
         const base = [
-          'expo-router',
+          // SDK 58 turns on async (lazy) routes for web by default; keep the
+          // SDK 57 bundle shape, with every route in the static export's
+          // entry bundle.
+          ['expo-router', { asyncRoutes: { web: false } }],
           // Native OS splash (Oxy family "Instagram, from Meta" pattern):
           // Schedio's own logo (white paper-plane mark on transparent)
           // centered on the dark brand background, with the shared Oxy
