@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { AliaChatSheet, type AliaChatSheetRef } from '@alia.onl/sdk';
 import { AliaAvatarIcon } from '@alia.onl/sdk/avatar';
 import { Button } from '@oxy.so/bloom/button';
-import { useAuth } from '@oxy.so/services';
+import { useAuth } from '@oxy.so/services/ui/client';
 
 /**
  * The "Ask Alia" button and the chat sheet it opens.

@@ -1,5 +1,5 @@
 import { View, StyleSheet, Text, Image } from 'react-native';
-import { OxySignInButton } from '@oxy.so/services';
+import { OxySignInButton } from '@oxy.so/services/ui/client';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';

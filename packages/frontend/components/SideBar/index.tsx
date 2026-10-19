@@ -18,7 +18,7 @@ import { AnalyticsIcon, AnalyticsIconActive } from '@/assets/icons/analytics-ico
 
 // Hooks
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy, useAuth } from '@oxy.so/services';
+import { useOxy, useAuth } from '@oxy.so/services/ui/client';
 
 // Utils
 import { confirmDialog } from '@/utils/alerts';

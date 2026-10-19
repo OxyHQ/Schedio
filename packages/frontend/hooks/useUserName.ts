@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useUserById } from '@/stores/usersStore';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 
 /**
  * Hook to get user name from Oxy user data

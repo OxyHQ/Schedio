@@ -2,7 +2,7 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 import Avatar from './Avatar';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { UserListSkeleton } from '@/components/shared/Skeleton';
