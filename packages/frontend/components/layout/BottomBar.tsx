@@ -16,7 +16,7 @@ import { AnalyticsIcon, AnalyticsIconActive } from '@/assets/icons/analytics-ico
 
 // Hooks
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy, useAuth } from '@oxy.so/services';
+import { useOxy, useAuth } from '@oxy.so/services/ui/client';
 
 // Utils
 import { ROUTES, routeMatchers, isRouteActive } from '@/utils/routeUtils';

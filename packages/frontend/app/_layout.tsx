@@ -32,7 +32,7 @@ import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useIsScreenNotMobile } from '@/hooks/useOptimizedMediaQuery';
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 
 // Services & Utils
 import { AppInitializer } from '@/lib/appInitializer';

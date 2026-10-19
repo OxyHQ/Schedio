@@ -12,7 +12,7 @@ import AvatarShapePicker from '@/components/avatar/AvatarShapePicker';
 import { useMyAvatarShape } from '@/hooks/useAvatarShape';
 import type { AvatarShapeKey } from '@/components/avatar/avatarShapes';
 import Avatar from '@/components/Avatar';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 
 export default function ProfileCustomizationScreen() {
   const { t } = useTranslation();

@@ -15,7 +15,7 @@ import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 import Avatar from '@/components/Avatar';
 import { authenticatedClient } from '@/utils/api';
 import { updatePrivacySettingsCache, type PrivacySettings } from '@/hooks/usePrivacySettings';

@@ -2,7 +2,7 @@ import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { useOxy } from '@oxy.so/services';
+import { useOxy } from '@oxy.so/services/ui/client';
 import { authenticatedClient } from '@/utils/api';
 import { getData } from '@/utils/storage';
 import { getDevicePushToken } from '@/utils/notifications';
