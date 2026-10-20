@@ -19,8 +19,19 @@ command_json="$4"
 
 # Read back from the running service, so subnets, security groups and
 # assignPublicIp are defined in one place (oxy-infra) and cannot drift here.
-network="$(aws ecs describe-services --cluster "$cluster" --services "$service" \
-  --query 'services[0].networkConfiguration' --output json)"
+service_json="$(aws ecs describe-services --cluster "$cluster" --services "$service" \
+  --query 'services[0]' --output json)"
+network="$(jq -c '.networkConfiguration' <<<"$service_json")"
+# The one-shot runs where the service runs: on its capacity provider strategy
+# when it has one (oxy-cluster's EC2 capacity, whose revisions are EC2-only),
+# otherwise on its launch type. A hard-coded FARGATE would refuse an EC2-only
+# revision and fail the deploy before the rollout.
+strategy="$(jq -c '.capacityProviderStrategy // []' <<<"$service_json")"
+if [[ "$strategy" != "[]" ]]; then
+  placement=(--capacity-provider-strategy "$strategy")
+else
+  placement=(--launch-type "$(jq -r '.launchType // "FARGATE"' <<<"$service_json")")
+fi
 
 overrides="$(jq -nc --arg name "$service" --argjson command "$command_json" \
   '{containerOverrides: [{name: $name, command: $command}]}')"
@@ -28,7 +39,7 @@ overrides="$(jq -nc --arg name "$service" --argjson command "$command_json" \
 run_json="$(aws ecs run-task \
   --cluster "$cluster" \
   --task-definition "$task_definition" \
-  --launch-type FARGATE \
+  "${placement[@]}" \
   --network-configuration "$network" \
   --started-by "deploy-$service" \
   --overrides "$overrides")"
