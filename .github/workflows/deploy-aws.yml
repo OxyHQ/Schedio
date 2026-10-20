@@ -4,6 +4,10 @@
 # definition derived from the RUNNING one with only the image changed, applies
 # the `pre` migrations as a one-shot on that image, rolls the service, registers
 # the `schedio` capability catalog with Oxy, and rolls back a failed release.
+# Images are addressed by digest only: no `:latest` is pushed, and the rollback
+# target is the RUNNING release pinned to the digest its tasks pulled
+# (scripts/pin-ecs-rollback-target.sh), the same immutable-image shape as
+# Mention's and Mercaria's deploys.
 # AWS access is the repository-exclusive OIDC role `oxy-schedio-github-deploy`
 # (oxy-infra terraform-uswest2/iam-schedio-deploy.tf). No stored keys, and no
 # runtime secret passes through GitHub: DATABASE_URL and
@@ -205,7 +209,6 @@ jobs:
             --label "org.opencontainers.image.revision=$DEPLOY_SHA" \
             --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" \
             -t "$IMG:$DEPLOY_SHA" \
-            -t "$IMG:latest" \
             --metadata-file "$RUNNER_TEMP/build-metadata.json" \
             --push \
             .
@@ -216,6 +219,7 @@ jobs:
             exit 1
           fi
           echo "image_uri=$IMG@$DIGEST" >>"$GITHUB_OUTPUT"
+          echo "digest=$DIGEST" >>"$GITHUB_OUTPUT"
 
       # The ECS service is created by oxy-infra (app-schedio.tf) from this
       # image, so the very first run pushes and stops here. That is the designed
@@ -234,6 +238,33 @@ jobs:
           fi
           echo "active=true" >>"$GITHUB_OUTPUT"
 
+      # What a failed release returns to, resolved BEFORE anything changes: the
+      # running release, pinned to its digest. The base revision Terraform
+      # registered named `:latest`, and rolling back to a tag starts whatever the
+      # tag points at by then — the failed release itself, while this workflow
+      # still moved `:latest`. The script also keeps that digest in ECR under a
+      # `deployed-` tag, and fails here if it is already gone.
+      - name: Pin the rollback target
+        if: steps.service.outputs.active == 'true'
+        id: rollback_target
+        run: |
+          set -euo pipefail
+          target=$(bash scripts/pin-ecs-rollback-target.sh "$CLUSTER" "$APP" "$APP" "$ECR_REGISTRY/oxy/$APP" | tail -1)
+          case "$target" in arn:aws:ecs:*) ;; *) echo "::error::no rollback target resolved"; exit 1 ;; esac
+          echo "task_definition=$target" >>"$GITHUB_OUTPUT"
+          echo "rollback target: $target"
+
+      # Keep this release under the lifecycle-managed `deployed-<sha>` tags, so
+      # it stays pullable as the NEXT release's rollback target. Re-tagged by
+      # digest: ECR refuses the write unless the manifest still hashes to it.
+      - name: Tag the released image
+        if: steps.service.outputs.active == 'true'
+        env:
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: bash scripts/tag-ecr-image.sh "oxy/$APP" "$DIGEST" "deployed-$DEPLOY_SHA"
+
+      # Only the image changes. Environment and secrets are owned by oxy-infra
+      # and carried forward from the running revision.
       - name: Register immutable task definition
         if: steps.service.outputs.active == 'true'
         id: task_definition
@@ -243,32 +274,7 @@ jobs:
           set -euo pipefail
           current_task_definition=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
             --query 'services[0].taskDefinition' --output text)
-          echo "previous_task_definition=$current_task_definition" >>"$GITHUB_OUTPUT"
-          source_file=$(mktemp)
-          rendered_file=$(mktemp)
-          trap 'rm -f "$source_file" "$rendered_file"' EXIT
-          aws ecs describe-task-definition --task-definition "$current_task_definition" \
-            --query taskDefinition --output json >"$source_file"
-
-          # Only the image changes. Environment and secrets are owned by
-          # oxy-infra and carried forward from the running revision.
-          jq --arg app "$APP" --arg image "$IMAGE_URI" '
-              .containerDefinitions |= map(if .name == $app then .image = $image else . end)
-              | del(
-                  .taskDefinitionArn,
-                  .revision,
-                  .status,
-                  .requiresAttributes,
-                  .compatibilities,
-                  .registeredAt,
-                  .registeredBy,
-                  .deregisteredAt
-                )
-            ' "$source_file" >"$rendered_file"
-
-          task_definition_arn=$(aws ecs register-task-definition \
-            --cli-input-json "file://$rendered_file" \
-            --query 'taskDefinition.taskDefinitionArn' --output text)
+          task_definition_arn=$(bash scripts/register-task-revision.sh "$current_task_definition" "$APP" "$IMAGE_URI")
           echo "task_definition_arn=$task_definition_arn" >>"$GITHUB_OUTPUT"
 
       # A one-shot on the image about to serve, with the service's own network
@@ -341,21 +347,35 @@ jobs:
             steps.ecs_deploy.outputs.deployment_started == 'true'
           }}
         env:
-          PREVIOUS_TASK_DEFINITION: ${{ steps.task_definition.outputs.previous_task_definition }}
+          PREVIOUS_TASK_DEFINITION: ${{ steps.rollback_target.outputs.task_definition }}
         run: |
           set -euo pipefail
           if [ -z "$PREVIOUS_TASK_DEFINITION" ]; then
             echo "::error::No previous task definition was recorded for rollback"
             exit 1
           fi
+          previous_image=$(aws ecs describe-task-definition --task-definition "$PREVIOUS_TASK_DEFINITION" \
+            --query "taskDefinition.containerDefinitions[?name=='$APP'].image | [0]" --output text)
+          if [[ "$previous_image" != "$ECR_REGISTRY/oxy/$APP@"* || ! "${previous_image#*@}" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::rollback target $PREVIOUS_TASK_DEFINITION names $previous_image, not a digest; refusing to roll back to a moving tag"
+            exit 1
+          fi
           rollback_json=$(aws ecs update-service \
             --cluster "$CLUSTER" \
             --service "$APP" \
             --task-definition "$PREVIOUS_TASK_DEFINITION")
-          rollback_deployment_id=$(jq -r '.service.deployments[] | select(.status == "PRIMARY") | .id' <<<"$rollback_json" | head -1)
+          rollback_deployment_id=$(jq -r --arg task_definition "$PREVIOUS_TASK_DEFINITION" \
+            '[.service.deployments[] | select(.status == "PRIMARY" and .taskDefinition == $task_definition)]
+             | if length == 1 then .[0].id else "" end' <<<"$rollback_json")
           if [ -z "$rollback_deployment_id" ]; then
-            echo "::error::ECS returned no primary rollback deployment id"
+            echo "::error::ECS returned no primary rollback deployment for $PREVIOUS_TASK_DEFINITION"
             exit 1
           fi
           bash scripts/wait-for-ecs-deployment.sh "$CLUSTER" "$APP" "$rollback_deployment_id"
-          echo "Rolled back to $PREVIOUS_TASK_DEFINITION"
+          live_task_definition=$(aws ecs describe-services --cluster "$CLUSTER" --services "$APP" \
+            --query 'services[0].taskDefinition' --output text)
+          if [ "$live_task_definition" != "$PREVIOUS_TASK_DEFINITION" ]; then
+            echo "::error::Rollback left $live_task_definition live instead of $PREVIOUS_TASK_DEFINITION"
+            exit 1
+          fi
+          echo "Rolled back to $PREVIOUS_TASK_DEFINITION ($previous_image)"

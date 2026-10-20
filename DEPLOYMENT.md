@@ -15,6 +15,14 @@ service, registers the capability catalog with Oxy, smokes `/api/health` and
 rolls back on failure. `.github/workflows/deploy-cloudflare.yml` exports and
 deploys the web app the same way.
 
+Images are immutable: the deploy pushes `oxy/schedio:<sha>` (never `:latest`)
+and every revision it registers names its image by digest. Before it changes
+anything it pins the rollback target, the running release at the digest its
+tasks pulled (`scripts/pin-ecs-rollback-target.sh`), and tags it and the new
+image `deployed-<sha>` so ECR's lifecycle policy keeps them. A failed release
+therefore returns to exactly the image that was serving, never to a tag that
+has since moved.
+
 ## Required configuration
 
 Environment and secrets are owned by `oxy-infra`, never by this repository or
