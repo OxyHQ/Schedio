@@ -15,7 +15,7 @@
       "distribution": "internal"
     },
     "production": {
-      "node": "20.0.0",
+      "node": "24.20.0",
       "android": {
         "buildType": "apk"
       },
