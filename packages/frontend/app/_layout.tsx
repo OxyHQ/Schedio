@@ -32,7 +32,7 @@ import { BloomThemeProvider } from '@oxy.so/bloom/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { useIsScreenNotMobile } from '@/hooks/useOptimizedMediaQuery';
 import { useTheme } from '@/hooks/useTheme';
-import { useOxy } from '@oxy.so/services/ui/client';
+import { useAccountColor, useOxy } from '@oxy.so/services/ui/client';
 
 // Services & Utils
 import { AppInitializer } from '@/lib/appInitializer';
@@ -72,6 +72,9 @@ interface MainLayoutProps {
 const MainLayout: React.FC<MainLayoutProps> = memo(({ isScreenNotMobile }) => {
   const theme = useTheme();
   const { user: currentUser } = useOxy();
+  // The Oxy account colour is the app's accent: applied once, below both the
+  // Oxy and Bloom providers.
+  useAccountColor();
 
   const needsAuth = !currentUser;
   const shouldShowBottomBar = !isScreenNotMobile;

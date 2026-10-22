@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, ScrollView, Switch } from 'react-native';
 import { useAppearanceStore } from '@/stores/appearanceStore';
 import { Header } from '@/components/layout/Header';
@@ -8,7 +9,17 @@ import { router } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { LogoIcon } from '@/assets/logo';
-import { COLOR_THEMES } from '@/styles/colorThemes';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from '@oxy.so/bloom/select';
+import { toast } from '@oxy.so/bloom/toast';
+import { COLOR_PRESET_REGISTRY } from '@oxy.so/bloom/theme';
+import { useAccountColorSave } from '@oxy.so/services/ui/client';
 import { SPACING, SPACING_CLASSES } from '@/constants/spacing';
 
 // App icon options (visual only for now)
@@ -24,8 +35,12 @@ export default function AppearanceSettingsScreen() {
   const loadMySettings = useAppearanceStore((state) => state.loadMySettings);
   const updateMySettings = useAppearanceStore((state) => state.updateMySettings);
   const theme = useTheme();
+  const { t } = useTranslation();
+  const { colors: allowedColors, value: colorValue, saveColor } = useAccountColorSave();
+  const colors = COLOR_PRESET_REGISTRY.filter(({ name }) => allowedColors.includes(name)).map(
+    ({ name, displayName }) => ({ value: name, label: displayName }),
+  );
 
-  const [selectedColorThemeId, setSelectedColorThemeId] = useState('classic');
   const [selectedThemeMode, setSelectedThemeMode] = useState<'light' | 'dark' | 'system'>('system');
   const [selectedIconId, setSelectedIconId] = useState('default');
   const [autoNightMode, setAutoNightMode] = useState(false);
@@ -34,55 +49,22 @@ export default function AppearanceSettingsScreen() {
     loadMySettings();
   }, [loadMySettings]);
 
-  // Derive selected color theme and mode from current settings
+  // Derive the selected mode from current settings
   useEffect(() => {
     if (mySettings) {
       const mode = mySettings.appearance?.themeMode || 'system';
-      const colorTheme = mySettings.appearance?.colorTheme || 'classic';
       setSelectedThemeMode(mode);
-      setSelectedColorThemeId(colorTheme);
     }
   }, [mySettings]);
-
-  // Get the effective theme mode (resolve 'system' to light or dark based on device settings)
-  const effectiveMode = useMemo(() => {
-    if (selectedThemeMode === 'system') {
-      return theme.isDark ? 'dark' : 'light';
-    }
-    return selectedThemeMode;
-  }, [selectedThemeMode, theme.isDark]);
-
-  const selectedColorTheme = useMemo(
-    () => COLOR_THEMES.find((t) => t.id === selectedColorThemeId) || COLOR_THEMES[0],
-    [selectedColorThemeId],
-  );
-
-  const onSelectColorTheme = useCallback(
-    async (colorTheme: (typeof COLOR_THEMES)[0]) => {
-      setSelectedColorThemeId(colorTheme.id);
-      await updateMySettings({
-        appearance: {
-          themeMode: selectedThemeMode,
-          colorTheme: colorTheme.id,
-          primaryColor: colorTheme.primaryColor,
-        },
-      });
-    },
-    [updateMySettings, selectedThemeMode],
-  );
 
   const onSelectThemeMode = useCallback(
     async (mode: 'light' | 'dark' | 'system') => {
       setSelectedThemeMode(mode);
       await updateMySettings({
-        appearance: {
-          themeMode: mode,
-          colorTheme: selectedColorThemeId,
-          primaryColor: selectedColorTheme.primaryColor,
-        },
+        appearance: { themeMode: mode },
       });
     },
-    [updateMySettings, selectedColorThemeId, selectedColorTheme],
+    [updateMySettings],
   );
 
   return (
@@ -116,7 +98,7 @@ export default function AppearanceSettingsScreen() {
                 key={mode}
                 className={`flex-1 py-${SPACING.item.gap} px-${SPACING.item.paddingHorizontal} rounded-xl border items-center justify-center`}
                 style={{
-                  backgroundColor: isSelected ? selectedColorTheme.primaryColor : theme.colors.card,
+                  backgroundColor: isSelected ? theme.colors.primary : theme.colors.card,
                   borderColor: theme.colors.border,
                 }}
                 onPress={() => onSelectThemeMode(mode)}
@@ -136,62 +118,37 @@ export default function AppearanceSettingsScreen() {
           })}
         </View>
 
-        {/* COLOR THEME */}
+        {/* ACCENT COLOR: the Oxy account colour */}
         <Text
           className={`${SPACING_CLASSES.sectionTitle} ${SPACING_CLASSES.sectionGap}`}
           style={{ color: theme.colors.textSecondary }}
         >
-          COLOR THEME
+          {t('settings.accentColor.title')}
         </Text>
-
-        {/* Color theme picker */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          className={`pb-${SPACING.content.gapLarge}`}
-          contentContainerStyle={{ gap: 12 }}
-        >
-          {COLOR_THEMES.map((colorTheme) => {
-            const isSelected = selectedColorThemeId === colorTheme.id;
-            const variant = colorTheme[effectiveMode];
-            return (
-              <TouchableOpacity
-                key={colorTheme.id}
-                className="w-[90px] rounded-xl overflow-hidden items-center"
-                style={{
-                  borderColor: isSelected ? colorTheme.primaryColor : theme.colors.border,
-                  borderWidth: isSelected ? 2.5 : 1,
-                }}
-                onPress={() => onSelectColorTheme(colorTheme)}
-                activeOpacity={0.8}
-              >
-                {/* Mini preview */}
-                <View
-                  className="w-full h-[60px] p-2.5 justify-between"
-                  style={{ backgroundColor: variant.chatBackground }}
-                >
-                  <View
-                    className="w-[60%] h-3.5 rounded-[7px] self-start"
-                    style={{ backgroundColor: variant.bubbleReceived }}
-                  />
-                  <View
-                    className="w-[50%] h-3.5 rounded-[7px] self-end"
-                    style={{ backgroundColor: variant.bubbleSent }}
-                  />
-                </View>
-                <Text
-                  className="text-[13px] py-2"
-                  style={{
-                    color: isSelected ? colorTheme.primaryColor : theme.colors.text,
-                    fontWeight: isSelected ? '600' : '400',
-                  }}
-                >
-                  {colorTheme.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+        <View className={`mb-${SPACING.content.gapLarge}`}>
+          <Select
+            value={colorValue}
+            onValueChange={(value) => {
+              const next = colors.find((option) => option.value === value);
+              if (next)
+                saveColor(next.value).catch(() =>
+                  toast.error(t('settings.accentColor.saveFailed')),
+                );
+            }}
+          >
+            <SelectTrigger label={t('settings.accentColor.title')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent
+              items={colors}
+              renderItem={(item) => (
+                <SelectItem value={item.value} label={item.label}>
+                  <SelectItemText>{item.label}</SelectItemText>
+                </SelectItem>
+              )}
+            />
+          </Select>
+        </View>
 
         {/* Auto-Night Mode */}
         <View
@@ -207,7 +164,7 @@ export default function AppearanceSettingsScreen() {
             <Switch
               value={autoNightMode}
               onValueChange={setAutoNightMode}
-              trackColor={{ false: theme.colors.border, true: selectedColorTheme.primaryColor }}
+              trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
               thumbColor="#FFFFFF"
               ios_backgroundColor={theme.colors.border}
             />

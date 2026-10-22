@@ -577,5 +577,7 @@
   "alia.clientContext": "The person is using Schedio, an app for scheduling and managing social media posts across platforms. They are on the dashboard, where they can open the composer, the publishing queue, their analytics and their connected accounts.",
   "alia.suggestion.plan": "Help me plan a week of posts",
   "alia.suggestion.write": "Write a caption for my next post",
-  "alia.suggestion.times": "When is the best time to post?"
+  "alia.suggestion.times": "When is the best time to post?",
+  "settings.accentColor.title": "Accent color",
+  "settings.accentColor.saveFailed": "Couldn't save your color. Try again."
 }
