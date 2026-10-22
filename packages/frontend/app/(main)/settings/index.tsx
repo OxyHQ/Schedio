@@ -151,13 +151,10 @@ export default function SettingsScreen() {
     async (value: boolean) => {
       const newThemeMode = value ? 'dark' : 'light';
       await updateMySettings({
-        appearance: {
-          themeMode: newThemeMode,
-          primaryColor: mySettings?.appearance?.primaryColor,
-        },
+        appearance: { themeMode: newThemeMode },
       });
     },
-    [updateMySettings, mySettings?.appearance?.primaryColor],
+    [updateMySettings],
   );
 
   // The app's UI language is an Oxy-account concern, not Schedio's own:

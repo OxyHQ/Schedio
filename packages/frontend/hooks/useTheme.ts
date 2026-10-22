@@ -1,16 +1,31 @@
 import { useMemo } from 'react';
+import { useTheme as useBloomTheme } from '@oxy.so/bloom/theme';
 import { useColorScheme } from '@/hooks/useColorScheme';
-import { useAppearanceStore } from '@/stores/appearanceStore';
 import { colors as baseColors } from '@/styles/colors';
-import { getColorTheme } from '@/styles/colorThemes';
 
 /**
  * Centralized theme system that provides consistent theming across the app
  * Following Oxy AI Development Instructions for theming
  *
  * This hook does NOT depend on OxyProvider to avoid context errors.
- * It uses the local appearance store which syncs with Oxy settings.
+ * The accent is the Bloom theme's primary, which the Oxy account colour drives.
  */
+
+// Chat bubble palette per mode. The sent bubble wears the account colour.
+const CHAT_PALETTE = {
+  light: {
+    bubbleReceived: '#FFFFFF',
+    textSent: '#FFFFFF',
+    textReceived: '#000000',
+    chatBackground: '#E5DDD5',
+  },
+  dark: {
+    bubbleReceived: '#1E1E2E',
+    textSent: '#FFFFFF',
+    textReceived: '#E0E0E0',
+    chatBackground: '#0D0D1A',
+  },
+} as const;
 
 export interface ThemeColors {
   // Background colors
@@ -77,23 +92,12 @@ export interface Theme {
  */
 export function useTheme(): Theme {
   const colorScheme = useColorScheme();
-  // Use selector to only subscribe to mySettings.appearance, not the entire store
-  const mySettings = useAppearanceStore((state) => state.mySettings);
-
-  // Get user's selected color theme (if set) or use default
-  const selectedColorThemeId = mySettings?.appearance?.colorTheme || 'classic';
-  const selectedColorTheme = getColorTheme(selectedColorThemeId);
-
-  // Get user's custom primary color (if set) or use default
-  // This comes from Oxy user settings via the appearance store
-  const customPrimaryColor =
-    mySettings?.appearance?.primaryColor || selectedColorTheme.primaryColor;
+  const accent = useBloomTheme().colors.primary;
 
   const isDark = colorScheme === 'dark';
   const isLight = colorScheme === 'light';
 
-  // Get the appropriate theme variant (light or dark)
-  const themeVariant = isDark ? selectedColorTheme.dark : selectedColorTheme.light;
+  const chat = isDark ? CHAT_PALETTE.dark : CHAT_PALETTE.light;
 
   const colors = useMemo<ThemeColors>(() => {
     if (isDark) {
@@ -110,15 +114,15 @@ export function useTheme(): Theme {
         border: baseColors.COLOR_BLACK_LIGHT_3,
         borderLight: baseColors.COLOR_BLACK_LIGHT_2,
 
-        primary: customPrimaryColor,
+        primary: accent,
         primaryLight: baseColors.primaryLight_1,
         primaryDark: baseColors.primaryDark,
 
         secondary: baseColors.secondaryColor,
 
-        tint: customPrimaryColor,
+        tint: accent,
         icon: baseColors.COLOR_BLACK_LIGHT_5,
-        iconActive: customPrimaryColor,
+        iconActive: accent,
 
         success: '#10B981',
         error: '#EF4444',
@@ -129,14 +133,14 @@ export function useTheme(): Theme {
         shadow: 'rgba(0, 0, 0, 0.3)',
         overlay: 'rgba(0, 0, 0, 0.5)',
 
-        // Message bubble colors from selected theme
-        messageBubbleSent: themeVariant.bubbleSent,
-        messageBubbleReceived: themeVariant.bubbleReceived,
-        messageTextSent: themeVariant.textSent,
-        messageTextReceived: themeVariant.textReceived,
+        // Message bubble colors
+        messageBubbleSent: accent,
+        messageBubbleReceived: chat.bubbleReceived,
+        messageTextSent: chat.textSent,
+        messageTextReceived: chat.textReceived,
 
-        // Chat background from selected theme
-        chatBackground: themeVariant.chatBackground,
+        // Chat background
+        chatBackground: chat.chatBackground,
       };
     } else {
       return {
@@ -152,15 +156,15 @@ export function useTheme(): Theme {
         border: baseColors.COLOR_BLACK_LIGHT_6,
         borderLight: baseColors.COLOR_BLACK_LIGHT_7,
 
-        primary: customPrimaryColor,
+        primary: accent,
         primaryLight: baseColors.primaryLight_1,
         primaryDark: baseColors.primaryDark,
 
         secondary: baseColors.secondaryColor,
 
-        tint: customPrimaryColor,
+        tint: accent,
         icon: baseColors.COLOR_BLACK_LIGHT_4,
-        iconActive: customPrimaryColor,
+        iconActive: accent,
 
         success: '#10B981',
         error: '#EF4444',
@@ -171,17 +175,17 @@ export function useTheme(): Theme {
         shadow: 'rgba(0, 0, 0, 0.1)',
         overlay: 'rgba(0, 0, 0, 0.5)',
 
-        // Message bubble colors from selected theme
-        messageBubbleSent: themeVariant.bubbleSent,
-        messageBubbleReceived: themeVariant.bubbleReceived,
-        messageTextSent: themeVariant.textSent,
-        messageTextReceived: themeVariant.textReceived,
+        // Message bubble colors
+        messageBubbleSent: accent,
+        messageBubbleReceived: chat.bubbleReceived,
+        messageTextSent: chat.textSent,
+        messageTextReceived: chat.textReceived,
 
-        // Chat background from selected theme
-        chatBackground: themeVariant.chatBackground,
+        // Chat background
+        chatBackground: chat.chatBackground,
       };
     }
-  }, [isDark, customPrimaryColor, themeVariant]);
+  }, [isDark, accent, chat]);
 
   return {
     mode: colorScheme,
