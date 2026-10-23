@@ -60,11 +60,11 @@ export default function HideCountsScreen() {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
         if (!mounted) return;
-        setSettings(response.data?.privacy || {});
+        setSettings(response.privacy || {});
       } catch (error) {
         console.warn('Error loading count settings:', error);
       } finally {

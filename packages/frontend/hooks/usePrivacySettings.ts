@@ -36,11 +36,11 @@ export function usePrivacySettings(userId?: string | null): PrivacySettings | nu
 
     const loadSettings = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           `/profile/settings/${userId}`,
         );
-        if (response.data?.privacy) {
-          setSettings(response.data.privacy);
+        if (response.privacy) {
+          setSettings(response.privacy);
         } else {
           // Default to public if no settings exist
           setSettings({
@@ -117,11 +117,11 @@ export function useCurrentUserPrivacySettings(): PrivacySettings | null {
 
       // Then fetch fresh data from API
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
-        if (response.data?.privacy) {
-          const freshSettings = response.data.privacy;
+        if (response.privacy) {
+          const freshSettings = response.privacy;
           cachedPrivacySettings = freshSettings;
           setSettings(freshSettings);
           // Cache the settings for next time

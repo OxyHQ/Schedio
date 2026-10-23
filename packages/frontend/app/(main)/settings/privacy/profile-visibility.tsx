@@ -53,11 +53,11 @@ export default function ProfileVisibilityScreen() {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
         if (!mounted) return;
-        setSettings(response.data?.privacy || { profileVisibility: 'public' });
+        setSettings(response.privacy || { profileVisibility: 'public' });
       } catch (error) {
         console.warn('Error loading profile visibility:', error);
         if (mounted) setSettings({ profileVisibility: 'public' });

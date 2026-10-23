@@ -8,7 +8,10 @@ import { SCHEDIO_CAPABILITY_CATALOG } from '../capabilities/schedio.catalog';
 const execute = mock(async () => ({ draft: { id: 'draft-1', status: 'draft' } }));
 mock.module('../capabilities/schedio.handlers', () => ({ executeSchedioCatalogTool: execute }));
 mock.module('../capabilities/oxy-service-client.js', () => ({
-  requiredOxyServiceToken: async () => 'test-service',
+  oxyAuthorityTransport: () => ({
+    fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
+    dispose() {},
+  }),
 }));
 const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'EdDSA' };

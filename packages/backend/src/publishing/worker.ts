@@ -1,6 +1,12 @@
 import { randomUUID } from 'node:crypto';
 import { and, asc, eq, lte, sql } from 'drizzle-orm';
-import { MentionPublishingClient, MentionPublishingError } from '@oxy.so/mention-sdk';
+import {
+  mentionForOxyService,
+  MentionServiceError,
+  type MentionRequester,
+  type MentionServiceClient,
+} from '@oxy.so/mention-sdk/server';
+import { oxyServiceClient } from '../capabilities/oxy-service-client';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { posts, deliveries, organizationPolicies } from '../db/schema';
@@ -106,10 +112,12 @@ export async function dispatch(
   claim: ClaimedDelivery,
   provider: {
     json: typeof upstreamJson;
-    mention: (token: string) => Pick<MentionPublishingClient, 'identity' | 'publish'>;
+    mention: (
+      requester: MentionRequester,
+    ) => Pick<MentionServiceClient, 'identity' | 'publish' | 'dispose'>;
   } = {
     json: upstreamJson,
-    mention: (accessToken) => new MentionPublishingClient({ accessToken }),
+    mention: (requester) => mentionForOxyService(oxyServiceClient(), { requester }),
   },
 ): Promise<DispatchResult> {
   try {
@@ -137,23 +145,41 @@ export async function dispatch(
       )
         return { status: 'failed', error: 'Destination no longer belongs to this workspace' };
       try {
+        if (account.platform === 'mention') {
+          if (!currentPost.oxyTaskId)
+            return {
+              status: 'failed',
+              error: 'Publishing authority is missing; reschedule from your Oxy account',
+            };
+          const accountId = currentPost.organizationId ?? currentPost.userId;
+          const client = provider.mention({ accountId, taskId: currentPost.oxyTaskId });
+          try {
+            const identity = await client.identity();
+            if (
+              identity.oxyUserId !== accountId ||
+              account.platformUserId !== `${account.instance}|${accountId}`
+            )
+              return {
+                status: 'failed',
+                error: 'Mention account differs from the publishing workspace',
+              };
+            const result = await client.publish(
+              { content: { text: claim.post.content }, visibility: 'public', status: 'published' },
+              claim.delivery.effectKey,
+            );
+            return { status: 'succeeded', url: result.url };
+          } finally {
+            client.dispose();
+          }
+        }
+        if (account.platform !== 'mastodon')
+          return { status: 'failed', error: 'Unsupported destination' };
+        if (!account.accessTokenCiphertext)
+          return { status: 'failed', error: 'Reconnect the Mastodon destination' };
         const accessToken = decryptSocialToken(account.accessTokenCiphertext, {
           accountId: account.id,
           kind: 'access',
         });
-        if (account.platform === 'mention') {
-          const client = provider.mention(accessToken);
-          const identity = await client.identity();
-          if (account.platformUserId !== `${account.instance}|${identity.oxyUserId}`)
-            return { status: 'failed', error: 'Connected Mention account changed; reconnect' };
-          const result = await client.publish(
-            { content: { text: claim.post.content }, visibility: 'public', status: 'published' },
-            claim.delivery.effectKey,
-          );
-          return { status: 'succeeded', url: result.url };
-        }
-        if (account.platform !== 'mastodon')
-          return { status: 'failed', error: 'Unsupported destination' };
         // Recheck immediately before dispatch; a worker may have paused after claiming.
         if (
           claim.delivery.attempts > 1 &&
@@ -197,7 +223,7 @@ export async function dispatch(
 }
 function dispatchError(error: unknown): DispatchResult {
   if (error instanceof PublishingError) return { status: 'failed', error: error.message };
-  if (error instanceof MentionPublishingError && !error.unknownOutcome)
+  if (error instanceof MentionServiceError && !error.unknownOutcome)
     return { status: 'failed', error: `Mention refused publication (${error.status})` };
   return {
     status: 'unknown',

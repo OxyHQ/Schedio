@@ -13,6 +13,7 @@ describe('PostgreSQL API wire contract', () => {
       revision: 1,
       approvedRevision: null,
       approvedBy: null,
+      oxyTaskId: null,
       queuePosition: 0,
       content: 'hello',
       media: [],
@@ -30,6 +31,7 @@ describe('PostgreSQL API wire contract', () => {
     expect(dto.platforms).toEqual(['507f191e810c19729de860ea']);
     expect(dto).not.toHaveProperty('_id');
     expect(dto).not.toHaveProperty('platformIds');
+    expect(dto).not.toHaveProperty('oxyTaskId');
   });
 
   it('uses the canonical allowAllos setting without alias keys', () => {

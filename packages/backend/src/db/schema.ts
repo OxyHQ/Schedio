@@ -54,7 +54,7 @@ export const socialAccounts = pgTable(
     oauthClientId: text(),
     oauthClientSecretCiphertext: text(),
     platformUsername: text().notNull(),
-    accessTokenCiphertext: text().notNull(),
+    accessTokenCiphertext: text(),
     refreshTokenCiphertext: text(),
     tokenExpiresAt: timestamp({ withTimezone: true, mode: 'date' }),
     profileImageUrl: text(),
@@ -73,7 +73,7 @@ export const socialAccounts = pgTable(
     check('social_accounts_platform_check', oneOf(table.platform, SOCIAL_PLATFORMS)),
     check(
       'social_accounts_access_token_ciphertext_check',
-      sql`${table.accessTokenCiphertext} like 'v1:%'`,
+      sql`(${table.platform} = 'mention' and ${table.accessTokenCiphertext} is null) or (${table.accessTokenCiphertext} is not null and ${table.accessTokenCiphertext} like 'v1:%')`,
     ),
     check(
       'social_accounts_refresh_token_ciphertext_check',
@@ -92,6 +92,7 @@ export const posts = pgTable(
     revision: integer().notNull().default(1),
     approvedRevision: integer(),
     approvedBy: text(),
+    oxyTaskId: text(),
     queuePosition: integer().notNull().default(0),
     media: text().array().notNull().default([]),
     platformIds: text().array().notNull().default([]),

@@ -42,15 +42,11 @@ export default function AccountsScreen() {
       .catch((e) => setMessage(publishingError(e)))
       .finally(() => setBusy(false));
   }, [params.state, params.code, params.error, reload, router, organizationId, select]);
-  async function connect(platform: 'mention' | 'mastodon') {
+  async function connect() {
     setBusy(true);
     setMessage('');
     try {
-      const result = await schedio.startConnection(
-        platform,
-        platform === 'mastodon' ? instance : undefined,
-        organizationId,
-      );
+      const result = await schedio.startConnection('mastodon', instance, organizationId);
       await Linking.openURL(result.authorizationUrl);
     } catch (e) {
       setMessage(publishingError(e));
@@ -71,8 +67,9 @@ export default function AccountsScreen() {
         }}
       >
         <Workspace />
-        <Text>Connect an account to authorize publishing from this workspace.</Text>
-        <Button title="Connect Mention" disabled={busy} onPress={() => void connect('mention')} />
+        <Text>
+          Mention is available for this workspace. You can also connect a Mastodon account.
+        </Text>
         <TextInput
           accessibilityLabel="Mastodon server"
           value={instance}
@@ -80,24 +77,28 @@ export default function AccountsScreen() {
           autoCapitalize="none"
           style={{ borderWidth: 1, padding: 12 }}
         />
-        <Button title="Connect Mastodon" disabled={busy} onPress={() => void connect('mastodon')} />
+        <Button title="Connect Mastodon" disabled={busy} onPress={() => void connect()} />
         {accounts.map((account) => (
           <View key={account.id} style={{ padding: 12, borderWidth: 1, gap: 8 }}>
             <Text>
-              {account.platform}: @{account.platformUsername}
+              {account.platform === 'mention'
+                ? 'Mention'
+                : `Mastodon: @${account.platformUsername}`}
             </Text>
-            <Button
-              title="Disconnect"
-              disabled={busy}
-              onPress={() => {
-                setBusy(true);
-                void schedio
-                  .disconnect(account.id, organizationId)
-                  .then(reload)
-                  .catch((e) => setMessage(publishingError(e)))
-                  .finally(() => setBusy(false));
-              }}
-            />
+            {account.platform === 'mastodon' && (
+              <Button
+                title="Disconnect"
+                disabled={busy}
+                onPress={() => {
+                  setBusy(true);
+                  void schedio
+                    .disconnect(account.id, organizationId)
+                    .then(reload)
+                    .catch((e) => setMessage(publishingError(e)))
+                    .finally(() => setBusy(false));
+                }}
+              />
+            )}
           </View>
         ))}
         {organizationId && (

@@ -12,6 +12,7 @@ import { getDb } from '../db';
 import { posts, organizationPolicies, oauthStates } from '../db/schema';
 import { createHash } from 'node:crypto';
 import { authorize } from './authority';
+import { scheduleAuthority } from './taskAuthority';
 import { ListQuery } from '@schedio/contracts';
 import { PublishingError, publishingErrors, route } from './errors';
 import {
@@ -79,7 +80,9 @@ router.post(
   route(async (req, res) => {
     const { revision } = RevisionInput.parse(req.body);
     const { scope } = await postScope(req);
-    res.json(await enqueue(scope, param(req), revision, new Date()));
+    res.json(
+      await enqueue(scope, param(req), revision, new Date(), await scheduleAuthority(req, scope)),
+    );
   }),
 );
 router.post(
@@ -89,7 +92,15 @@ router.post(
     if (new Date(scheduledAt) <= new Date())
       throw new PublishingError(422, 'validation_failed', 'Choose a future publishing time');
     const { scope } = await postScope(req);
-    res.json(await enqueue(scope, param(req), revision, new Date(scheduledAt)));
+    res.json(
+      await enqueue(
+        scope,
+        param(req),
+        revision,
+        new Date(scheduledAt),
+        await scheduleAuthority(req, scope),
+      ),
+    );
   }),
 );
 router.get(
