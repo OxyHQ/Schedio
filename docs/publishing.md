@@ -51,3 +51,11 @@ Source checkpoint only; no deployment, registry publication or production writes
 The 2026-10-23 19:31 UTC read-only production census found zero social accounts, posts and deliveries (`first-party-root/schedio-counts-log.json` in organization scratch). There is no live queue to convert from own OAuth. Recheck immediately before cutover. If concurrent legacy Mention work appears, preserve its rows/effect keys and require an ordinary verified session to reschedule; never convert an external grant into global own authority. Historical external OAuth states fail closed for Mention; Mastodon exchange/refresh remains intact.
 
 Candidate validation passed 59 backend tests (disposable PostgreSQL and actual shared Oxy/Mention HTTP transport), backend build/typecheck, frontend typecheck/web export, OpenAPI freshness, migration lock checks, Biome and Expo lint. The core 7 payload type guard also exposed old privacy callers reading an already unwrapped `.data`; they now consume the actual payload. Registry artifact provenance is checked again with the final published pins; temporary candidate overrides are never committed.
+
+Privacy data no longer uses a global persistent cache. Reads are bound to the
+verified current account, requested profile and session epoch; switching account
+or logging out discards pending replies and clears the displayed state. The main
+screen tree is keyed by account so old privacy forms are not reused. The legacy
+unscoped storage key is removed without reading it. Two HTTP/async regression
+tests cover a delayed previous-account response and logout/login to the same
+account; frontend typecheck and Expo lint pass.

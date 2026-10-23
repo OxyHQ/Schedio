@@ -16,7 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/hooks/useTheme';
 import { useTranslation } from 'react-i18next';
 import { authenticatedClient } from '@/utils/api';
-import { updatePrivacySettingsCache, type PrivacySettings } from '@/hooks/usePrivacySettings';
+import type { PrivacySettings } from '@/hooks/usePrivacySettings';
 
 const IconComponent = Ionicons as typeof Ionicons;
 
@@ -59,7 +59,6 @@ export default function HiddenWordsScreen() {
     setSaving(true);
     try {
       await authenticatedClient.put('/profile/settings', { privacy: next });
-      await updatePrivacySettingsCache(next);
     } catch (error) {
       console.warn('Error updating hidden words:', error);
       setSettings(previous);
