@@ -34,10 +34,10 @@ export default function PrivacySettingsScreen() {
   useEffect(() => {
     const loadPrivacySettings = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
-        const settings = response.data;
+        const settings = response;
         setPrivacySettings(settings?.privacy || { profileVisibility: 'public' });
         setLoading(false);
       } catch (error) {

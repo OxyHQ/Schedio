@@ -1,7 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { and, eq, isNull } from 'drizzle-orm';
 import { z } from 'zod';
-import { MentionPublishingClient } from '@oxy.so/mention-sdk';
 import { Account, ConnectionInput, ConnectionFinish } from '@schedio/contracts';
 import { getDb, type SchedioTransaction } from '../db';
 import { oauthStates, socialAccounts } from '../db/schema';
@@ -21,9 +20,7 @@ const tokenSchema = z.object({
   expires_in: z.number().positive().optional(),
   scope: z.string().optional(),
 });
-const OXY = 'https://api.oxy.so';
-const RESOURCE = 'https://mcp.mention.earth';
-const MENTION_SCOPE = 'social.accounts.read social.posts.publish';
+const MENTION = 'https://api.mention.earth';
 const MASTODON_SCOPE = 'read:accounts write:statuses';
 function hash(value: string) {
   return createHash('sha256').update(value).digest('hex');
@@ -34,7 +31,28 @@ function cipher(value: string, id: string) {
 export function accountDto(row: typeof socialAccounts.$inferSelect) {
   return Account.parse(row);
 }
+/** A destination projection of the Oxy account, never an OAuth connection. */
+export function mentionDestinationId(scope: Scope) {
+  return `mention:${hash(scope.organizationId ?? scope.userId)}`;
+}
+export async function ensureMentionDestination(scope: Scope) {
+  const accountId = scope.organizationId ?? scope.userId;
+  await getDb()
+    .insert(socialAccounts)
+    .values({
+      id: mentionDestinationId(scope),
+      userId: accountId,
+      organizationId: scope.organizationId,
+      platform: 'mention',
+      instance: MENTION,
+      platformUserId: `${MENTION}|${accountId}`,
+      platformUsername: accountId,
+      accessTokenCiphertext: null,
+    })
+    .onConflictDoNothing();
+}
 export async function listAccounts(scope: Scope) {
+  await ensureMentionDestination(scope);
   const rows = await getDb()
     .select()
     .from(socialAccounts)
@@ -48,7 +66,11 @@ export async function listAccounts(scope: Scope) {
     );
   return {
     items: rows
-      .filter((a) => a.platform === 'mention' || a.platform === 'mastodon')
+      .filter(
+        (a) =>
+          a.platform === 'mastodon' ||
+          (a.platform === 'mention' && a.id === mentionDestinationId(scope)),
+      )
       .map(accountDto),
     nextCursor: null,
   };
@@ -59,62 +81,37 @@ export async function startConnection(
   provider: ConnectionProvider = defaultProvider,
 ) {
   const input = ConnectionInput.parse(raw);
-  const instance =
-    input.platform === 'mention'
-      ? 'https://api.mention.earth'
-      : instanceOrigin(input.instance ?? '');
+  const instance = instanceOrigin(input.instance ?? '');
   const redirectUri = process.env.SOCIAL_OAUTH_REDIRECT_URI;
   if (!redirectUri || new URL(redirectUri).protocol !== 'https:')
     throw new PublishingError(503, 'service_unavailable', 'OAuth callback is not configured');
   const state = randomBytes(32).toString('base64url'),
     stateHash = hash(state),
     verifier = randomBytes(48).toString('base64url');
-  const registration = await provider.json(
-    input.platform === 'mention' ? `${OXY}/auth/mcp/oauth/register` : `${instance}/api/v1/apps`,
-    {
-      method: 'POST',
-      body:
-        input.platform === 'mention'
-          ? {
-              client_name: 'Schedio',
-              redirect_uris: [redirectUri],
-              grant_types: ['authorization_code', 'refresh_token'],
-              response_types: ['code'],
-              token_endpoint_auth_method: 'none',
-            }
-          : {
-              client_name: 'Schedio',
-              redirect_uris: redirectUri,
-              scopes: MASTODON_SCOPE,
-              website: 'https://schedio.app',
-            },
+  const registration = await provider.json(`${instance}/api/v1/apps`, {
+    method: 'POST',
+    body: {
+      client_name: 'Schedio',
+      redirect_uris: redirectUri,
+      scopes: MASTODON_SCOPE,
+      website: 'https://schedio.app',
     },
-  );
+  });
   if (registration.status >= 400)
     throw new PublishingError(422, 'validation_failed', 'The server could not register Schedio');
   const client = z
     .object({ client_id: z.string(), client_secret: z.string().optional() })
     .parse(registration.body);
-  let authorizationEndpoint = `${instance}/oauth/authorize`;
-  if (input.platform === 'mention') {
-    const discovery = await provider.json(`${OXY}/.well-known/oauth-authorization-server`);
-    authorizationEndpoint = z
-      .object({ authorization_endpoint: z.url() })
-      .parse(discovery.body).authorization_endpoint;
-    const host = new URL(authorizationEndpoint).origin;
-    if (host !== 'https://auth.oxy.so' && host !== OXY)
-      throw new Error('Unexpected Oxy authorization origin');
-  }
+  const authorizationEndpoint = `${instance}/oauth/authorize`;
   const url = new URL(authorizationEndpoint);
   url.search = new URLSearchParams({
     response_type: 'code',
     client_id: client.client_id,
     redirect_uri: redirectUri,
-    scope: input.platform === 'mention' ? MENTION_SCOPE : MASTODON_SCOPE,
+    scope: MASTODON_SCOPE,
     state,
     code_challenge: hashChallenge(verifier),
     code_challenge_method: 'S256',
-    ...(input.platform === 'mention' ? { resource: RESOURCE } : {}),
   }).toString();
   await getDb()
     .insert(oauthStates)
@@ -141,10 +138,12 @@ function hashChallenge(value: string) {
   return createHash('sha256').update(value).digest('base64url');
 }
 async function identify(platform: string, instance: string, token: string) {
-  if (platform === 'mention') {
-    const me = await new MentionPublishingClient({ accessToken: token }).identity();
-    return { id: me.oxyUserId, username: me.handle };
-  }
+  if (platform !== 'mastodon')
+    throw new PublishingError(
+      422,
+      'validation_failed',
+      'Only external Mastodon connections use OAuth',
+    );
   const response = await upstreamJson(`${instance}/api/v1/accounts/verify_credentials`, { token });
   if (response.status !== 200)
     throw new PublishingError(422, 'validation_failed', 'Provider authorization failed');
@@ -169,28 +168,28 @@ export async function finishConnection(
         'bad_request',
         'Connection request expired or belongs to another workspace',
       );
+    if (state.platform !== 'mastodon')
+      throw new PublishingError(
+        409,
+        'conflict',
+        'Mention is already available with your Oxy account',
+      );
     const secret = secretsSchema.parse(
       JSON.parse(
         decryptSocialToken(state.secretsCiphertext, { accountId: stateHash, kind: 'access' }),
       ),
     );
-    const result = await provider.json(
-      state.platform === 'mention'
-        ? `${OXY}/auth/mcp/oauth/token`
-        : `${state.instance}/oauth/token`,
-      {
-        method: 'POST',
-        form: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: secret.clientId,
-          ...(secret.clientSecret ? { client_secret: secret.clientSecret } : {}),
-          redirect_uri: secret.redirectUri,
-          code: input.code,
-          code_verifier: secret.verifier,
-          ...(state.platform === 'mention' ? { resource: RESOURCE } : {}),
-        }),
-      },
-    );
+    const result = await provider.json(`${state.instance}/oauth/token`, {
+      method: 'POST',
+      form: new URLSearchParams({
+        grant_type: 'authorization_code',
+        client_id: secret.clientId,
+        ...(secret.clientSecret ? { client_secret: secret.clientSecret } : {}),
+        redirect_uri: secret.redirectUri,
+        code: input.code,
+        code_verifier: secret.verifier,
+      }),
+    });
     if (result.status !== 200)
       throw new PublishingError(
         422,
@@ -199,13 +198,6 @@ export async function finishConnection(
       );
     const token = tokenSchema.parse(result.body);
     const identity = await provider.identify(state.platform, state.instance, token.access_token);
-    // A destination must be the selected Oxy organization for an organization connection.
-    if (state.platform === 'mention' && identity.id !== (scope.organizationId ?? scope.userId))
-      throw new PublishingError(
-        403,
-        'forbidden',
-        'Authorize the Mention account for this workspace',
-      );
     const existing = await tx.query.socialAccounts.findFirst({
       where: and(
         eq(socialAccounts.userId, scope.userId),
@@ -252,6 +244,12 @@ export async function usableAccount(
     .where(eq(socialAccounts.id, accountId))
     .for('update');
   if (!account?.isActive) throw new PublishingError(409, 'conflict', 'Destination disconnected');
+  if (account.platform === 'mention') {
+    const scope = { userId: account.userId, organizationId: account.organizationId };
+    if (account.id !== mentionDestinationId(scope) || account.accessTokenCiphertext !== null)
+      throw new PublishingError(409, 'conflict', 'Use the current Mention destination');
+    return account;
+  }
   if (account.tokenExpiresAt && account.tokenExpiresAt.getTime() < Date.now() + 60000) {
     if (!account.refreshTokenCiphertext || !account.oauthClientId)
       throw new PublishingError(409, 'conflict', 'Reconnect the destination');
@@ -259,28 +257,22 @@ export async function usableAccount(
       accountId,
       kind: 'refresh',
     });
-    const result = await provider.json(
-      account.platform === 'mention'
-        ? `${OXY}/auth/mcp/oauth/token`
-        : `${account.instance}/oauth/token`,
-      {
-        method: 'POST',
-        form: new URLSearchParams({
-          grant_type: 'refresh_token',
-          refresh_token: refresh,
-          client_id: account.oauthClientId,
-          ...(account.oauthClientSecretCiphertext
-            ? {
-                client_secret: decryptSocialToken(account.oauthClientSecretCiphertext, {
-                  accountId,
-                  kind: 'access',
-                }),
-              }
-            : {}),
-          ...(account.platform === 'mention' ? { resource: RESOURCE } : {}),
-        }),
-      },
-    );
+    const result = await provider.json(`${account.instance}/oauth/token`, {
+      method: 'POST',
+      form: new URLSearchParams({
+        grant_type: 'refresh_token',
+        refresh_token: refresh,
+        client_id: account.oauthClientId,
+        ...(account.oauthClientSecretCiphertext
+          ? {
+              client_secret: decryptSocialToken(account.oauthClientSecretCiphertext, {
+                accountId,
+                kind: 'access',
+              }),
+            }
+          : {}),
+      }),
+    });
     if (result.status !== 200)
       throw new PublishingError(409, 'conflict', 'Reconnect the destination');
     const token = tokenSchema.parse(result.body);
@@ -318,6 +310,12 @@ export async function disconnect(scope: Scope, id: string) {
       )
       .for('update');
     if (!account) throw new PublishingError(404, 'not_found', 'Account not found');
+    if (account.platform === 'mention')
+      throw new PublishingError(
+        422,
+        'validation_failed',
+        'Mention belongs to the current Oxy account',
+      );
     await tx
       .update(socialAccounts)
       .set({

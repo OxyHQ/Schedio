@@ -49,11 +49,11 @@ export default function RestrictedScreen() {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
         if (!mounted) return;
-        const privacy = response.data?.privacy || {};
+        const privacy = response.privacy || {};
         setSettings(privacy);
         const ids = privacy.restrictedUsers ?? [];
         if (ids.length > 0) {

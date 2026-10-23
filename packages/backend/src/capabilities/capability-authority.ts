@@ -8,7 +8,7 @@ import {
 import { CapabilityTicketError, verifyCapabilityTicket } from '@oxy.so/core/server';
 import { z } from 'zod';
 
-import { requiredOxyServiceToken } from './oxy-service-client.js';
+import { oxyAuthorityTransport } from './oxy-service-client.js';
 
 type AuditResult = z.infer<typeof auditResultSchema>;
 
@@ -68,13 +68,15 @@ export async function verifySchedioCapabilityTicket(
 }
 
 async function authorityRequest(path: string, body: Record<string, unknown>): Promise<unknown> {
-  const token = await requiredOxyServiceToken();
-  const response = await fetch(`${OXY_API_URL}${path}`, {
-    method: 'POST',
-    headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-    body: JSON.stringify(body),
-    signal: AbortSignal.timeout(10_000),
-  });
+  const transport = oxyAuthorityTransport();
+  const response = await transport
+    .fetch(`${OXY_API_URL}${path}`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
+    })
+    .finally(() => transport.dispose());
   if (!response.ok) throw new Error(`Oxy capability authority returned ${response.status}`);
   return response.json();
 }

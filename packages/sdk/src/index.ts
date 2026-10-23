@@ -89,11 +89,7 @@ export class SchedioClient {
       }),
     );
   }
-  async startConnection(
-    platform: 'mention' | 'mastodon',
-    instance?: string,
-    organizationId?: string,
-  ) {
+  async startConnection(platform: 'mastodon', instance?: string, organizationId?: string) {
     return ConnectionStart.parse(
       await this.request('POST', '/api/accounts/connect', {
         platform,
