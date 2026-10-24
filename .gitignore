@@ -110,3 +110,6 @@ temp/
 # Local development
 .local/
 .local-pg/
+
+# Local git worktrees
+.worktrees/

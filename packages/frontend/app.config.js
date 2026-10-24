@@ -16,9 +16,15 @@ module.exports = (_config) => {
    */
   const PLATFORM = process.env.EAS_BUILD_PLATFORM;
 
-  const IS_TESTFLIGHT = process.env.EXPO_PUBLIC_ENV === 'testflight';
-  const IS_PRODUCTION = process.env.EXPO_PUBLIC_ENV === 'production';
-  const IS_DEV = !IS_TESTFLIGHT || !IS_PRODUCTION;
+  // Dev-only entries (the local and LAN link hosts) ship only when the build
+  // asks for them explicitly with `APP_VARIANT=development`; anything else,
+  // unset included, is the production app. This used to be
+  // `IS_DEV = !IS_TESTFLIGHT || !IS_PRODUCTION`, read off `EXPO_PUBLIC_ENV`: true
+  // for every build that was not BOTH TestFlight and production at once, which
+  // is every build, so release builds claimed `http://localhost:3000` and a LAN
+  // address inside the verified filter. `__tests__/appConfig.test.js` asserts a
+  // production config names no local host.
+  const IS_DEV_VARIANT = process.env.APP_VARIANT === 'development';
 
   // Check if google-services.json exists
   const googleServicesPath = path.resolve(__dirname, '../../google-services.json');
@@ -62,29 +68,30 @@ module.exports = (_config) => {
                 scheme: 'https',
                 host: 'schedio.app',
               },
-              IS_DEV && {
-                scheme: 'http',
-                host: 'localhost:3001',
-              },
-              IS_DEV && {
-                scheme: 'http',
-                host: '192.168.86.44:3001',
-              },
-              IS_DEV && {
-                scheme: 'http',
-                host: '192.168.86.44:3000',
-              },
               {
                 scheme: 'https',
                 host: 'oxy.so',
               },
-              IS_DEV && {
-                scheme: 'http',
-                host: 'localhost:3000',
-              },
             ],
             category: ['BROWSABLE', 'DEFAULT'],
           },
+          // The development variant also opens links to local web servers. Its
+          // own filter, without autoVerify: an http host can never verify, and
+          // in a verified filter it would only fail it.
+          ...(IS_DEV_VARIANT
+            ? [
+                {
+                  action: 'VIEW',
+                  data: [
+                    { scheme: 'http', host: 'localhost', port: '3000' },
+                    { scheme: 'http', host: 'localhost', port: '3001' },
+                    { scheme: 'http', host: '192.168.86.44', port: '3000' },
+                    { scheme: 'http', host: '192.168.86.44', port: '3001' },
+                  ],
+                  category: ['BROWSABLE', 'DEFAULT'],
+                },
+              ]
+            : []),
         ],
         softwareKeyboardLayoutMode: 'pan',
       },
