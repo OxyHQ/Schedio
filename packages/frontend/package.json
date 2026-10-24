@@ -15,6 +15,7 @@
     "build-web:prod": "expo export --platform web --output-dir dist",
     "lint": "biome check --error-on-warnings . && expo lint",
     "lint:expo": "expo lint",
+    "test": "bun test ./__tests__",
     "clean": "rm -rf dist .expo"
   },
   "dependencies": {
