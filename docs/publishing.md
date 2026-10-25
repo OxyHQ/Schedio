@@ -76,3 +76,18 @@ changed-file Biome pass with these published packages. Source readiness does not
 claim rollout: Mention's matching receiver must be live first, then recheck the
 legacy queue census and apply the pre migration before enabling Schedio callers.
 Mastodon retains its external OAuth grant and provider state throughout.
+
+
+## Alia client transport
+
+The frontend source pins published Alia SDK 22.0.0 with Core 7.3 / services 13.
+Conversation, streaming and audio requests follow the shared Oxy session and its
+account lifecycle; no local bearer refresh or app permission prompt is added.
+Frontend types and account-switch privacy regressions pass against registry bytes.
+
+Public launch is deferred. The [prelaunch runbook](prelaunch.md) provides the
+alternative to a live rollout: hold deployment, verify the old producer is
+stopped, expire its exact workload binding and complete the required lifetime
+drain. Once that parking is verified, Schedio's missing DNS does not block global
+v1 retirement. Source alone is not proof of parking. Keep public smoke and
+rollback checks unchanged for the eventual verified protocol-2 launch.
