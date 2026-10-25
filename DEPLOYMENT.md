@@ -1,5 +1,11 @@
 # Deploying Schedio
 
+**Prelaunch is deferred (2026-10-25).** Both deploy workflows require the explicit
+repository variable `SCHEDIO_LAUNCH_ENABLED=true`; unset or false holds automatic
+releases and manual dispatch. CI remains enabled. Source readiness is not a live
+launch. Follow [the parking and launch runbook](docs/prelaunch.md) for the
+reversible runtime/binding hold, DB maintenance and verified protocol-2 restart.
+
 Production runs on Oxy's AWS account, declared in `oxy-infra`
 (`terraform-uswest2/app-schedio.tf` and `iam-schedio-deploy.tf`):
 
