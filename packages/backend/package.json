@@ -11,6 +11,7 @@
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "bun check",
     "test": "bun test --no-env-file --isolate ./src",
+    "test:deployment": "bun test --no-env-file ./src/__tests__/prelaunchDeployment.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "bun src/db/migrate.ts",
     "db:check-locks": "oxy-db-check-migration-locks --migrations=drizzle --after=1 --hot-tables=deliveries,posts,social_accounts,user_settings",
