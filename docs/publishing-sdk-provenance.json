@@ -1,16 +1,17 @@
 {
   "sourceRepository": "https://github.com/OxyHQ/Mention",
-  "sourceCommit": "9c9e0061cc3a6ca2eab826db288623ad1449f281",
+  "sourceCommit": "ac74c7f1203e096a0e0765ec7de1c9dd08761da8",
   "packages": {
     "@oxy.so/mention-contracts": {
-      "version": "0.1.3",
-      "sha256": "bb50322c371bfbdfb1ce2749b348b76ac3c1c076f2cb3f01f453236459c21c56",
-      "integrity": "sha512-7hX2Ht/vGrWjEapxNXz1X4/gSRZ5YfriRlzGbHCaBlMfIQ94H8i+g9Gbp56NQg5yYkNnj+SjznZ3hUNu2u3iNw=="
+      "version": "0.2.0",
+      "sha256": "f8b4ef9c33b88133bfa1c8c4aa080aa16427105d8b7c210b340d13d03805fc71",
+      "integrity": "sha512-qHf1t+VJQ9GbaguqXpWLm/yXanFprkpglr8N3kLuGu9ehK8G3OAafZ5uGUb4PmxiXCNgPkag1cW3CU01CyedPg=="
     },
     "@oxy.so/mention-sdk": {
-      "version": "0.1.3",
-      "sha256": "ed3f01ae73a80da5a59945726503b89a080c72bce4d5e7442b6a644409af6225",
-      "integrity": "sha512-aAjnCwPX1VlArbYBNZXIZrHLcbqltcdgVdhAo5aIvE26RWqVVKkb33VRwmz+2XGsTqcnRSBEq4XFAEZtwNrjrw=="
+      "version": "0.2.0",
+      "sha256": "b844a7decf9d8d64785ec2ac0cc410b42153e135e7bd5b6640fde46b3e8b648f",
+      "integrity": "sha512-Ma3bP803J7937lPVZ4bfxFZ6pUbO1prL/5k6F+mF1t0y71KneC1yUcC5O/zz36vh0TQho/q/Alc+mZ5ao2LDOw=="
     }
-  }
+  },
+  "releaseRun": "https://github.com/OxyHQ/Mention/actions/runs/40178334092"
 }

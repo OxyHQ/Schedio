@@ -46,7 +46,8 @@ After deploying this API, run `bun run --cwd packages/backend capabilities:regis
 
 ## First-party rollout
 
-Source checkpoint only; no deployment, registry publication or production writes are claimed. Publish and pin Oxy core 7/contracts 6 and the new Mention SDK/contracts, deploy Oxy's live task readers and Mention's own publishing receiver, then apply generated migration `0002_boring_spectrum` in the pre phase before deploying Schedio. Local candidate tarballs are validation only; final registry pins remain pending.
+Source checkpoint only; no deployment, registry publication or production writes are claimed. Publish and pin Oxy core 7/contracts 6 and the new Mention SDK/contracts, deploy Oxy's live task readers and Mention's own publishing receiver, then apply generated migration `0002_boring_spectrum` in the pre phase before deploying Schedio. The registry composition below satisfies the package gate; activation still
+requires the deployed Mention receiver and the ordered migration.
 
 The 2026-10-23 19:31 UTC read-only production census found zero social accounts, posts and deliveries (`first-party-root/schedio-counts-log.json` in organization scratch). There is no live queue to convert from own OAuth. Recheck immediately before cutover. If concurrent legacy Mention work appears, preserve its rows/effect keys and require an ordinary verified session to reschedule; never convert an external grant into global own authority. Historical external OAuth states fail closed for Mention; Mastodon exchange/refresh remains intact.
 
@@ -59,3 +60,19 @@ screen tree is keyed by account so old privacy forms are not reused. The legacy
 unscoped storage key is removed without reading it. Two HTTP/async regression
 tests cover a delayed previous-account response and logout/login to the same
 account; frontend typecheck and Expo lint pass.
+
+
+Published registry composition, 2026-10-25: Oxy core 7.3.0, contracts 6.0.0,
+services 13.0.0, MCP 1.4.0, protocol 1.5.1 and Mention SDK/contracts 0.2.0. The
+artifact receipt records the actual public tarball hashes/integrities and release
+source; no local tarball or override remains. Candidates were removed before an
+isolated-cache registry install, and frozen installation verifies the lock. The
+installed contracts declaration matches the public Zod 4 artifact. Frontend
+validation also uses Zod 4 with explicit record keys and issue diagnostics.
+
+All 59 backend tests, two account/session-switch privacy regressions, backend
+and frontend types, backend build, OpenAPI freshness, publishing provenance and
+changed-file Biome pass with these published packages. Source readiness does not
+claim rollout: Mention's matching receiver must be live first, then recheck the
+legacy queue census and apply the pre migration before enabling Schedio callers.
+Mastodon retains its external OAuth grant and provider state throughout.
