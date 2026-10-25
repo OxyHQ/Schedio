@@ -85,6 +85,9 @@ Conversation, streaming and audio requests follow the shared Oxy session and its
 account lifecycle; no local bearer refresh or app permission prompt is added.
 Frontend types and account-switch privacy regressions pass against registry bytes.
 
-This source pin does not resolve the missing `schedio.app` Cloudflare zone/API DNS.
-Keep the deployment smoke checks and existing rollback behavior; the old running
-producer still prevents final v1 retirement until a verified deployment succeeds.
+Public launch is deferred. The [prelaunch runbook](prelaunch.md) provides the
+alternative to a live rollout: hold deployment, verify the old producer is
+stopped, expire its exact workload binding and complete the required lifetime
+drain. Once that parking is verified, Schedio's missing DNS does not block global
+v1 retirement. Source alone is not proof of parking. Keep public smoke and
+rollback checks unchanged for the eventual verified protocol-2 launch.

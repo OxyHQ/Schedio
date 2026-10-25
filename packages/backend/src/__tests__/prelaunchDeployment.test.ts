@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-const repository = new URL('../../../../', import.meta.url);
-const read = (path: string) => readFileSync(new URL(path, repository), 'utf8');
+const repository = resolve(__dirname, '../../../..');
+const read = (path: string) => readFileSync(resolve(repository, path), 'utf8');
 const source = (name: string) =>
   Bun.YAML.parse(read(`.github/workflows/${name}`)) as {
     jobs: Record<string, { if: string; steps: Array<{ name?: string; run?: string }> }>;
