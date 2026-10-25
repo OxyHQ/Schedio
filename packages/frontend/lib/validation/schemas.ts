@@ -45,7 +45,7 @@ export const MessageSchema = z.object({
   media: z.array(MediaItemSchema).optional(),
   fontSize: z.number().optional(),
   replyTo: z.string().optional(),
-  reactions: z.record(z.array(z.string())).optional(), // emoji -> userIds
+  reactions: z.record(z.string(), z.array(z.string())).optional(), // emoji -> userIds
   // Encryption
   isEncrypted: z.boolean().optional(),
   ciphertext: z.string().optional(),
@@ -77,7 +77,7 @@ export const MessageAPISchema = z.object({
   updatedAt: z.string().optional(),
   isEncrypted: z.boolean().optional(),
   encryptionVersion: z.number().optional(),
-  readBy: z.record(z.string()).optional(),
+  readBy: z.record(z.string(), z.string()).optional(),
   deliveredTo: z.array(z.string()).optional(),
   media: z.array(MediaItemSchema).optional(),
 });
@@ -185,7 +185,7 @@ export const ConversationAPISchema = z.object({
     })
     .optional(),
   lastMessageAt: z.string().optional(),
-  unreadCounts: z.record(z.number()).optional(),
+  unreadCounts: z.record(z.string(), z.number()).optional(),
   createdAt: z.string().optional(),
 });
 
@@ -203,12 +203,12 @@ export const ConversationsAPIResponseSchema = z.object({
 /**
  * Safe parse with error logging
  */
-export function safeParse<T>(schema: z.ZodSchema<T>, data: unknown, context?: string): T | null {
+export function safeParse<T>(schema: z.ZodType<T>, data: unknown, context?: string): T | null {
   const result = schema.safeParse(data);
 
   if (!result.success) {
     console.error(`[Validation Error]${context ? ` ${context}:` : ''}`, {
-      errors: result.error.errors,
+      errors: result.error.issues,
       data,
     });
     return null;
@@ -220,13 +220,13 @@ export function safeParse<T>(schema: z.ZodSchema<T>, data: unknown, context?: st
 /**
  * Parse or throw with detailed error
  */
-export function parseOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, context?: string): T {
+export function parseOrThrow<T>(schema: z.ZodType<T>, data: unknown, context?: string): T {
   try {
     return schema.parse(data);
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const message = `Validation failed${context ? ` for ${context}` : ''}: ${error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
-      console.error('[Validation Error]', message, { errors: error.errors, data });
+      const message = `Validation failed${context ? ` for ${context}` : ''}: ${error.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')}`;
+      console.error('[Validation Error]', message, { errors: error.issues, data });
       throw new Error(message);
     }
     throw error;
@@ -237,7 +237,7 @@ export function parseOrThrow<T>(schema: z.ZodSchema<T>, data: unknown, context?:
  * Validate array with partial success
  * Returns only valid items, logs invalid ones
  */
-export function parseArray<T>(schema: z.ZodSchema<T>, data: unknown[], context?: string): T[] {
+export function parseArray<T>(schema: z.ZodType<T>, data: unknown[], context?: string): T[] {
   if (!Array.isArray(data)) {
     console.error(
       `[Validation Error]${context ? ` ${context}:` : ''} Expected array, got:`,
@@ -255,7 +255,7 @@ export function parseArray<T>(schema: z.ZodSchema<T>, data: unknown[], context?:
     } else {
       console.warn(
         `[Validation Warning]${context ? ` ${context}:` : ''} Invalid item at index ${index}:`,
-        result.error.errors,
+        result.error.issues,
       );
     }
   });

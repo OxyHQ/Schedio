@@ -1,22 +1,23 @@
 import { appCapabilityCatalogSchema } from '@oxy.so/contracts';
 
 import { SCHEDIO_CAPABILITY_CATALOG } from './capabilities/schedio.catalog.js';
-import { requiredOxyServiceToken } from './capabilities/oxy-service-client.js';
+import { oxyAuthorityTransport } from './capabilities/oxy-service-client.js';
 
 const OXY_API_URL = (process.env.OXY_API_URL ?? 'https://api.oxy.so').replace(/\/$/, '');
 
 async function main(): Promise<void> {
   const catalog = appCapabilityCatalogSchema.parse(SCHEDIO_CAPABILITY_CATALOG);
-  const token = await requiredOxyServiceToken();
-  const response = await fetch(`${OXY_API_URL}/capabilities/catalogs/register`, {
-    method: 'POST',
-    headers: {
-      authorization: `Bearer ${token}`,
-      'content-type': 'application/json',
-    },
-    body: JSON.stringify({ catalog, deployedAt: new Date().toISOString() }),
-    signal: AbortSignal.timeout(15_000),
-  });
+  const transport = oxyAuthorityTransport();
+  const response = await transport
+    .fetch(`${OXY_API_URL}/capabilities/catalogs/register`, {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({ catalog, deployedAt: new Date().toISOString() }),
+      signal: AbortSignal.timeout(15_000),
+    })
+    .finally(() => transport.dispose());
   if (!response.ok) {
     throw new Error(`Schedio capability catalog registration failed (${response.status})`);
   }

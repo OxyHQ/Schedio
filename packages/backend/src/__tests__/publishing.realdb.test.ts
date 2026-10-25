@@ -26,11 +26,17 @@ import {
   finishConnection,
   usableAccount,
   disconnect,
+  listAccounts,
+  mentionDestinationId,
   type ConnectionProvider,
 } from '../publishing/connections';
 import { encryptSocialToken, decryptSocialToken } from '../utils/tokenCipher';
 import { oauthStates } from '../db/schema';
 import { DraftInput } from '@schedio/contracts';
+import { OxyServer } from '@oxy.so/core/server';
+import { mentionForOxyService } from '@oxy.so/mention-sdk/server';
+import { scheduleAuthority } from '../publishing/taskAuthority';
+import type { Request } from 'express';
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
 const scope = { userId: 'publishing-owner', organizationId: null };
 let databaseUrl: string | undefined;
@@ -106,6 +112,159 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
     if (databaseUrl) await dropTestDatabase(databaseUrl, { driver: 'bun-sql' });
     delete process.env.DATABASE_URL;
   }, 30000);
+  it('makes Mention available without OAuth or credentials, isolating organization and personal destinations', async () => {
+    const first = await listAccounts(scope);
+    const own = first.items.find((a) => a.platform === 'mention');
+    expect(own?.id).toBe(mentionDestinationId(scope));
+    const org = { userId: scope.userId, organizationId: 'org' };
+    const [one, two] = await Promise.all([
+      listAccounts(org),
+      listAccounts({ ...org, userId: 'second-operator' }),
+    ]);
+    expect(one.items).toHaveLength(1);
+    expect(one.items[0]?.id).toBe(two.items[0]?.id);
+    expect(one.items[0]?.id).not.toBe(own?.id);
+    const stored = await getDb().query.socialAccounts.findFirst({
+      where: eq(socialAccounts.id, own?.id ?? ''),
+    });
+    expect(stored?.accessTokenCiphertext).toBeNull();
+    expect(stored?.oauthClientId).toBeNull();
+    await expect(disconnect(scope, own?.id ?? '')).rejects.toThrow('current Oxy account');
+  });
+
+  it('publishes with original managed requester through shared HTTP transport, and preserves effect keys on uncertain replies', async () => {
+    const managed = { userId: 'org', organizationId: 'org' };
+    await listAccounts(managed);
+    const p = await createDraft(managed, {
+      content: 'Org publication',
+      platforms: [mentionDestinationId(managed)],
+      organizationId: 'org',
+    });
+    let revoked = false;
+    let wrongAccount = false;
+    let uncertain = false;
+    const keys: string[] = [];
+    const taskBodies: Array<Record<string, unknown>> = [];
+    const now = Math.floor(Date.now() / 1000);
+    const token = `e30.${Buffer.from(JSON.stringify({ iat: now, exp: now + 300, authority: 'first_party' })).toString('base64url')}.fixture`;
+    const api = Bun.serve({
+      hostname: '127.0.0.1',
+      port: 0,
+      async fetch(request) {
+        const path = new URL(request.url).pathname;
+        if (path.endsWith('/challenge')) return Response.json({ nonce: 'fixture' });
+        if (path === '/auth/service-token/workload') {
+          const body = (await request.json()) as Record<string, unknown>;
+          expect(body.protocolVersion).toBe(2);
+          expect(['oxy-api', 'oxy-service:6a2f851751b784a86fd0e916']).toContain(
+            String(body.audience ?? 'oxy-api'),
+          );
+          expect(body).not.toHaveProperty('scopes');
+          return Response.json({ token, expiresIn: 300 });
+        }
+        expect(request.headers.get('authorization')).toBe(`Bearer ${token}`);
+        if (path === '/capabilities/tasks') {
+          const body = (await request.json()) as Record<string, unknown>;
+          taskBodies.push(body);
+          expect(body.actor).toEqual({ type: 'requester', accountId: 'human' });
+          expect(body.subjectToken).toBe('managed-session');
+          return Response.json({
+            task: { id: 'original-task', requesterAccountId: 'human', effectiveAccountId: 'org' },
+          });
+        }
+        expect(request.headers.get('x-oxy-task-id')).toBe('original-task');
+        expect(request.headers.get('x-oxy-user-id')).toBe('org');
+        if (revoked) return Response.json({ error: 'revoked' }, { status: 403 });
+        if (path === '/mcp/bundles/me')
+          return Response.json({
+            oxyUserId: wrongAccount ? 'another-account' : 'org',
+            handle: 'organization',
+            displayName: 'Organization',
+          });
+        expect(path).toBe('/publishing/v1/posts');
+        keys.push(request.headers.get('Idempotency-Key') ?? '');
+        expect(await request.json()).toMatchObject({ content: { text: p.content } });
+        return uncertain
+          ? Response.json({ error: 'uncertain' }, { status: 503 })
+          : Response.json({ success: true, post: { id: 'published-post' } });
+      },
+    });
+    const oxy = new OxyServer({
+      baseURL: api.url.origin,
+      workloadCredentials: async () => ({
+        AccessKeyId: 'ASIA_TEST',
+        SecretAccessKey: 'fixture',
+        Token: 'temporary',
+      }),
+    });
+    try {
+      const req = {
+        accessToken: 'managed-session',
+        oxyActor: { actorAccountId: 'human', effectiveAccountId: 'org', delegated: true },
+      } as unknown as Request;
+      const authority = await scheduleAuthority(req, managed, oxy);
+      await enqueue(managed, p.id, p.revision, new Date(), authority);
+      const persisted = await getDb().query.posts.findFirst({ where: eq(posts.id, p.id) });
+      expect(persisted?.oxyTaskId).toBe('original-task');
+      expect(JSON.stringify(persisted)).not.toContain('managed-session');
+      expect(taskBodies[0]?.origin).toEqual({ kind: 'automation', id: `${p.id}:${p.revision}` });
+      const claim = await claimDelivery();
+      if (!claim) throw new Error('Expected Mention claim');
+      const provider = {
+        json: async () => {
+          throw new Error('No external OAuth transport');
+        },
+        mention: (requester: Parameters<typeof mentionForOxyService>[1]['requester']) =>
+          mentionForOxyService(oxy, { baseURL: api.url.origin, requester }),
+      };
+      wrongAccount = true;
+      expect((await dispatch(claim, provider)).status).toBe('failed');
+      expect(keys).toEqual([]);
+      wrongAccount = false;
+      revoked = true;
+      expect((await dispatch(claim, provider)).status).toBe('failed');
+      expect(keys).toEqual([]);
+      revoked = false;
+      uncertain = true;
+      expect((await dispatch(claim, provider)).status).toBe('unknown');
+      uncertain = false;
+      expect(await dispatch(claim, provider)).toEqual({
+        status: 'succeeded',
+        url: 'https://mention.earth/p/published-post',
+      });
+      expect(keys).toEqual([claim.delivery.effectKey, claim.delivery.effectKey]);
+    } finally {
+      oxy.dispose();
+      api.stop(true);
+    }
+  });
+
+  it('requires fresh authority for Mention scheduling and revokes the old root when editing an unattempted revision', async () => {
+    await listAccounts(scope);
+    const p = await draft([mentionDestinationId(scope)]);
+    await expect(enqueue(scope, p.id, p.revision, new Date())).rejects.toThrow(
+      'current Oxy session',
+    );
+    const revoked: string[] = [];
+    const authority = {
+      create: async () => 'root-original',
+      revoke: async (id: string) => {
+        revoked.push(id);
+      },
+    };
+    await enqueue(scope, p.id, p.revision, new Date(), authority);
+    const updated = await editDraft(
+      scope,
+      p.id,
+      { content: 'Updated', platforms: [mentionDestinationId(scope)], revision: p.revision },
+      authority.revoke,
+    );
+    expect(updated.status).toBe('draft');
+    expect(updated.revision).toBe(2);
+    expect(revoked).toEqual(['root-original']);
+    const row = await getDb().query.posts.findFirst({ where: eq(posts.id, p.id) });
+    expect(row?.oxyTaskId).toBeNull();
+  });
   it('deduplicates concurrent capability drafts and a lost reply without approving or publishing', async () => {
     const operation = { key: 'same-draft', actorAccountId: 'agent' };
     const input = { content: 'Review this', platforms: ['a'] };
@@ -130,7 +289,7 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
     ).toBe(false);
     await account('foreign', 'another-user');
     await expect(createDraft(scope, { content: 'text', platforms: ['foreign'] })).rejects.toThrow(
-      'Choose connected',
+      'Choose Mention',
     );
     expect((await listPosts(scope)).items).toHaveLength(0);
   });
@@ -390,12 +549,12 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
       getDb().transaction((tx) => usableAccount(tx, account.id, provider)),
     ).rejects.toThrow('disconnected');
   });
-  it('rejects expired OAuth states and a Mention account different from the authorized workspace', async () => {
+  it('rejects expired external OAuth states and never starts Mention OAuth', async () => {
     process.env.SOCIAL_TOKEN_ENCRYPTION_KEY = 'a'.repeat(64);
     process.env.SOCIAL_OAUTH_REDIRECT_URI = 'https://schedio.app/accounts';
     const provider: ConnectionProvider = {
       json: async (url) =>
-        url.endsWith('/register')
+        url.endsWith('/api/v1/apps')
           ? { status: 200, body: { client_id: 'client' } }
           : url.includes('.well-known')
             ? { status: 200, body: { authorization_endpoint: 'https://auth.oxy.so/authorize' } }
@@ -409,10 +568,12 @@ describe.if(Boolean(ADMIN_URL))('publishing transactions and worker', () => {
               },
       identify: async () => ({ id: 'another-oxy-account', username: 'another' }),
     };
-    const start = await startConnection(scope, { platform: 'mention' }, provider);
-    await expect(
-      finishConnection(scope, { state: start.state, code: 'code' }, provider),
-    ).rejects.toThrow('workspace');
+    await expect(startConnection(scope, { platform: 'mention' }, provider)).rejects.toThrow();
+    const start = await startConnection(
+      scope,
+      { platform: 'mastodon', instance: 'https://mastodon.social' },
+      provider,
+    );
     await getDb()
       .update(oauthStates)
       .set({ expiresAt: new Date(Date.now() - 1000) });

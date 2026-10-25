@@ -15,6 +15,13 @@
       "when": 1792049839113,
       "tag": "0001_bright_corsair",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792785195292,
+      "tag": "0002_boring_spectrum",
+      "breakpoints": true
     }
   ]
 }

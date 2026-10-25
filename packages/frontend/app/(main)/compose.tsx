@@ -116,7 +116,9 @@ export default function ComposeScreen() {
           style={{ borderWidth: 1, minHeight: 160, padding: 12 }}
         />
         <Text>Destinations</Text>
-        {accounts.length === 0 && <Text>Connect Mention or Mastodon in Accounts first.</Text>}
+        {accounts.length === 0 && (
+          <Text>Load your Mention destination or connect Mastodon in Accounts.</Text>
+        )}
         {accounts.map((a) => (
           <Button
             key={a.id}

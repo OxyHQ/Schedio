@@ -58,7 +58,11 @@ export const QueueInput = z
   })
   .strict();
 export const ConnectionInput = z
-  .object({ platform: Platform, instance: z.url().optional(), organizationId: id.optional() })
+  .object({
+    platform: z.literal('mastodon'),
+    instance: z.url().optional(),
+    organizationId: id.optional(),
+  })
   .strict();
 export const ConnectionFinish = z
   .object({ state: z.string().min(32).max(200), code: z.string().min(1).max(4096) })

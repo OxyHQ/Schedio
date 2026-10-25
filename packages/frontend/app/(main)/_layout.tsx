@@ -1,11 +1,13 @@
 import { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Stack } from 'expo-router';
+import { useOxy } from '@oxy.so/services/ui/client';
 import { useTheme } from '@/hooks/useTheme';
 import { ThemedView } from '@/components/ThemedView';
 
 export default function MainLayout() {
   const theme = useTheme();
+  const { user } = useOxy();
 
   const styles = useMemo(
     () =>
@@ -21,6 +23,7 @@ export default function MainLayout() {
   return (
     <ThemedView style={styles.container}>
       <Stack
+        key={user?.id ?? 'signed-out'}
         screenOptions={{
           headerShown: false,
           contentStyle: { backgroundColor: theme.colors.background },

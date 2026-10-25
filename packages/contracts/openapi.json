@@ -824,10 +824,7 @@
         "properties": {
           "platform": {
             "type": "string",
-            "enum": [
-              "mention",
-              "mastodon"
-            ]
+            "const": "mastodon"
           },
           "instance": {
             "type": "string",

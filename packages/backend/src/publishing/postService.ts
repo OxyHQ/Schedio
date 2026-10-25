@@ -4,6 +4,7 @@ import { getDb, type SchedioTransaction } from '../db';
 import { posts, deliveries, socialAccounts, organizationPolicies } from '../db/schema';
 import { Post, DraftInput, EditInput } from '@schedio/contracts';
 import { PublishingError } from './errors';
+import { revokePublishingTask, type ScheduleAuthority } from './taskAuthority';
 import { decodeCursor, encodeCursor, type PageQuery } from './pagination';
 export type Scope = { userId: string; organizationId: string | null };
 export function owns(scope: Scope) {
@@ -104,7 +105,7 @@ async function targets(tx: SchedioTransaction, scope: Scope, ids: string[]) {
     throw new PublishingError(
       422,
       'validation_failed',
-      'Choose connected Mention or Mastodon destinations in this workspace',
+      'Choose Mention or connected Mastodon destinations in this workspace',
     );
   return rows;
 }
@@ -181,7 +182,12 @@ export async function createDraft(
   });
   return postDto(row);
 }
-export async function editDraft(scope: Scope, id: string, raw: unknown) {
+export async function editDraft(
+  scope: Scope,
+  id: string,
+  raw: unknown,
+  revoke = revokePublishingTask,
+) {
   const input = EditInput.parse(raw);
   const row = await getDb().transaction(async (tx) => {
     const p = await lockedPost(tx, id, scope);
@@ -195,6 +201,7 @@ export async function editDraft(scope: Scope, id: string, raw: unknown) {
         'A dispatched post cannot be edited; create a new draft',
       );
     const accounts = await targets(tx, scope, input.platforms);
+    if (p.oxyTaskId) await revoke(p.oxyTaskId);
     const [updated] = await tx
       .update(posts)
       .set({
@@ -204,6 +211,7 @@ export async function editDraft(scope: Scope, id: string, raw: unknown) {
         approvedRevision: null,
         approvedBy: null,
         status: 'draft',
+        oxyTaskId: null,
         scheduledAt: null,
         updatedAt: new Date(),
       })
@@ -235,62 +243,93 @@ export async function approve(scope: Scope, id: string, revision: number) {
   });
   return postDto(row);
 }
-export async function enqueue(scope: Scope, id: string, revision: number, when: Date) {
-  const row = await getDb().transaction(async (tx) => {
-    await tx.execute(
-      sql`select pg_advisory_xact_lock(hashtextextended(${scope.organizationId ?? scope.userId},0))`,
-    );
-    const p = await lockedPost(tx, id, scope);
-    if (p.revision !== revision)
-      throw new PublishingError(409, 'conflict', 'This post has changed');
-    if (p.organizationId) {
-      const policy = await tx.query.organizationPolicies.findFirst({
-        where: eq(organizationPolicies.organizationId, p.organizationId),
-      });
-      if (policy?.required && p.approvedRevision !== p.revision)
-        throw new PublishingError(
-          409,
-          'conflict',
-          'Current content and destinations require approval',
-        );
-    }
-    const ds = await tx.select().from(deliveries).where(eq(deliveries.postId, id));
-    if (ds.length === 0)
-      throw new PublishingError(
-        409,
-        'conflict',
-        'Choose current connected destinations before publishing',
+export async function enqueue(
+  scope: Scope,
+  id: string,
+  revision: number,
+  when: Date,
+  authority?: ScheduleAuthority,
+) {
+  let createdTaskId: string | undefined;
+  let row: typeof posts.$inferSelect;
+  try {
+    row = await getDb().transaction(async (tx) => {
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${scope.organizationId ?? scope.userId},0))`,
       );
-    if (ds.every((d) => d.status === 'succeeded')) return p;
-    let queuePosition = p.queuePosition;
-    if (p.status !== 'scheduled') {
-      const queued = await tx
-        .select({ id: posts.id, position: posts.queuePosition })
-        .from(posts)
-        .where(and(owns(scope), eq(posts.status, 'scheduled')))
-        .limit(500);
-      if (queued.length >= 500)
+      const p = await lockedPost(tx, id, scope);
+      if (p.revision !== revision)
+        throw new PublishingError(409, 'conflict', 'This post has changed');
+      if (p.organizationId) {
+        const policy = await tx.query.organizationPolicies.findFirst({
+          where: eq(organizationPolicies.organizationId, p.organizationId),
+        });
+        if (policy?.required && p.approvedRevision !== p.revision)
+          throw new PublishingError(
+            409,
+            'conflict',
+            'Current content and destinations require approval',
+          );
+      }
+      const ds = await tx.select().from(deliveries).where(eq(deliveries.postId, id));
+      if (ds.length === 0)
         throw new PublishingError(
           409,
           'conflict',
-          'This workspace already has 500 scheduled posts',
+          'Choose current connected destinations before publishing',
         );
-      queuePosition = queued.reduce((max, row) => Math.max(max, row.position), -1) + 1;
-    }
-    if (ds.some((d) => d.status === 'sending' && d.leaseUntil && d.leaseUntil > new Date()))
-      throw new PublishingError(409, 'conflict', 'Publishing is already in progress');
-    await tx
-      .update(deliveries)
-      .set({ status: 'pending', error: null })
-      .where(and(eq(deliveries.postId, id), inArray(deliveries.status, ['failed'])));
-    const [updated] = await tx
-      .update(posts)
-      .set({ status: 'scheduled', scheduledAt: when, queuePosition, updatedAt: new Date() })
-      .where(eq(posts.id, id))
-      .returning();
-    if (!updated) throw new Error('Missing post');
-    return updated;
-  });
+      if (ds.every((d) => d.status === 'succeeded')) return p;
+      let queuePosition = p.queuePosition;
+      if (p.status !== 'scheduled') {
+        const queued = await tx
+          .select({ id: posts.id, position: posts.queuePosition })
+          .from(posts)
+          .where(and(owns(scope), eq(posts.status, 'scheduled')))
+          .limit(500);
+        if (queued.length >= 500)
+          throw new PublishingError(
+            409,
+            'conflict',
+            'This workspace already has 500 scheduled posts',
+          );
+        queuePosition = queued.reduce((max, row) => Math.max(max, row.position), -1) + 1;
+      }
+      if (ds.some((d) => d.status === 'sending' && d.leaseUntil && d.leaseUntil > new Date()))
+        throw new PublishingError(409, 'conflict', 'Publishing is already in progress');
+      let oxyTaskId = p.oxyTaskId;
+      if (ds.some((d) => d.platform === 'mention' && d.status !== 'succeeded')) {
+        if (!authority)
+          throw new PublishingError(
+            403,
+            'forbidden',
+            'A current Oxy session is required to schedule Mention',
+          );
+        createdTaskId = await authority.create(p.id, p.revision, when);
+        if (p.oxyTaskId) await authority.revoke(p.oxyTaskId);
+        oxyTaskId = createdTaskId;
+      }
+      await tx
+        .update(deliveries)
+        .set({ status: 'pending', error: null })
+        .where(and(eq(deliveries.postId, id), inArray(deliveries.status, ['failed'])));
+      const [updated] = await tx
+        .update(posts)
+        .set({
+          status: 'scheduled',
+          scheduledAt: when,
+          queuePosition,
+          oxyTaskId,
+          updatedAt: new Date(),
+        })
+        .where(eq(posts.id, id))
+        .returning();
+      if (!updated) throw new Error('Missing post');
+      return updated;
+    });
+  } catch (error) {
+    if (createdTaskId && authority) await authority.revoke(createdTaskId);
+    throw error;
+  }
   return postDto(row);
 }
 export async function reorder(scope: Scope, ids: string[]) {

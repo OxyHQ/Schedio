@@ -18,7 +18,7 @@ import { useTranslation } from 'react-i18next';
 import { useOxy } from '@oxy.so/services/ui/client';
 import Avatar from '@/components/Avatar';
 import { authenticatedClient } from '@/utils/api';
-import { updatePrivacySettingsCache, type PrivacySettings } from '@/hooks/usePrivacySettings';
+import type { PrivacySettings } from '@/hooks/usePrivacySettings';
 
 const IconComponent = Ionicons as typeof Ionicons;
 
@@ -49,11 +49,11 @@ export default function BlockedScreen() {
     let mounted = true;
     const load = async () => {
       try {
-        const response = await authenticatedClient.get<{ data?: { privacy?: PrivacySettings } }>(
+        const response = await authenticatedClient.get<{ privacy?: PrivacySettings }>(
           '/profile/settings/me',
         );
         if (!mounted) return;
-        const privacy = response.data?.privacy || {};
+        const privacy = response.privacy || {};
         setSettings(privacy);
         const ids = privacy.blockedUsers ?? [];
         if (ids.length > 0) {
@@ -120,7 +120,6 @@ export default function BlockedScreen() {
     setSaving(true);
     try {
       await authenticatedClient.put('/profile/settings', { privacy: next });
-      await updatePrivacySettingsCache(next);
     } catch (error) {
       console.warn('Error updating blocked users:', error);
       setSettings(previous);
