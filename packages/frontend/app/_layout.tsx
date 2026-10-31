@@ -22,11 +22,12 @@ import { ThemedView } from '@/components/ThemedView';
 import { AppProviders } from '@/components/providers/AppProviders';
 import { QUERY_CLIENT_CONFIG } from '@/components/providers/constants';
 
-// Bloom theme provider — required by @oxy.so/services >=10 SDK components
+// Bloom application provider — required by @oxy.so/services >=10 SDK components
 // (OxySignInButton, bottom sheets) which consume Bloom's `useTheme`. Must wrap
 // every render branch (splash + app) or those components throw
 // "useTheme must be used within a <BloomThemeProvider>".
-import { BloomThemeProvider } from '@oxy.so/bloom/theme';
+import { BloomProvider } from '@oxy.so/bloom/provider';
+import { expoRouterScrollAdapter } from '@oxy.so/bloom/scroll/expo-router';
 
 // Hooks
 import { useColorScheme } from '@/hooks/useColorScheme';
@@ -288,8 +289,8 @@ export default function RootLayout() {
   ]);
 
   return (
-    <BloomThemeProvider mode={colorScheme}>
+    <BloomProvider mode={colorScheme} scrollAdapter={expoRouterScrollAdapter}>
       <ThemedView style={{ flex: 1 }}>{appContent}</ThemedView>
-    </BloomThemeProvider>
+    </BloomProvider>
   );
 }
