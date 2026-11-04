@@ -9,14 +9,7 @@ import { router } from 'expo-router';
 import { ThemedView } from '@/components/ThemedView';
 import { useTheme } from '@/hooks/useTheme';
 import { LogoIcon } from '@/assets/logo';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectItemText,
-  SelectTrigger,
-  SelectValue,
-} from '@oxy.so/bloom/select';
+import { SettingsSelect } from '@oxy.so/bloom/settings-modal/rows';
 import { toast } from '@oxy.so/bloom/toast';
 import { COLOR_PRESET_REGISTRY } from '@oxy.so/bloom/theme';
 import { useAccountColorSave } from '@oxy.so/services/ui/client';
@@ -126,28 +119,15 @@ export default function AppearanceSettingsScreen() {
           {t('settings.accentColor.title')}
         </Text>
         <View className={`mb-${SPACING.content.gapLarge}`}>
-          <Select
+          <SettingsSelect
+            label={t('settings.accentColor.title')}
             value={colorValue}
-            onValueChange={(value) => {
-              const next = colors.find((option) => option.value === value);
-              if (next)
-                saveColor(next.value).catch(() =>
-                  toast.error(t('settings.accentColor.saveFailed')),
-                );
-            }}
-          >
-            <SelectTrigger label={t('settings.accentColor.title')}>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent
-              items={colors}
-              renderItem={(item) => (
-                <SelectItem value={item.value} label={item.label}>
-                  <SelectItemText>{item.label}</SelectItemText>
-                </SelectItem>
-              )}
-            />
-          </Select>
+            onChange={(next) =>
+              saveColor(next).catch(() => toast.error(t('settings.accentColor.saveFailed')))
+            }
+            items={colors}
+            compact={false}
+          />
         </View>
 
         {/* Auto-Night Mode */}
