@@ -315,7 +315,7 @@ This package is part of the Schedio monorepo and integrates with:
 
 ### Shared Dependencies
 - Uses `@schedio/shared-types` for type safety across packages
-- Integrates with `@oxy.so/services` for authentication
+- Talks to Oxy through the one `OxyServer` in `src/oxy.ts` (`@oxy.so/core/server`)
 
 ## Notes
 

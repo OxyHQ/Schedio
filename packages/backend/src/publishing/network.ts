@@ -1,4 +1,4 @@
-import { safeFetch } from '@oxy.so/core/server';
+import { readResponseJson, safeFetch } from '@oxy.so/core/server';
 import { PublishingError } from './errors';
 export function instanceOrigin(value: string) {
   const url = new URL(value);
@@ -38,17 +38,10 @@ export async function upstreamJson(
     },
     body: options.form?.toString() ?? (options.body ? JSON.stringify(options.body) : undefined),
   });
-  const chunks: Buffer[] = [];
-  let size = 0;
-  try {
-    for await (const chunk of result.response) {
-      const b = Buffer.from(chunk);
-      size += b.length;
-      if (size > 1024 * 1024) throw new Error('Oversized provider response');
-      chunks.push(b);
-    }
-    return { status: result.status, body: JSON.parse(Buffer.concat(chunks).toString()) as unknown };
-  } finally {
-    result.response.destroy();
-  }
+  const body = await readResponseJson(result.response, {
+    maxBytes: 1024 * 1024,
+    timeoutMs: 20000,
+  });
+  if (body.kind !== 'ok') throw new Error(`Provider response unreadable (${body.kind})`);
+  return { status: result.status, body: body.value };
 }

@@ -6,8 +6,14 @@ import {
 // --- Imports ---
 import express from 'express';
 import { closeDatabase, connectToDatabase } from './src/db';
-import { OXY_API_URL } from '@oxy.so/core';
-import { OxyServer, createOxyAuthMiddleware } from '@oxy.so/core/server';
+import {
+  createOxyAuthMiddleware,
+  createOxyCors,
+  createOxyRateLimit,
+  createOxySecurityHeaders,
+  oxyTrustProxy,
+} from '@oxy.so/core/server';
+import { oxy } from './src/oxy';
 
 // Routers
 import capabilityRoutes from './src/routes/capabilities';
@@ -18,20 +24,30 @@ import { openapi } from '@schedio/contracts';
 import { startPublishingWorker } from './src/publishing/worker';
 import analyticsRoutes from './src/routes/analytics';
 
-// Middleware
-import { rateLimiter, bruteForceProtection } from './src/middleware/security';
 import { logger } from './src/utils/logger';
 import { validateTokenCipherConfiguration } from './src/utils/tokenCipher';
 
 const app = express();
 app.use(ecosystemActivityMiddleware);
 
-// Behind the ALB (single proxy hop) — required for express-rate-limit /
-// express-slow-down to read the real client IP from X-Forwarded-For.
-app.set('trust proxy', 1);
-
-// Initialize Oxy client for authentication
-export const oxy = new OxyServer({ baseURL: OXY_API_URL });
+// The real client behind Cloudflare and the ALB, for the rate limiter's key.
+app.set('trust proxy', oxyTrustProxy);
+app.use(createOxySecurityHeaders());
+app.use(
+  createOxyCors({
+    appOrigins: [
+      process.env.FRONTEND_URL || 'https://schedio.app',
+      ...(process.env.NODE_ENV === 'production'
+        ? []
+        : ['http://localhost:8081', 'http://localhost:8082']),
+    ],
+  }),
+);
+// Answers are per user and per session; no shared cache may keep one.
+app.use((_req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
 
 // --- Middleware ---
 app.use(express.json());
@@ -47,36 +63,10 @@ app.use(async (_req, res, next) => {
     if (res.headersSent) {
       return;
     }
-    res.status(503).json({ message: 'Database temporarily unavailable' });
+    res.status(503).json({
+      error: { code: 'service_unavailable', message: 'Database temporarily unavailable' },
+    });
   }
-});
-
-// CORS and security headers
-app.use((req, res, next) => {
-  const allowedOrigins = [
-    process.env.FRONTEND_URL || 'https://schedio.app',
-    ...(process.env.NODE_ENV === 'production'
-      ? []
-      : ['http://localhost:8081', 'http://localhost:8082']),
-  ];
-  const origin = req.headers.origin;
-  if (origin && allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Date, X-Api-Version, X-Oxy-Edge-Region, X-Oxy-Activity-Id',
-  );
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
-  if (req.method === 'OPTIONS') {
-    return res.status(204).end();
-  }
-  next();
 });
 
 // --- API ROUTES ---
@@ -96,12 +86,11 @@ authenticatedApiRouter.use('/profile', profileSettingsRoutes);
 authenticatedApiRouter.use(publishingRoutes);
 authenticatedApiRouter.use('/analytics', analyticsRoutes);
 
-// Mount public and authenticated API routers.
-// Health/public routes are mounted before the limiters so health checks are not
-// rate-limited; rate limiting + brute-force protection apply to everything after.
+// Mount public and authenticated API routers. Health/public routes are mounted
+// before the limiter; everything after is limited per user (per hashed IP when
+// anonymous).
 app.use('/api', publicApiRouter);
-app.use(rateLimiter);
-app.use(bruteForceProtection);
+app.use(createOxyRateLimit(oxy));
 app.use('/_oxy/capabilities', capabilityRoutes);
 app.use('/api', createOxyAuthMiddleware(oxy), authenticatedApiRouter);
 app.use('/api', (_req, res) =>

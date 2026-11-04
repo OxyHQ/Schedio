@@ -6,7 +6,7 @@ import {
   type MentionRequester,
   type MentionServiceClient,
 } from '@oxy.so/mention-sdk/server';
-import { oxyServiceClient } from '../capabilities/oxy-service-client';
+import { oxy } from '../oxy';
 import { z } from 'zod';
 import { getDb } from '../db';
 import { posts, deliveries, organizationPolicies } from '../db/schema';
@@ -117,7 +117,7 @@ export async function dispatch(
     ) => Pick<MentionServiceClient, 'identity' | 'publish' | 'dispose'>;
   } = {
     json: upstreamJson,
-    mention: (requester) => mentionForOxyService(oxyServiceClient(), { requester }),
+    mention: (requester) => mentionForOxyService(oxy, { requester }),
   },
 ): Promise<DispatchResult> {
   try {

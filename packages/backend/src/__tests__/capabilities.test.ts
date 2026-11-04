@@ -7,17 +7,40 @@ import { issueCapabilityTicket, verifyCapabilityTicket } from '@oxy.so/core/serv
 import { SCHEDIO_CAPABILITY_CATALOG } from '../capabilities/schedio.catalog';
 const execute = mock(async () => ({ draft: { id: 'draft-1', status: 'draft' } }));
 mock.module('../capabilities/schedio.handlers', () => ({ executeSchedioCatalogTool: execute }));
-mock.module('../capabilities/oxy-service-client.js', () => ({
-  oxyAuthorityTransport: () => ({
-    fetch: (...args: Parameters<typeof fetch>) => globalThis.fetch(...args),
-    dispose() {},
-  }),
-}));
 const { privateKey, publicKey } = generateKeyPairSync('ed25519');
 const jwk = { ...publicKey.export({ format: 'jwk' }), kid: 'test-key', use: 'sig', alg: 'EdDSA' };
 const originalFetch = globalThis.fetch;
 let active = true;
+let introspectionDown = false;
+let introspections = 0;
 let audits: unknown[] = [];
+// The process's one OxyServer, reduced to the two calls the capability lane makes.
+mock.module('../oxy', () => ({
+  oxy: {
+    baseURL: 'https://api.oxy.so',
+    agency: {
+      async introspectCapabilityTicket(sent: string) {
+        introspections += 1;
+        if (introspectionDown) throw Object.assign(new Error('upstream'), { status: 503 });
+        const claims = verifyCapabilityTicket(sent, {
+          audience: 'oxy-schedio-api',
+          issuer: 'https://api.oxy.so',
+          resolvePublicKey: () => publicKey,
+        });
+        return {
+          active,
+          claims,
+          decision: { allowed: active, reason: active ? 'authorized' : 'revoked' },
+        };
+      },
+    },
+    async serviceRequest(method: string, path: string, body: unknown) {
+      expect([method, path]).toEqual(['POST', '/capabilities/audit']);
+      audits.push(body);
+      return {};
+    },
+  },
+}));
 let server: ReturnType<ReturnType<typeof express>['listen']>;
 let url: string;
 function unsigned() {
@@ -39,6 +62,7 @@ function unsigned() {
     },
     tool: 'createDraft',
     capabilities: ['publications.draft'],
+    catalog: { registrationId: 'registration', version: '1.0.0', digest: 'a'.repeat(64) },
     limits: [],
     autonomy: 'execute_on_request' as const,
   };
@@ -68,6 +92,12 @@ async function call(
   });
 }
 beforeAll(async () => {
+  // Before the routes load: the JWKS resolver binds `fetch` when it is built.
+  globalThis.fetch = (async (input: string | URL | Request) => {
+    if (String(input) === 'https://api.oxy.so/capabilities/.well-known/jwks.json')
+      return Response.json({ keys: [jwk] });
+    throw new Error('Unexpected upstream request');
+  }) as typeof fetch;
   const { router } = await import('../routes/capabilities.js');
   const app = express();
   app.use(express.json());
@@ -75,32 +105,11 @@ beforeAll(async () => {
   server = app.listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
   url = `http://127.0.0.1:${(server.address() as AddressInfo).port}/_oxy/capabilities`;
-  globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
-    const target = String(input);
-    if (target.endsWith('/capabilities/.well-known/jwks.json'))
-      return Response.json({ keys: [jwk] });
-    if (target.endsWith('/capabilities/tickets/introspect')) {
-      const sent = JSON.parse(String(init?.body));
-      const claims = verifyCapabilityTicket(sent.ticket, {
-        audience: 'oxy-schedio-api',
-        issuer: 'https://api.oxy.so',
-        resolvePublicKey: () => publicKey,
-      });
-      return Response.json({
-        active,
-        claims,
-        decision: { allowed: active, reason: active ? 'authorized' : 'revoked' },
-      });
-    }
-    if (target.endsWith('/capabilities/audit')) {
-      audits.push(JSON.parse(String(init?.body)));
-      return Response.json({});
-    }
-    throw new Error('Unexpected upstream request');
-  }) as typeof fetch;
 });
 beforeEach(() => {
   active = true;
+  introspectionDown = false;
+  introspections = 0;
   audits = [];
   execute.mockClear();
 });
@@ -140,6 +149,31 @@ describe('Schedio signed draft capabilities', () => {
     active = false;
     expect((await call()).status).toBe(403);
     expect(execute).not.toHaveBeenCalled();
+    expect(audits).toMatchObject([{ result: { status: 'denied' } }]);
+  });
+  it('refuses a ticket with no signed catalogue binding without asking Oxy', async () => {
+    const { catalog: _catalog, ...unbound } = unsigned();
+    const token = issueCapabilityTicket(unbound, {
+      privateKey,
+      keyId: 'test-key',
+      issuer: 'https://api.oxy.so',
+      ttlSeconds: 60,
+      jti: 'ticket-2',
+    });
+    expect((await call('createDraft', `Capability ${token}`)).status).toBe(401);
+    expect(introspections).toBe(0);
+    expect(execute).not.toHaveBeenCalled();
+  });
+  it('answers an Oxy outage 503, never a refusal, and asks again next time', async () => {
+    introspectionDown = true;
+    const outage = await call();
+    expect(outage.status).toBe(503);
+    expect(await outage.json()).toEqual({ error: 'capability_authority_unavailable' });
+    expect(execute).not.toHaveBeenCalled();
+    expect(audits).toEqual([]);
+    introspectionDown = false;
+    expect((await call()).status).toBe(200);
+    expect(introspections).toBe(2);
   });
   it('blocks wrong account, resource, tool and read-only capability', async () => {
     expect(

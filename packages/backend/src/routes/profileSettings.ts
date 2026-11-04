@@ -1,7 +1,7 @@
 import { uuidv7 } from '@oxy.so/db';
 import { and, desc, eq } from 'drizzle-orm';
 import { Router, type Request, type Response } from 'express';
-import { requireOxyAuth, getRequiredOxyUserId } from '@oxy.so/core/server';
+import { getRequiredOxyUserId } from '@oxy.so/core/server';
 import { getDb } from '../db';
 import { blocks, restricts, userBehaviors } from '../db/schema';
 import {
@@ -16,12 +16,8 @@ import { logger } from '../utils/logger';
 const router = Router();
 
 /**
- * Profile Settings API
- * All routes require authentication
+ * Profile Settings API. Mounted behind `createOxyAuthMiddleware(oxy)` in server.ts.
  */
-
-// Apply auth middleware to all routes
-router.use(requireOxyAuth);
 
 /**
  * GET /api/profile/settings/me
@@ -34,7 +30,7 @@ router.get('/settings/me', async (req: Request, res: Response) => {
     return sendSuccessResponse(res, 200, doc);
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching my settings:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch settings');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to fetch settings');
   }
 });
 
@@ -48,10 +44,10 @@ router.get('/settings/:userId', async (req: Request, res: Response) => {
 
     const validationError = validateRequired(userId, 'userId');
     if (validationError) {
-      return sendErrorResponse(res, 400, 'Bad Request', validationError);
+      return sendErrorResponse(res, 400, 'bad_request', validationError);
     }
     if (typeof userId !== 'string') {
-      return sendErrorResponse(res, 400, 'Bad Request', 'userId must be a single value');
+      return sendErrorResponse(res, 400, 'bad_request', 'userId must be a single value');
     }
 
     const requesterId = getRequiredOxyUserId(req);
@@ -65,7 +61,7 @@ router.get('/settings/:userId', async (req: Request, res: Response) => {
     return sendSuccessResponse(res, 200, extractPublicProfileData(doc, userId));
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching user settings:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch settings');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to fetch settings');
   }
 });
 
@@ -81,7 +77,7 @@ router.put('/settings', async (req: Request, res: Response) => {
     return sendSuccessResponse(res, 200, doc);
   } catch (err) {
     logger.error('[ProfileSettings] Error updating settings:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to update settings');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to update settings');
   }
 });
 
@@ -107,12 +103,7 @@ router.delete('/settings/behavior', async (req: Request, res: Response) => {
     );
   } catch (err) {
     logger.error('[ProfileSettings] Error resetting user behavior:', err);
-    return sendErrorResponse(
-      res,
-      500,
-      'Internal Server Error',
-      'Failed to reset personalization data',
-    );
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to reset personalization data');
   }
 });
 
@@ -134,7 +125,7 @@ router.get('/blocks', async (req: Request, res: Response) => {
     });
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching blocked users:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch blocked users');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to fetch blocked users');
   }
 });
 
@@ -145,11 +136,11 @@ router.post('/blocks', async (req: Request, res: Response) => {
 
     const validationError = validateRequired(blockedId, 'blockedId');
     if (validationError || typeof blockedId !== 'string') {
-      return sendErrorResponse(res, 400, 'Bad Request', 'Missing or invalid blockedId');
+      return sendErrorResponse(res, 400, 'bad_request', 'Missing or invalid blockedId');
     }
 
     if (oxyUserId === blockedId) {
-      return sendErrorResponse(res, 400, 'Bad Request', 'Cannot block yourself');
+      return sendErrorResponse(res, 400, 'bad_request', 'Cannot block yourself');
     }
 
     const inserted = await getDb()
@@ -162,7 +153,7 @@ router.post('/blocks', async (req: Request, res: Response) => {
       : sendSuccessResponse(res, 201, { success: true }, 'User blocked successfully');
   } catch (err: unknown) {
     logger.error('[ProfileSettings] Error blocking user:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to block user');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to block user');
   }
 });
 
@@ -173,7 +164,7 @@ router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
 
     const validationError = validateRequired(blockedId, 'blockedId');
     if (validationError || typeof blockedId !== 'string') {
-      return sendErrorResponse(res, 400, 'Bad Request', validationError);
+      return sendErrorResponse(res, 400, 'bad_request', validationError);
     }
 
     const rows = await getDb()
@@ -182,13 +173,13 @@ router.delete('/blocks/:blockedId', async (req: Request, res: Response) => {
       .returning({ id: blocks.id });
 
     if (rows.length === 0) {
-      return sendErrorResponse(res, 404, 'Not Found', 'Block not found');
+      return sendErrorResponse(res, 404, 'not_found', 'Block not found');
     }
 
     return sendSuccessResponse(res, 200, { success: true }, 'User unblocked successfully');
   } catch (err) {
     logger.error('[ProfileSettings] Error unblocking user:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to unblock user');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to unblock user');
   }
 });
 
@@ -210,7 +201,7 @@ router.get('/restricts', async (req: Request, res: Response) => {
     });
   } catch (err) {
     logger.error('[ProfileSettings] Error fetching restricted users:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to fetch restricted users');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to fetch restricted users');
   }
 });
 
@@ -221,11 +212,11 @@ router.post('/restricts', async (req: Request, res: Response) => {
 
     const validationError = validateRequired(restrictedId, 'restrictedId');
     if (validationError || typeof restrictedId !== 'string') {
-      return sendErrorResponse(res, 400, 'Bad Request', 'Missing or invalid restrictedId');
+      return sendErrorResponse(res, 400, 'bad_request', 'Missing or invalid restrictedId');
     }
 
     if (oxyUserId === restrictedId) {
-      return sendErrorResponse(res, 400, 'Bad Request', 'Cannot restrict yourself');
+      return sendErrorResponse(res, 400, 'bad_request', 'Cannot restrict yourself');
     }
 
     const inserted = await getDb()
@@ -238,7 +229,7 @@ router.post('/restricts', async (req: Request, res: Response) => {
       : sendSuccessResponse(res, 201, { success: true }, 'User restricted successfully');
   } catch (err: unknown) {
     logger.error('[ProfileSettings] Error restricting user:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to restrict user');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to restrict user');
   }
 });
 
@@ -249,7 +240,7 @@ router.delete('/restricts/:restrictedId', async (req: Request, res: Response) =>
 
     const validationError = validateRequired(restrictedId, 'restrictedId');
     if (validationError || typeof restrictedId !== 'string') {
-      return sendErrorResponse(res, 400, 'Bad Request', validationError);
+      return sendErrorResponse(res, 400, 'bad_request', validationError);
     }
 
     const rows = await getDb()
@@ -258,13 +249,13 @@ router.delete('/restricts/:restrictedId', async (req: Request, res: Response) =>
       .returning({ id: restricts.id });
 
     if (rows.length === 0) {
-      return sendErrorResponse(res, 404, 'Not Found', 'Restrict not found');
+      return sendErrorResponse(res, 404, 'not_found', 'Restrict not found');
     }
 
     return sendSuccessResponse(res, 200, { success: true }, 'User unrestricted successfully');
   } catch (err) {
     logger.error('[ProfileSettings] Error unrestricting user:', err);
-    return sendErrorResponse(res, 500, 'Internal Server Error', 'Failed to unrestrict user');
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to unrestrict user');
   }
 });
 

@@ -1,12 +1,6 @@
+import type { ErrorCode } from '@schedio/contracts';
 import type { Response } from 'express';
-
-/**
- * Standard API error response format
- */
-export interface ApiErrorResponse {
-  error: string;
-  message: string;
-}
+import type { z } from 'zod';
 
 /**
  * Standard API success response format
@@ -17,16 +11,14 @@ export interface ApiSuccessResponse<T = unknown> {
   data?: T;
 }
 
-/**
- * Sends standardized error response
- */
+/** Sends the API error envelope, `{ error: { code, message } }`. */
 export function sendErrorResponse(
   res: Response,
   status: number,
-  error: string,
+  code: z.infer<typeof ErrorCode>,
   message: string,
 ): Response {
-  return res.status(status).json({ error, message });
+  return res.status(status).json({ error: { code, message } });
 }
 
 /**

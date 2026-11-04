@@ -3,6 +3,7 @@ import { Router, type Request, type Response } from 'express';
 import { getRequiredOxyUserId } from '@oxy.so/core/server';
 import { getDb } from '../db';
 import { postAnalytics, posts } from '../db/schema';
+import { sendErrorResponse } from '../utils/apiHelpers';
 
 const router = Router();
 
@@ -20,19 +21,19 @@ router.get('/posts/:id', async (req: Request, res: Response) => {
   try {
     const userId = getRequiredOxyUserId(req);
     const id = req.params.id;
-    if (typeof id !== 'string') return res.status(400).json({ message: 'id is invalid' });
+    if (typeof id !== 'string') return sendErrorResponse(res, 400, 'bad_request', 'id is invalid');
     const post = await getDb().query.posts.findFirst({
       columns: { id: true },
       where: and(eq(posts.id, id), eq(posts.userId, userId)),
     });
-    if (!post) return res.status(404).json({ message: 'Post not found' });
+    if (!post) return sendErrorResponse(res, 404, 'not_found', 'Post not found');
 
     const rows = await getDb()
       .select()
       .from(postAnalytics)
       .where(eq(postAnalytics.postId, post.id));
     if (rows.length === 0) {
-      return res.status(404).json({ message: 'No analytics found for this post' });
+      return sendErrorResponse(res, 404, 'not_found', 'No analytics found for this post');
     }
     const analytics = rows.map((row) => ({
       id: row.id,
@@ -51,7 +52,7 @@ router.get('/posts/:id', async (req: Request, res: Response) => {
     }));
     return res.json({ analytics });
   } catch {
-    return res.status(500).json({ message: 'Failed to fetch post analytics' });
+    return sendErrorResponse(res, 500, 'internal_error', 'Failed to fetch post analytics');
   }
 });
 

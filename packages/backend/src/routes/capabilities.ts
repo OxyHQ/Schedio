@@ -1,16 +1,11 @@
 import { createHash } from 'node:crypto';
 import { Router, type RequestHandler } from 'express';
 import type { CapabilityTicketClaims, CatalogTool } from '@oxy.so/contracts';
-import {
-  CapabilityTicketError,
-  inputSatisfiesCapabilityLimits,
-  readCapabilityAuthorization,
-} from '@oxy.so/core/server';
+import { inputSatisfiesCapabilityLimits, readCapabilityAuthorization } from '@oxy.so/core/server';
 import { jsonObjectSchemaToZod } from '@oxy.so/mcp';
 
 import {
   auditSchedioCapabilityTicket,
-  introspectSchedioCapabilityTicket,
   verifySchedioCapabilityTicket,
 } from '../capabilities/capability-authority.js';
 import {
@@ -101,20 +96,20 @@ for (const tool of SCHEDIO_CAPABILITY_CATALOG.tools.filter(({ exposure }) =>
       return;
     }
 
-    let claims: CapabilityTicketClaims;
-    try {
-      claims = await verifySchedioCapabilityTicket(ticket);
-    } catch (error) {
-      const code = error instanceof CapabilityTicketError ? error.code : 'jwks_unavailable';
-      response.status(code === 'jwks_unavailable' ? 503 : 401).json({
-        error:
-          code === 'jwks_unavailable'
-            ? 'capability_authority_unavailable'
-            : 'invalid_capability_ticket',
-        code,
-      });
-      return;
+    const verdict = await verifySchedioCapabilityTicket(ticket);
+    switch (verdict.outcome) {
+      case 'invalid':
+        response.status(401).json({ error: 'invalid_capability_ticket', code: verdict.code });
+        return;
+      case 'unavailable':
+        response.status(503).json({ error: 'capability_authority_unavailable' });
+        return;
+      case 'revoked':
+        await auditDenied(ticket, tool, 'capability_revoked_or_denied');
+        response.status(403).json({ error: 'capability_revoked_or_denied' });
+        return;
     }
+    const { claims } = verdict;
 
     const rawInput = tool.invocation.method === 'GET' ? request.query : request.body;
     const parsedInput = parseInput.safeParse(rawInput);
@@ -135,18 +130,6 @@ for (const tool of SCHEDIO_CAPABILITY_CATALOG.tools.filter(({ exposure }) =>
     if (!inputSatisfiesCapabilityLimits(tool.name, input, claims.limits)) {
       await auditDenied(ticket, tool, 'capability_limit_exceeded', claims);
       response.status(403).json({ error: 'capability_limit_exceeded' });
-      return;
-    }
-
-    try {
-      if (!(await introspectSchedioCapabilityTicket(ticket, claims))) {
-        await auditDenied(ticket, tool, 'capability_revoked_or_denied', claims);
-        response.status(403).json({ error: 'capability_revoked_or_denied' });
-        return;
-      }
-    } catch (error) {
-      log.general.error({ err: error, ticketId: claims.jti }, 'Capability introspection failed');
-      response.status(503).json({ error: 'capability_authority_unavailable' });
       return;
     }
 
