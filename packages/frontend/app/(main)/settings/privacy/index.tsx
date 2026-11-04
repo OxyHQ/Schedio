@@ -168,7 +168,7 @@ export default function PrivacySettingsScreen() {
               </View>
               <View className="flex-1">
                 <Text className="text-base font-medium" style={{ color: theme.colors.text }}>
-                  {t('settings.privacy.tagsAndallos')}
+                  {t('settings.privacy.tagsAndAllos')}
                 </Text>
               </View>
             </View>

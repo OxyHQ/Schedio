@@ -13,10 +13,10 @@ import { Search } from '@/assets/icons/search-icon';
 const IconComponent = Ionicons as typeof Ionicons;
 
 const FILTERS: { id: string; labelKey: string }[] = [
-  { id: 'people', labelKey: 'Who to follow' },
-  { id: 'latest', labelKey: 'posts' },
-  { id: 'videos', labelKey: 'Videos' },
-  { id: 'saved', labelKey: 'Saved' },
+  { id: 'people', labelKey: 'search.filters.people' },
+  { id: 'latest', labelKey: 'search.filters.latest' },
+  { id: 'videos', labelKey: 'search.filters.videos' },
+  { id: 'saved', labelKey: 'search.filters.saved' },
 ];
 
 export default function AdvancedSearchScreen() {
@@ -40,7 +40,7 @@ export default function AdvancedSearchScreen() {
     <ThemedView className="flex-1">
       <Header
         options={{
-          title: t('Advanced Search'),
+          title: t('search.advanced'),
           leftComponents: [
             <HeaderIconButton key="back" onPress={() => router.back()}>
               <BackArrowIcon size={20} color={theme.colors.text} />
@@ -65,7 +65,7 @@ export default function AdvancedSearchScreen() {
           <TextInput
             className="flex-1 text-base py-3 ml-3"
             style={{ color: theme.colors.text }}
-            placeholder={t('Search Schedio')}
+            placeholder={t('search.placeholder')}
             placeholderTextColor={theme.colors.textSecondary}
             value={query}
             onChangeText={setQuery}
@@ -79,7 +79,7 @@ export default function AdvancedSearchScreen() {
           className="text-[13px] font-semibold uppercase mb-3 ml-1"
           style={{ color: theme.colors.textSecondary }}
         >
-          {t('Filter by')}
+          {t('search.filterBy')}
         </Text>
 
         <View className="flex-row flex-wrap gap-2 mb-8">
@@ -115,7 +115,7 @@ export default function AdvancedSearchScreen() {
           activeOpacity={0.85}
         >
           <IconComponent name="search" size={18} color="#FFFFFF" />
-          <Text className="text-[15px] font-semibold ml-2 text-white">{t('Search')}</Text>
+          <Text className="text-[15px] font-semibold ml-2 text-white">{t('search.submit')}</Text>
         </TouchableOpacity>
       </ScrollView>
     </ThemedView>

@@ -63,7 +63,7 @@ export default function TagsallosScreen() {
     <ThemedView className="flex-1">
       <Header
         options={{
-          title: t('settings.privacy.tagsAndallos'),
+          title: t('settings.privacy.tagsAndAllos'),
           leftComponents: [
             <HeaderIconButton key="back" onPress={() => router.back()}>
               <BackArrowIcon size={20} color={theme.colors.text} />
@@ -120,13 +120,13 @@ export default function TagsallosScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-base font-medium" style={{ color: theme.colors.text }}>
-                    {t('settings.privacy.allowallos')}
+                    {t('settings.privacy.allowAllos')}
                   </Text>
                   <Text
                     className="text-[13px] mt-0.5"
                     style={{ color: theme.colors.textSecondary }}
                   >
-                    {t('settings.privacy.allowallosDesc')}
+                    {t('settings.privacy.allowAllosDesc')}
                   </Text>
                 </View>
               </View>

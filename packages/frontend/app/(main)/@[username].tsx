@@ -46,7 +46,11 @@ export default function ProfileScreen() {
     <ThemedView className="flex-1">
       <Header
         options={{
-          title: data?.username ? `@${data.username}` : username ? `@${username}` : t('Profile'),
+          title: data?.username
+            ? `@${data.username}`
+            : username
+              ? `@${username}`
+              : t('common.profile'),
           leftComponents: [
             <HeaderIconButton key="back" onPress={() => router.back()}>
               <BackArrowIcon size={20} color={theme.colors.text} />
@@ -68,7 +72,7 @@ export default function ProfileScreen() {
             className="text-base mt-3 text-center"
             style={{ color: theme.colors.textSecondary }}
           >
-            {`${t('No results found for')} @${username}`}
+            {`${t('common.noResultsFor')} @${username}`}
           </Text>
         </View>
       ) : (
@@ -109,7 +113,7 @@ export default function ProfileScreen() {
                   {counts?.following ?? 0}
                 </Text>
                 <Text className="text-[13px] mt-0.5" style={{ color: theme.colors.textSecondary }}>
-                  {t('Following')}
+                  {t('profile.following')}
                 </Text>
               </View>
               <View className="items-center">
@@ -117,7 +121,7 @@ export default function ProfileScreen() {
                   {counts?.followers ?? 0}
                 </Text>
                 <Text className="text-[13px] mt-0.5" style={{ color: theme.colors.textSecondary }}>
-                  {t('Follow')}
+                  {t('profile.follow')}
                 </Text>
               </View>
             </View>
