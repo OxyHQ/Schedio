@@ -30,7 +30,18 @@
     "message": "Ci scusiamo per l'inconveniente. Per favore riprova.",
     "retry": "Riprova"
   },
+  "location": {
+    "permissionDenied": "Permesso di posizione negato",
+    "added": "Posizione aggiunta",
+    "failed": "Impossibile ottenere la posizione",
+    "removed": "Posizione rimossa"
+  },
   "nav": {
+    "dashboard": "Dashboard",
+    "compose": "Scrivi",
+    "queue": "Coda",
+    "analytics": "Statistiche",
+    "accounts": "Account",
     "settings": "Impostazioni",
     "signIn": "Accedi"
   },
@@ -49,6 +60,9 @@
   "search": {
     "title": "Cerca",
     "submit": "Cerca",
+    "placeholder": "Cerca su Schedio",
+    "filterBy": "Filtra per",
+    "advanced": "Ricerca avanzata",
     "loadFailed": "Errore nel recupero dei dati: {{message}}",
     "filters": {
       "people": "Chi seguire",

@@ -30,7 +30,18 @@
     "message": "Lamentamos el inconveniente. Por favor, inténtalo de nuevo.",
     "retry": "Reintentar"
   },
+  "location": {
+    "permissionDenied": "Permiso de ubicación denegado",
+    "added": "Ubicación añadida",
+    "failed": "No se pudo obtener la ubicación",
+    "removed": "Ubicación eliminada"
+  },
   "nav": {
+    "dashboard": "Panel",
+    "compose": "Redactar",
+    "queue": "Cola",
+    "analytics": "Estadísticas",
+    "accounts": "Cuentas",
     "settings": "Ajustes",
     "signIn": "Iniciar sesión"
   },
@@ -49,6 +60,9 @@
   "search": {
     "title": "Buscar",
     "submit": "Buscar",
+    "placeholder": "Buscar en Schedio",
+    "filterBy": "Filtrar por",
+    "advanced": "Búsqueda avanzada",
     "loadFailed": "Error al obtener datos: {{message}}",
     "filters": {
       "people": "A quién seguir",
