@@ -1,32 +1,23 @@
-import { appCapabilityCatalogSchema } from '@oxy.so/contracts';
+import { registerCapabilityCatalog } from '@oxy.so/mcp';
 
-import { SCHEDIO_CAPABILITY_CATALOG } from './capabilities/schedio.catalog.js';
-import { oxyAuthorityTransport } from './capabilities/oxy-service-client.js';
-
-const OXY_API_URL = (process.env.OXY_API_URL ?? 'https://api.oxy.so').replace(/\/$/, '');
+import { SCHEDIO_CAPABILITY_CATALOG } from './capabilities/schedio.catalog';
+import { oxy } from './oxy';
 
 async function main(): Promise<void> {
-  const catalog = appCapabilityCatalogSchema.parse(SCHEDIO_CAPABILITY_CATALOG);
-  const transport = oxyAuthorityTransport();
-  const response = await transport
-    .fetch(`${OXY_API_URL}/capabilities/catalogs/register`, {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({ catalog, deployedAt: new Date().toISOString() }),
-      signal: AbortSignal.timeout(15_000),
-    })
-    .finally(() => transport.dispose());
-  if (!response.ok) {
-    throw new Error(`Schedio capability catalog registration failed (${response.status})`);
+  const transport = oxy.createServiceClient({ baseURL: oxy.baseURL, audience: 'oxy-api' });
+  try {
+    const binding = await registerCapabilityCatalog(SCHEDIO_CAPABILITY_CATALOG, {
+      transport,
+      oxyApiUrl: oxy.baseURL,
+      timeoutMs: 15_000,
+    });
+    process.stdout.write(
+      `Registered Schedio capability catalog ${binding.version} (${binding.digest})\n`,
+    );
+  } finally {
+    transport.dispose();
+    oxy.dispose();
   }
-  const body = (await response.json()) as { registration?: { digest?: string } };
-  const digest = body.registration?.digest;
-  if (typeof digest !== 'string' || digest.length === 0) {
-    throw new Error('Schedio capability catalog registration returned no digest');
-  }
-  process.stdout.write(`Registered Schedio capability catalog ${catalog.version} (${digest})\n`);
 }
 
 void main().catch((error: unknown) => {

@@ -1,106 +1,65 @@
-import { createPublicKey, type KeyObject } from 'node:crypto';
+import type { auditResultSchema, CapabilityTicketClaims } from '@oxy.so/contracts';
 import {
-  type auditResultSchema,
-  capabilityTicketClaimsSchema,
-  policyDecisionSchema,
-  type CapabilityTicketClaims,
-} from '@oxy.so/contracts';
-import { CapabilityTicketError, verifyCapabilityTicket } from '@oxy.so/core/server';
-import { z } from 'zod';
+  CapabilityTicketError,
+  createLiveCapabilityTicketVerifier,
+  createOxyJwksKeyResolver,
+} from '@oxy.so/core/server';
+import type { z } from 'zod';
 
-import { oxyAuthorityTransport } from './oxy-service-client.js';
+import { oxy } from '../oxy';
+import { SCHEDIO_CAPABILITY_CATALOG } from './schedio.catalog';
 
 type AuditResult = z.infer<typeof auditResultSchema>;
 
-const OXY_API_URL = (process.env.OXY_API_URL ?? 'https://api.oxy.so').replace(/\/$/, '');
-const JWKS_TTL_MS = 5 * 60 * 1_000;
-
-const publicJwkSchema = z.object({
-  kty: z.string(),
-  crv: z.string(),
-  x: z.string(),
-  kid: z.string().min(1),
-  use: z.string().optional(),
-  alg: z.string().optional(),
-});
-const jwksSchema = z.object({ keys: z.array(publicJwkSchema) });
-const introspectionEnvelopeSchema = z.object({
-  active: z.boolean(),
-  claims: z.unknown().optional(),
-  decision: z.unknown().optional(),
+const resolvePublicKey = createOxyJwksKeyResolver({
+  jwksUrl: `${oxy.baseURL}/capabilities/.well-known/jwks.json`,
 });
 
-let cachedKeys = new Map<string, KeyObject>();
-let keysExpireAt = 0;
+/**
+ * - `invalid`: the ticket is not one Oxy signed for this catalogue (401).
+ * - `unavailable`: Oxy could not be asked whether it still stands behind it (503).
+ * - `revoked`: Oxy answered, and does not (403).
+ */
+export type CapabilityTicketVerdict =
+  | { outcome: 'valid'; claims: CapabilityTicketClaims }
+  | { outcome: 'invalid'; code: string }
+  | { outcome: 'unavailable' }
+  | { outcome: 'revoked' };
 
-async function loadPublicKeys(force = false): Promise<void> {
-  if (!force && cachedKeys.size > 0 && Date.now() < keysExpireAt) return;
-  const response = await fetch(`${OXY_API_URL}/capabilities/.well-known/jwks.json`, {
-    signal: AbortSignal.timeout(5_000),
-  });
-  if (!response.ok) throw new Error(`Oxy capability JWKS returned ${response.status}`);
-  const body = jwksSchema.parse(await response.json());
-  const keys = new Map<string, KeyObject>();
-  for (const jwk of body.keys) {
-    keys.set(jwk.kid, createPublicKey({ key: jwk, format: 'jwk' }));
-  }
-  if (keys.size === 0) throw new Error('Oxy capability JWKS contains no keys');
-  cachedKeys = keys;
-  keysExpireAt = Date.now() + JWKS_TTL_MS;
-}
-
+/**
+ * Signature, issuer, audience, expiry and catalogue binding locally, then
+ * Oxy's LIVE decision: a ticket Oxy no longer stands behind (revoked task or
+ * grant, a denied policy decision, or claims that differ from the signed ones)
+ * is refused however valid its signature.
+ */
 export async function verifySchedioCapabilityTicket(
-  token: string,
-): Promise<CapabilityTicketClaims> {
-  await loadPublicKeys();
-  const options = {
-    audience: 'oxy-schedio-api',
-    issuer: OXY_API_URL,
-    resolvePublicKey: (keyId: string) => cachedKeys.get(keyId),
-  };
+  ticket: string,
+): Promise<CapabilityTicketVerdict> {
+  const oxyAnswer: { state: 'not_asked' | 'asking' | 'answered' } = { state: 'not_asked' };
+  const verify = createLiveCapabilityTicketVerifier({
+    issuer: oxy.baseURL,
+    audience: SCHEDIO_CAPABILITY_CATALOG.audience,
+    resolvePublicKey,
+    introspect: async (token, request) => {
+      oxyAnswer.state = 'asking';
+      const result = await oxy.agency.introspectCapabilityTicket(token, request);
+      oxyAnswer.state = 'answered';
+      return result.decision?.allowed === true ? result : { ...result, active: false };
+    },
+  });
   try {
-    return verifyCapabilityTicket(token, options);
+    return { outcome: 'valid', claims: await verify(ticket) };
   } catch (error) {
-    if (!(error instanceof CapabilityTicketError) || error.code !== 'unknown_key') throw error;
-    await loadPublicKeys(true);
-    return verifyCapabilityTicket(token, options);
+    if (error instanceof CapabilityTicketError) return { outcome: 'invalid', code: error.code };
+    switch (oxyAnswer.state) {
+      case 'not_asked':
+        return { outcome: 'invalid', code: 'invalid_claims' };
+      case 'asking':
+        return { outcome: 'unavailable' };
+      case 'answered':
+        return { outcome: 'revoked' };
+    }
   }
-}
-
-async function authorityRequest(path: string, body: Record<string, unknown>): Promise<unknown> {
-  const transport = oxyAuthorityTransport();
-  const response = await transport
-    .fetch(`${OXY_API_URL}${path}`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(10_000),
-    })
-    .finally(() => transport.dispose());
-  if (!response.ok) throw new Error(`Oxy capability authority returned ${response.status}`);
-  return response.json();
-}
-
-/** Recalculates mutable user, account, grant, credential and app authority. */
-export async function introspectSchedioCapabilityTicket(
-  token: string,
-  localClaims: CapabilityTicketClaims,
-): Promise<boolean> {
-  const envelope = introspectionEnvelopeSchema.parse(
-    await authorityRequest('/capabilities/tickets/introspect', { ticket: token }),
-  );
-  const claims =
-    envelope.claims === undefined ? undefined : capabilityTicketClaimsSchema.parse(envelope.claims);
-  const decision =
-    envelope.decision === undefined ? undefined : policyDecisionSchema.parse(envelope.decision);
-  return (
-    envelope.active === true &&
-    decision?.allowed === true &&
-    claims?.jti === localClaims.jti &&
-    claims.aud === localClaims.aud &&
-    claims.tool === localClaims.tool &&
-    claims.resource.effectiveAccountId === localClaims.resource.effectiveAccountId
-  );
 }
 
 export async function auditSchedioCapabilityTicket(input: {
@@ -109,15 +68,15 @@ export async function auditSchedioCapabilityTicket(input: {
   rollbackSupported: boolean;
   idempotencyKeyHash?: string;
 }): Promise<void> {
-  await authorityRequest('/capabilities/audit', {
-    ticket: input.ticket,
-    result: input.result,
-    rollback: { supported: input.rollbackSupported, attempted: false },
-    ...(input.idempotencyKeyHash ? { idempotencyKeyHash: input.idempotencyKeyHash } : {}),
-  });
-}
-
-export function resetSchedioCapabilityAuthorityForTests(): void {
-  cachedKeys = new Map();
-  keysExpireAt = 0;
+  await oxy.serviceRequest(
+    'POST',
+    '/capabilities/audit',
+    {
+      ticket: input.ticket,
+      result: input.result,
+      rollback: { supported: input.rollbackSupported, attempted: false },
+      ...(input.idempotencyKeyHash ? { idempotencyKeyHash: input.idempotencyKeyHash } : {}),
+    },
+    { retry: false, timeout: 10_000 },
+  );
 }
