@@ -11,7 +11,7 @@ import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reani
 import { useTheme } from '@/hooks/useTheme';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsScreenNotMobile } from '@/hooks/useOptimizedMediaQuery';
-import { useKeyboardVisibility } from '@/hooks/useKeyboardVisibility';
+import { useKeyboardVisible } from '@oxy.so/bloom/hooks';
 
 interface FloatingActionButtonProps {
   onPress: () => void;
@@ -37,7 +37,7 @@ export const FloatingActionButton: React.FC<FloatingActionButtonProps> = ({
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const isScreenNotMobile = useIsScreenNotMobile();
-  const keyboardVisible = useKeyboardVisibility();
+  const keyboardVisible = useKeyboardVisible();
 
   const flattenedStyle = StyleSheet.flatten(style);
   const hasCustomPosition = flattenedStyle?.position !== undefined;

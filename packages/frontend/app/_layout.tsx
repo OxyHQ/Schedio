@@ -3,7 +3,7 @@ import 'react-native-url-polyfill/auto';
 // Import Reanimated early to ensure proper initialization before other modules
 import 'react-native-reanimated';
 
-import NetInfo from '@react-native-community/netinfo';
+import { useNetworkStatus } from '@oxy.so/bloom/connection-status';
 import { preventNativeSplashAutoHide, useHideNativeSplashWhenReady } from '@oxy.so/expo-splash';
 import { QueryClient, focusManager, onlineManager } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
@@ -36,7 +36,6 @@ import { useAccountColor, useOxy } from '@oxy.so/services/ui/client';
 
 // Services & Utils
 import { AppInitializer } from '@/lib/appInitializer';
-import { startConnectionMonitoring } from '@/lib/network/connectionStatus';
 import { loadFontsWithFallback } from '@/utils/fontLoader';
 
 // Styles
@@ -186,23 +185,17 @@ export default function RootLayout() {
     AppInitializer.loadEagerSettings();
   }, []);
 
+  const { online } = useNetworkStatus();
   useEffect(() => {
-    const unsubscribeNetInfo = NetInfo.addEventListener((state) => {
-      onlineManager.setOnline(Boolean(state.isConnected && state.isInternetReachable !== false));
-    });
+    onlineManager.setOnline(online);
+  }, [online]);
 
-    const stopMonitoring = startConnectionMonitoring();
-
+  useEffect(() => {
     const onAppStateChange = (status: AppStateStatus) => {
       focusManager.setFocused(status === 'active');
     };
     const appStateSub = AppState.addEventListener('change', onAppStateChange);
-
-    return () => {
-      unsubscribeNetInfo();
-      stopMonitoring();
-      appStateSub.remove();
-    };
+    return () => appStateSub.remove();
   }, []);
 
   useEffect(() => {
