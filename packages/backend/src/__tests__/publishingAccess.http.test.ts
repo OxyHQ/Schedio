@@ -56,8 +56,8 @@ beforeAll(async () => {
     },
   });
   process.env.OXY_API_URL = oxyApi.url.origin;
-  const { authorize } = await import('../publishing/authority');
-  const { publishingErrors, route } = await import('../publishing/errors');
+  const { authorize } = await import('../publishing/authority.js');
+  const { publishingErrors, route } = await import('../publishing/errors.js');
   const app = express();
   app.use((req, _res, next) => {
     Object.assign(req, { userId: 'person', sessionId: 'session', accessToken: 'person-session' });
@@ -77,7 +77,7 @@ beforeEach(async () => {
   mode = 'admin';
   reads = 0;
   // Each case starts with nothing remembered.
-  const { oxy } = await import('../oxy');
+  const { oxy } = await import('../oxy.js');
   oxy.invalidateAppPermissions();
 });
 afterAll(async () => {
