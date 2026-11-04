@@ -40,9 +40,9 @@ export function SideBar() {
 
   const handleSignOut = async () => {
     const confirmed = await confirmDialog({
-      title: t('settings.signOut'),
-      message: t('settings.signOutMessage'),
-      okText: t('settings.signOut'),
+      title: t('common.signOut'),
+      message: t('common.signOutConfirm'),
+      okText: t('common.signOut'),
       cancelText: t('common.cancel'),
       destructive: true,
     });
@@ -64,37 +64,37 @@ export function SideBar() {
   const navigationItems = useMemo<NavigationItem[]>(() => {
     const items: NavigationItem[] = [
       {
-        title: t('Dashboard'),
+        title: t('nav.dashboard'),
         icon: <Home color={theme.colors.text} />,
         iconActive: <HomeActive color={theme.colors.primary} />,
         route: ROUTES.HOME,
       },
       {
-        title: t('Compose'),
+        title: t('nav.compose'),
         icon: <ComposeIcon color={theme.colors.text} size={20} />,
         iconActive: <ComposeIIconActive color={theme.colors.primary} size={20} />,
         route: ROUTES.COMPOSE,
       },
       {
-        title: t('Queue'),
+        title: t('nav.queue'),
         icon: <CalendarIcon color={theme.colors.text} size={20} />,
         iconActive: <CalendarIcon color={theme.colors.primary} size={20} />,
         route: ROUTES.QUEUE,
       },
       {
-        title: t('Analytics'),
+        title: t('nav.analytics'),
         icon: <AnalyticsIcon color={theme.colors.text} size={20} />,
         iconActive: <AnalyticsIconActive color={theme.colors.primary} size={20} />,
         route: ROUTES.ANALYTICS,
       },
       {
-        title: t('Accounts'),
+        title: t('nav.accounts'),
         icon: <IconComponent name="people-outline" size={20} color={theme.colors.text} />,
         iconActive: <IconComponent name="people" size={20} color={theme.colors.primary} />,
         route: ROUTES.ACCOUNTS,
       },
       {
-        title: t('Settings'),
+        title: t('nav.settings'),
         icon: <Gear color={theme.colors.text} />,
         iconActive: <GearActive color={theme.colors.primary} />,
         route: ROUTES.SETTINGS,
@@ -193,7 +193,7 @@ export function SideBar() {
               <SideBarItem
                 isActive={false}
                 icon={<IconComponent name="log-out-outline" size={20} color={theme.colors.text} />}
-                text={t('settings.signOut')}
+                text={t('common.signOut')}
                 isExpanded={isExpanded}
                 onHoverExpand={handleHoverIn}
                 onPress={handleSignOut}
@@ -202,7 +202,7 @@ export function SideBar() {
               <SideBarItem
                 isActive={false}
                 icon={<IconComponent name="log-in-outline" size={20} color={theme.colors.text} />}
-                text={t('Sign In')}
+                text={t('nav.signIn')}
                 isExpanded={isExpanded}
                 onHoverExpand={handleHoverIn}
                 onPress={async () => {

@@ -41,31 +41,31 @@ export const BottomBar = () => {
   const navigationItems = useMemo<NavigationItem[]>(
     () => [
       {
-        title: t('Dashboard'),
+        title: t('nav.dashboard'),
         icon: <Home color={theme.colors.text} size={24} />,
         iconActive: <HomeActive color={theme.colors.primary} size={24} />,
         route: ROUTES.HOME,
       },
       {
-        title: t('Compose'),
+        title: t('nav.compose'),
         icon: <ComposeIcon color={theme.colors.text} size={24} />,
         iconActive: <ComposeIIconActive color={theme.colors.primary} size={24} />,
         route: ROUTES.COMPOSE,
       },
       {
-        title: t('Queue'),
+        title: t('nav.queue'),
         icon: <CalendarIcon color={theme.colors.text} size={24} />,
         iconActive: <CalendarIcon color={theme.colors.primary} size={24} />,
         route: ROUTES.QUEUE,
       },
       {
-        title: t('Analytics'),
+        title: t('nav.analytics'),
         icon: <AnalyticsIcon color={theme.colors.text} size={24} />,
         iconActive: <AnalyticsIconActive color={theme.colors.primary} size={24} />,
         route: ROUTES.ANALYTICS,
       },
       {
-        title: t('Settings'),
+        title: t('nav.settings'),
         icon: <Gear color={theme.colors.text} />,
         iconActive: <GearActive color={theme.colors.primary} />,
         route: ROUTES.SETTINGS,
@@ -238,7 +238,7 @@ export const BottomBar = () => {
                 },
               ]}
             >
-              {user?.username ? t('Profile') : t('Sign In')}
+              {user?.username ? t('common.profile') : t('nav.signIn')}
             </Text>
           </View>
         </Pressable>

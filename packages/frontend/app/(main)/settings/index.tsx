@@ -173,9 +173,9 @@ export default function SettingsScreen() {
 
   const handleSignOut = async () => {
     const confirmed = await confirmDialog({
-      title: t('settings.signOut'),
-      message: t('settings.signOutMessage'),
-      okText: t('settings.signOut'),
+      title: t('common.signOut'),
+      message: t('common.signOutConfirm'),
+      okText: t('common.signOut'),
       cancelText: t('common.cancel'),
       destructive: true,
     });
@@ -359,7 +359,7 @@ export default function SettingsScreen() {
                     Schedio
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
-                    {t('settings.aboutallo.version', {
+                    {t('settings.about.version', {
                       version: Constants.expoConfig?.version || '1.0.0',
                     })}
                   </Text>
@@ -383,12 +383,12 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('settings.aboutallo.build')}
+                    {t('settings.about.build')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {typeof Constants.expoConfig?.runtimeVersion === 'string'
                       ? Constants.expoConfig.runtimeVersion
-                      : t('settings.aboutallo.buildVersion')}
+                      : t('settings.about.buildUnavailable')}
                   </Text>
                 </View>
               </View>
@@ -414,7 +414,7 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('settings.aboutallo.platform')}
+                    {t('settings.about.platform')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {Constants.platform?.ios
@@ -446,7 +446,7 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('settings.aboutallo.oxySDK')}
+                    {t('settings.about.oxySdk')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {oxySdkVersion}
@@ -471,7 +471,7 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('settings.aboutallo.expoSDK')}
+                    {t('settings.about.expoSdk')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {expoSdkVersion}
@@ -498,7 +498,7 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('settings.aboutallo.apiUrl')}
+                    {t('settings.about.apiUrl')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {apiUrl}
@@ -562,7 +562,7 @@ export default function SettingsScreen() {
                   [
                     { text: t('common.cancel'), style: 'cancel' },
                     {
-                      text: t('common.sendFeedback'),
+                      text: t('common.send'),
                       onPress: () => {
                         Alert.alert(
                           t('common.success'),
@@ -732,7 +732,7 @@ export default function SettingsScreen() {
                     className="text-[15px] font-medium mb-0.5"
                     style={{ color: theme.colors.text }}
                   >
-                    {t('Language')}
+                    {t('settings.preferences.language')}
                   </Text>
                   <Text className="text-[13px]" style={{ color: theme.colors.textSecondary }}>
                     {languageDescription}
@@ -936,7 +936,7 @@ export default function SettingsScreen() {
                 <IconComponent name="log-out" size={20} color={theme.colors.error} />
               </View>
               <Text className="text-[15px] font-semibold" style={{ color: theme.colors.error }}>
-                {t('settings.signOut')}
+                {t('common.signOut')}
               </Text>
             </View>
             <IconComponent name="chevron-forward" size={16} color={theme.colors.error} />

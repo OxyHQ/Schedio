@@ -19,17 +19,17 @@ export const NotificationPermissionSheet: React.FC<Props> = ({ onEnable, onLater
       <View style={styles.illustrationWrap}>
         <NoUpdatesIllustration width={140} height={140} />
       </View>
-      <Text style={styles.title}>{t('permission.notifications.title')}</Text>
-      <Text style={styles.subtitle}>{t('permission.notifications.subtitle')}</Text>
+      <Text style={styles.title}>{t('notifications.permission.title')}</Text>
+      <Text style={styles.subtitle}>{t('notifications.permission.subtitle')}</Text>
       <View style={styles.actions}>
         <TouchableOpacity onPress={onLater} style={[styles.button, styles.secondary]}>
           <Text style={[styles.buttonText, styles.secondaryText]}>
-            {t('permission.notifications.later')}
+            {t('notifications.permission.later')}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onEnable} style={[styles.button, styles.primary]}>
           <Text style={[styles.buttonText, styles.primaryText]}>
-            {t('permission.notifications.enable')}
+            {t('notifications.permission.enable')}
           </Text>
         </TouchableOpacity>
       </View>

@@ -71,7 +71,7 @@ export default function SearchResultsScreen() {
     <ThemedView className="flex-1">
       <Header
         options={{
-          title: decodedQuery || t('Search'),
+          title: decodedQuery || t('search.title'),
           leftComponents: [
             <HeaderIconButton key="back" onPress={() => router.back()}>
               <BackArrowIcon size={20} color={theme.colors.text} />
@@ -99,9 +99,7 @@ export default function SearchResultsScreen() {
                 className="text-base mt-3 text-center"
                 style={{ color: theme.colors.textSecondary }}
               >
-                {errored
-                  ? t('error.data.fetch_failed')
-                  : `${t('No results found for')} "${decodedQuery}"`}
+                {errored ? t('search.loadFailed') : `${t('common.noResultsFor')} "${decodedQuery}"`}
               </Text>
             </View>
           }

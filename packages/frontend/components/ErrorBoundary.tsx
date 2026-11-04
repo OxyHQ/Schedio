@@ -87,12 +87,12 @@ class ErrorBoundaryBase extends Component<Props, State> {
       return (
         <View style={styles.container}>
           <Text style={styles.emoji}>😕</Text>
-          <Text style={styles.title}>{this.props.t('error.boundary.title')}</Text>
-          <Text style={styles.message}>{this.props.t('error.boundary.message')}</Text>
+          <Text style={styles.title}>{this.props.t('errorBoundary.title')}</Text>
+          <Text style={styles.message}>{this.props.t('errorBoundary.message')}</Text>
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.retryButton} onPress={this.handleRetry}>
-              <Text style={styles.retryText}>{this.props.t('error.boundary.retry')}</Text>
+              <Text style={styles.retryText}>{this.props.t('errorBoundary.retry')}</Text>
             </TouchableOpacity>
 
             {showReload && (

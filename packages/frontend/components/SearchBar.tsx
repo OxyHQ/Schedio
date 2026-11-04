@@ -97,7 +97,7 @@ export const SearchBar = () => {
             marginHorizontal: 17,
             flex: 1,
           }}
-          placeholder={t('Search Schedio')}
+          placeholder={t('search.placeholder')}
           placeholderTextColor={theme.colors.textSecondary}
           value={searchQuery}
           onChangeText={handleSearchChange}
@@ -126,7 +126,7 @@ export const SearchBar = () => {
           }}
         >
           <Text style={{ fontWeight: 'bold', marginBottom: 10, color: theme.colors.text }}>
-            {t('Filter by')}
+            {t('search.filterBy')}
           </Text>
 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -151,7 +151,7 @@ export const SearchBar = () => {
               router.push('/search/advanced');
             }}
           >
-            <Text style={{ color: 'white', fontWeight: '600' }}>{t('Advanced Search')}</Text>
+            <Text style={{ color: 'white', fontWeight: '600' }}>{t('search.advanced')}</Text>
           </TouchableOpacity>
         </View>
       )}
