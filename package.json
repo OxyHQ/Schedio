@@ -19,6 +19,7 @@
     "test": "bun run --filter '*' test",
     "lint": "biome check --error-on-warnings . && bun run --filter '@schedio/frontend' lint:expo",
     "i18n:check": "oxy-doctor-i18n --ci",
+    "doctor:oxy": "oxy-doctor --ci",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "check:bun-pin": "bun scripts/check-bun-pin.mjs",
