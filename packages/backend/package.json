@@ -23,7 +23,7 @@
   "dependencies": {
     "@aws-sdk/credential-provider-node": "3.972.84",
     "@oxy.so/contracts": "6.9.0",
-    "@oxy.so/core": "7.23.0",
+    "@oxy.so/core": "7.23.1",
     "@oxy.so/db": "1.4.0",
     "@oxy.so/mcp": "1.4.1",
     "@oxy.so/mention-contracts": "0.2.0",
