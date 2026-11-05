@@ -82,6 +82,12 @@ jobs:
       # namespace, every locale shaped like English. Missing translations warn.
       - name: Translation keys (ADR 0055)
         run: bun run i18n:check
+      # Fails on a required native peer of the installed @oxy.so/services the
+      # frontend does not declare (expo-crypto is its CSPRNG: without it sign-in
+      # breaks on a native build) and on two copies of a package bun.lock could
+      # serve with one.
+      - name: Oxy dependency health (oxy-doctor)
+        run: bun run doctor:oxy
       - name: Expo ESLint rules
         run: bun run --filter @schedio/frontend lint:expo
       # The backend image runs the bun its Dockerfile names, and that literal
