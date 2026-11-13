@@ -64,7 +64,7 @@ export const AppProviders = memo(function AppProviders({
                     <ErrorBoundary>
                       <HomeRefreshProvider>
                         {/* Bloom's native Portal appends into this provider/outlet pair
-                            (AliaChatSheet's BottomSheet renders through it). One outlet,
+                            (GemieChatSheet's BottomSheet renders through it). One outlet,
                             after the content it paints over and never inside the inert
                             boundary. No-ops on web. */}
                         <PortalProvider>
