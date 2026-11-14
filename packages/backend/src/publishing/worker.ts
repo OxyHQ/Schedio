@@ -3,7 +3,7 @@ import { and, asc, eq, lte, sql } from 'drizzle-orm';
 import {
   mentionForOxyService,
   MentionServiceError,
-  type MentionRequester,
+  type MentionActingFor,
   type MentionServiceClient,
 } from '@oxy.so/mention-sdk/server';
 import { oxy } from '../oxy';
@@ -113,11 +113,11 @@ export async function dispatch(
   provider: {
     json: typeof upstreamJson;
     mention: (
-      requester: MentionRequester,
+      actingFor: MentionActingFor,
     ) => Pick<MentionServiceClient, 'identity' | 'publish' | 'dispose'>;
   } = {
     json: upstreamJson,
-    mention: (requester) => mentionForOxyService(oxy, { requester }),
+    mention: (actingFor) => mentionForOxyService(oxy, { actingFor }),
   },
 ): Promise<DispatchResult> {
   try {
@@ -146,13 +146,15 @@ export async function dispatch(
         return { status: 'failed', error: 'Destination no longer belongs to this workspace' };
       try {
         if (account.platform === 'mention') {
-          if (!currentPost.oxyTaskId)
-            return {
-              status: 'failed',
-              error: 'Publishing authority is missing; reschedule from your Oxy account',
-            };
+          // Schedio acting for the workspace on its declared Mention write (oxy
+          // ADR 0066); an organization's post is published for its author, who
+          // must still operate it. Oxy checks both live.
           const accountId = currentPost.organizationId ?? currentPost.userId;
-          const client = provider.mention({ accountId, taskId: currentPost.oxyTaskId });
+          const client = provider.mention(
+            accountId === currentPost.userId
+              ? { accountId }
+              : { accountId, requesterAccountId: currentPost.userId },
+          );
           try {
             const identity = await client.identity();
             if (
