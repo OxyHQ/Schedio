@@ -16,9 +16,13 @@ The one way Schedio talks to Oxy. Moved from AGENTS.md; each rule is checked in 
   ask `fresh`. `OxyAccessError` becomes 401 / 403 / 503 in
   `publishing/errors.ts` through `accessErrorStatus` — an outage is 503, never
   a "no", and is never cached.
-- **Calls as the person** go through `oxy.withUser(req | bearer, …)`
-  (`publishing/taskAuthority.ts` switches into the organization that way and
-  keeps only the Oxy task id).
+- **Calls as the person** go through `oxy.withUser(req | bearer, …)` while they
+  are present. **Background work acts for the account** (oxy ADR 0066): the
+  worker's Mention dispatch is `mentionForOxyService(oxy, { actingFor })`,
+  naming the workspace and, for an organization, the author who operates it. No
+  session, task or consent is kept. It works only once Schedio's entry in Oxy's
+  first-party registry declares `actsForPeople`: Mention `write`; Schedio has
+  none yet (parked before launch), so add it before launch.
 - **Capability tickets** (`/_oxy/capabilities/*`): `createLiveCapabilityTicketVerifier`
   with `createOxyJwksKeyResolver` and `oxy.agency.introspectCapabilityTicket`
   (`capabilities/capability-authority.ts`); invalid → 401, Oxy unreachable →

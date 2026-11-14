@@ -42,6 +42,7 @@ Migrations: `bun run --filter @schedio/backend db:generate`, then
 ## Boundaries
 
 - Never construct a second `OxyServer` or `new OxyServices()` with a user token: identity must stay workload-bound.
+- First-party never asks people for permissions: this service acts for a person with `actingFor` on what oxy's first-party registry declares (oxy ADR 0066); permissions, scopes and consent are only for third parties. Schedio has no registry entry yet; it needs `actsForPeople` (Mention write) before launch.
 - Never cache an Oxy outage as a denial; it is a 503.
 - Never publish to npm from a laptop; see the npm releases doc.
 - Ask first before changing the OpenAPI contract shape or migration order: clients and deploys depend on them.
@@ -73,4 +74,4 @@ Never print or commit `*_DATABASE_URL`, `SOCIAL_TOKEN_ENCRYPTION_KEY` or provide
 - [Application roles](https://github.com/OxyHQ/oxy/blob/main/docs/auth/application-roles.md)
 - [Bloom app conventions](https://github.com/OxyHQ/Bloom/blob/main/docs/app-conventions.mdx)
 
-Owner: Nate Isern (OxyHQ). Last reviewed: 2026-11-11.
+Owner: Nate Isern (OxyHQ). Last reviewed: 2026-11-14.
