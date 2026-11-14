@@ -1,8 +1,3 @@
-import {
-  startEcosystemActivity,
-  stopEcosystemActivity,
-  ecosystemActivityMiddleware,
-} from './src/ecosystemActivity';
 // --- Imports ---
 import express from 'express';
 import { closeDatabase, connectToDatabase } from './src/db';
@@ -12,6 +7,7 @@ import {
   createOxyRateLimit,
   createOxySecurityHeaders,
   oxyTrustProxy,
+  startEcosystemTraffic,
 } from '@oxy.so/core/server';
 import { oxy } from './src/oxy';
 
@@ -27,8 +23,13 @@ import analyticsRoutes from './src/routes/analytics';
 import { logger } from './src/utils/logger';
 import { validateTokenCipherConfiguration } from './src/utils/tokenCipher';
 
+// The entry point, never imported by a test: the publisher starts with the process.
+const traffic = startEcosystemTraffic({
+  service: 'schedio',
+  ready: () => server?.listening === true,
+});
 const app = express();
-app.use(ecosystemActivityMiddleware);
+app.use(traffic.observeHttp);
 
 // The real client behind Cloudflare and the ALB, for the rate limiter's key.
 app.set('trust proxy', oxyTrustProxy);
@@ -123,7 +124,7 @@ function installGracefulShutdown(): void {
 
     const finish = (exitCode: number) => {
       void Promise.resolve(stopWorker?.())
-        .then(() => stopEcosystemActivity())
+        .then(() => traffic.stop())
         .then(() => closeDatabase())
         .then(
           () => process.exit(exitCode),
@@ -148,7 +149,6 @@ function installGracefulShutdown(): void {
 const bootServer = async () => {
   try {
     validateTokenCipherConfiguration();
-    startEcosystemActivity(() => server?.listening === true);
     await connectToDatabase();
     stopWorker = startPublishingWorker();
     server = app.listen(PORT, () => {
