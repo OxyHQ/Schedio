@@ -92,7 +92,6 @@ export const posts = pgTable(
     revision: integer().notNull().default(1),
     approvedRevision: integer(),
     approvedBy: text(),
-    oxyTaskId: text(),
     queuePosition: integer().notNull().default(0),
     media: text().array().notNull().default([]),
     platformIds: text().array().notNull().default([]),
