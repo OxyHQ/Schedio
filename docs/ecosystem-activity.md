@@ -4,12 +4,18 @@ The backend publishes aggregate traffic and its infrastructure heartbeat to the
 Oxy API, which broadcasts changes to the website dashboard. Collection runs in
 the service process regardless of whether somebody opens the dashboard.
 
-Enable with `OXY_ECOSYSTEM_ACTIVITY_ENABLED=true`, `AWS_REGION`, and a registered
-Oxy workload binding for the deployed task role. The shared Oxy activity producer
-uses workload identity; do not provision `OXY_SERVICE_API_KEY` or
-`OXY_SERVICE_API_SECRET` for this own service.
-An invalid activation value or missing required configuration fails at boot.
-Disabled collection emits a warning; it must not be interpreted as zero traffic.
+`server.ts` starts it with one call, `startEcosystemTraffic` from
+`@oxy.so/core/server`, and awaits its `stop()` on shutdown. `OXY_ECOSYSTEM_ACTIVITY_ENABLED`
+is `true` or `false` (anything else fails boot) and wins; unset, it publishes
+wherever `AWS_REGION` is set. Once it should publish, a missing region fails
+boot. Publishing needs a registered Oxy workload binding for the deployed task
+role. The shared Oxy activity producer uses workload identity; do not provision
+`OXY_SERVICE_API_KEY` or `OXY_SERVICE_API_SECRET` for this own service.
+Where it does not publish nothing is emitted, which must not be interpreted as
+zero traffic. Production sets `OXY_ECOSYSTEM_ACTIVITY_ENABLED=false` while Schedio
+is prelaunch (it is not in `ecosystem_activity_services` in oxy-infra); a
+development shell with `AWS_REGION` set and the flag unset publishes, so keep the
+`.env.example` default `false`.
 Verify the live workload binding and enable the flag in the deployment before
 claiming coverage. Source configuration is not evidence of deployed coverage.
 
