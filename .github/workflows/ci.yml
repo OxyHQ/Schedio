@@ -196,7 +196,7 @@ jobs:
 
   # backend's hosted twin in the Seldon race: the same name, services, env and steps.
   backend-hosted:
-    name: Backend build and tests
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Backend build and tests' || 'Backend build and tests (seldon twin, off)' }}
     needs: [changes, race]
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -211,7 +211,7 @@ jobs:
   # backend's rescue: reruns it hosted when its Seldon lane failed (the house
   # network drops connections); a genuine failure fails again.
   backend-rescue:
-    name: Backend build and tests
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Backend build and tests' || 'Backend build and tests (seldon rescue, off)' }}
     needs: [changes, backend]
     if: ${{ !cancelled() && needs.backend.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
@@ -251,7 +251,7 @@ jobs:
 
   # frontend's hosted twin in the Seldon race: the same name and steps.
   frontend-hosted:
-    name: Frontend web export
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Frontend web export' || 'Frontend web export (seldon twin, off)' }}
     needs: [changes, race]
     if: ${{ !cancelled() && needs.race.outputs.race == 'true' && needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
@@ -264,7 +264,7 @@ jobs:
   # frontend's rescue: reruns it hosted when its Seldon lane failed (the house
   # network drops connections); a genuine failure fails again.
   frontend-rescue:
-    name: Frontend web export
+    name: ${{ vars.CI_SELDON_RACE == 'true' && 'Frontend web export' || 'Frontend web export (seldon rescue, off)' }}
     needs: [changes, frontend]
     if: ${{ !cancelled() && needs.frontend.result == 'failure' && vars.CI_SELDON_RACE == 'true' && github.run_attempt == 1 && (github.event_name == 'pull_request' || github.event_name == 'merge_group') && !github.event.pull_request.head.repo.fork && needs.changes.outputs.frontend == 'true' }}
     runs-on: ubuntu-latest
